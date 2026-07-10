@@ -273,6 +273,11 @@ async def websocket_terminal(websocket: WebSocket, session_id: str):
     sim_shell = None
     if container_id and container_id.startswith("simulated-"):
         sim_shell = runtime_service.get_session_shell(session_id, lab_name)
+    
+    # Fallback: if Docker is unavailable, always provide a simulated shell
+    if not sim_shell and (not runtime_service.is_docker_available or not runtime_service.docker_client):
+        sim_shell = runtime_service.get_session_shell(session_id, lab_name or "docker-basics")
+        logger.info(f"Docker unavailable — falling back to simulated shell for session {session_id}")
 
     # Welcome Banner
     banner = (
