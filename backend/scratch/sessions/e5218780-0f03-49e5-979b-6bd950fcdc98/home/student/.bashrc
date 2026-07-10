@@ -1,0 +1,1 @@
+# Simulated bash config file
