@@ -14,6 +14,13 @@ export const authService = {
     return authData;
   },
 
+  async googleLogin(token: string, email?: string, name?: string): Promise<AuthResponse> {
+    const response = await apiClient.post("/auth/google-login", { token, email, name });
+    const authData: AuthResponse = response.data;
+    setTokens(authData.access_token, authData.refresh_token);
+    return authData;
+  },
+
   async logout(): Promise<void> {
     const refreshToken = getRefreshToken();
     try {

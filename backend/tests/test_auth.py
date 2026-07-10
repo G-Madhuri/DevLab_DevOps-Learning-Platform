@@ -153,3 +153,48 @@ def test_logout_success(client):
         json={"refresh_token": refresh_token},
     )
     assert refresh_response.status_code == 401
+
+
+def test_google_login_new_user_success(client):
+    response = client.post(
+        "/api/v1/auth/google-login",
+        json={
+            "token": "mock-google-token-xyz",
+            "email": "my.own.google.email@example.com",
+            "name": "My Own Google Name",
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "access_token" in data
+    assert "refresh_token" in data
+    assert data["user"]["email"] == "my.own.google.email@example.com"
+    assert data["user"]["name"] == "My Own Google Name"
+
+
+def test_google_login_existing_user_success(client):
+    # First login (registers user)
+    client.post(
+        "/api/v1/auth/google-login",
+        json={
+            "token": "mock-google-token-xyz",
+            "email": "my.own.google.email2@example.com",
+            "name": "My Own Google Name 2",
+        },
+    )
+    # Second login (authenticates existing user)
+    response = client.post(
+        "/api/v1/auth/google-login",
+        json={
+            "token": "mock-google-token-abc",
+            "email": "my.own.google.email2@example.com",
+            "name": "My Own Google Name 2 Updated",
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "access_token" in data
+    assert data["user"]["email"] == "my.own.google.email2@example.com"
+    # Name should remain unchanged as it's an existing record, or updated if implemented.
+    assert data["user"]["name"] == "My Own Google Name 2"
+

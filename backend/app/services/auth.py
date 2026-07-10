@@ -45,6 +45,48 @@ class AuthService:
             user=user,
         )
 
+    def login_google_user(self, db: Session, email: str, name: str) -> TokenResponse:
+        """
+        Authenticate a Google OAuth user by email, registering them if they do not exist.
+        """
+        user = user_repository.get_by_email(db, email=email)
+        if not user:
+            # Register user automatically
+            import secrets
+            from app.core.security import get_password_hash
+            random_password = secrets.token_urlsafe(16) + "GoogleOAuth123!"
+            password_hash = get_password_hash(random_password)
+            user = User(
+                email=email,
+                name=name,
+                password_hash=password_hash
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
+        # Generate tokens
+        access_token = create_access_token(subject=user.id)
+        refresh_token_str = create_refresh_token(subject=user.id)
+
+        # Persist refresh token in database
+        expires_at = datetime.now(timezone.utc) + timedelta(
+            days=settings.REFRESH_TOKEN_EXPIRE_DAYS
+        )
+        token_data = {
+            "user_id": user.id,
+            "token": refresh_token_str,
+            "expires_at": expires_at,
+            "is_revoked": False,
+        }
+        token_repository.create(db, obj_in_data=token_data)
+
+        return TokenResponse(
+            access_token=access_token,
+            refresh_token=refresh_token_str,
+            user=user,
+        )
+
     def refresh_access_token(self, db: Session, refresh_token: str) -> RefreshTokenResponse:
         """
         Rotates the refresh token and issues a new access token if the provided token is valid.
