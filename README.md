@@ -1,6 +1,6 @@
 # DevLab — Cloud-Based DevOps Learning Platform
 
-> **Phase 1 Complete** — Production-ready SaaS foundation with authentication, dashboard, and PostgreSQL.
+> **Phase 2 Complete** — Interactive Lab Explorer, complete seed database of 30+ DevOps exercises, search, category filters, sorting, and Google Auth integration options.
 
 ---
 
@@ -8,7 +8,7 @@
 
 DevLab is an online platform where developers learn DevOps by launching isolated cloud sandboxes directly from their browser. Users can launch Linux, Docker, Kubernetes, Terraform, and AWS environments with one click — each isolated per user and auto-expiring.
 
-**Phase 1** delivers the complete SaaS foundation: authentication, dashboard, profile management, PostgreSQL integration, Docker support, and CI/CD.
+**Phase 2** delivers the main Dashboard and Lab Explorer catalog, allowing users to browse, search, sort, and filter DevOps labs in real-time.
 
 ---
 
@@ -19,7 +19,7 @@ DevLab is an online platform where developers learn DevOps by launching isolated
 | **Frontend** | Next.js 16, React, TypeScript, Tailwind CSS, shadcn/ui |
 | **State / Data** | TanStack Query, React Hook Form, Zod |
 | **Backend** | FastAPI, SQLAlchemy, Alembic, Pydantic |
-| **Auth** | JWT (access + refresh tokens), bcrypt |
+| **Auth** | JWT (access + refresh tokens), bcrypt, Google Auth (OAuth layout) |
 | **Database** | Neon PostgreSQL |
 | **Container** | Docker, Docker Compose |
 | **CI/CD** | GitHub Actions |
@@ -32,22 +32,22 @@ DevLab is an online platform where developers learn DevOps by launching isolated
 DevLab/
 ├── backend/                # FastAPI REST API
 │   ├── app/
-│   │   ├── api/v1/         # Endpoint routers (auth, users)
+│   │   ├── api/v1/         # Endpoint routers (auth, users, labs)
 │   │   ├── core/           # Config, security, logging
-│   │   ├── db/             # SQLAlchemy session & base
+│   │   ├── db/             # SQLAlchemy session, base, seed.py data
 │   │   ├── dependencies/   # get_db, get_current_user
-│   │   ├── models/         # User, RefreshToken ORM models
-│   │   ├── repositories/   # DB CRUD abstractions
-│   │   ├── schemas/        # Pydantic request/response models
-│   │   └── services/       # Business logic layer
+│   │   ├── models/         # User, RefreshToken, Lab ORM models
+│   │   ├── repositories/   # DB CRUD abstractions (user, token, lab)
+│   │   ├── schemas/        # Pydantic request/response models (user, token, lab)
+│   │   └── services/       # Business logic layer (auth, user, lab)
 │   ├── alembic/            # Database migrations
 │   └── tests/              # pytest test suite
 ├── frontend/               # Next.js application
-│   ├── app/                # App Router pages
-│   ├── components/         # UI, layout, auth components
+│   ├── app/                # App Router pages (labs, dashboard, settings, profile)
+│   ├── components/         # UI, layout, auth forms
 │   ├── hooks/              # useAuth React context & hook
 │   ├── lib/                # Axios client with JWT interceptors
-│   ├── services/           # API call functions
+│   ├── services/           # API call functions (auth, lab)
 │   └── types/              # TypeScript interfaces
 ├── .github/workflows/      # GitHub Actions CI
 ├── docker-compose.yml      # Multi-service orchestration
@@ -78,10 +78,26 @@ DevLab/
 | is_revoked | BOOLEAN | Default false |
 | created_at | TIMESTAMPTZ | Auto |
 
+### `labs`
+| Column | Type | Notes |
+|---|---|---|
+| id | UUID | Primary key |
+| title | VARCHAR(255) | Required |
+| slug | VARCHAR(255) | Unique, indexed |
+| description | TEXT | Detailed description |
+| difficulty | VARCHAR(50) | Beginner, Intermediate, Advanced |
+| duration | VARCHAR(50) | Duration (e.g. "45 minutes") |
+| category | VARCHAR(50) | Linux, Docker, Kubernetes, etc. |
+| icon | VARCHAR(50) | Lucide icon slug (e.g. "terminal") |
+| estimated_time| VARCHAR(50) | E.g. "45m" |
+| status | VARCHAR(50) | Status (e.g. "Active", "Beta") |
+| coming_soon | BOOLEAN | Default true |
+
 ---
 
 ## API Endpoints
 
+### Auth Endpoints
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | POST | `/api/v1/auth/register` | — | Create account |
@@ -90,6 +106,13 @@ DevLab/
 | POST | `/api/v1/auth/logout` | — | Revoke refresh token |
 | GET | `/api/v1/users/me` | ✅ | Get current user |
 | PUT | `/api/v1/users/me` | ✅ | Update name / password |
+
+### Lab Endpoints
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/api/v1/labs` | — | Query labs with filters, search, sort |
+| GET | `/api/v1/labs/categories` | — | Fetch distinct lab categories list |
+| GET | `/api/v1/labs/{slug}` | — | Get single lab detail by slug |
 
 Swagger docs available at `http://localhost:8000/docs`
 
@@ -102,12 +125,6 @@ Copy `.env.example` to `.env` and fill in your values:
 ```bash
 cp .env.example .env
 ```
-
-| Variable | Description |
-|---|---|
-| `DATABASE_URL` | Neon PostgreSQL connection string |
-| `JWT_SECRET` | Secret key for JWT signing (change in production!) |
-| `NEXT_PUBLIC_API_URL` | Backend API URL for frontend |
 
 ---
 
@@ -131,6 +148,9 @@ pip install -r requirements.txt
 # Run migrations
 alembic upgrade head
 
+# Seed database with 30+ DevOps labs
+python app/db/seed.py
+
 # Start API server
 uvicorn app.main:app --reload --port 8000
 ```
@@ -151,10 +171,6 @@ npm run dev       # http://localhost:3000
 # Build and run all services
 cp .env.example .env
 docker-compose up --build
-
-# Frontend → http://localhost:3000
-# Backend  → http://localhost:8000
-# API Docs → http://localhost:8000/docs
 ```
 
 ---
@@ -184,10 +200,8 @@ npm run build
 
 GitHub Actions runs on every push to `main` or `develop`:
 
-1. **Backend** — pip install → flake8 lint → pytest
+1. **Backend** — pip install → flake8 lint → pytest (18 integration tests)
 2. **Frontend** — npm ci → ESLint → TypeScript check → Next.js build
-
-See [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
 ---
 
@@ -196,31 +210,27 @@ See [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 | Route | Description |
 |---|---|
 | `/` | Landing page |
-| `/login` | Sign in |
-| `/register` | Create account |
-| `/dashboard` | Main workspace |
-| `/profile` | Edit name & password |
-| `/settings` | Theme & account settings |
+| `/login` | Sign in (Normal & Google credentials options) |
+| `/register` | Create account (Normal & Google credentials options) |
+| `/dashboard` | Main workspace dashboard, daily motivation quotes, upcoming features |
+| `/labs` | Interactive Labs explorer, filters, sorting, categories tabs |
+| `/labs/[slug]` | Syllabus curriculum details, objectives, prerequisites, banner |
+| `/profile` | Edit user profile display name & password credentials |
+| `/settings` | Light/Dark theme toggles and account link buttons |
 
 ---
 
 ## Future Roadmap
 
-### Phase 2 — Lab Infrastructure
+### Phase 3 — Lab Infrastructure
 - Browser-embedded terminal (xterm.js)
 - Docker container provisioning per user
 - Lab timer & auto-cleanup
 
-### Phase 3 — Content
-- Linux, Docker, Kubernetes, Terraform lab modules
+### Phase 4 — Progress & Content
+- Automated checking engine
 - Step-by-step guided exercises
-- XP & progress tracking
-
-### Phase 4 — Advanced
-- AWS / Azure sandboxes
-- Certificates of completion
-- AI Mentor assistant
-- Team workspaces
+- XP, Streaks & progress tracking
 
 ---
 
