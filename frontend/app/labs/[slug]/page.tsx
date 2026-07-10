@@ -304,13 +304,22 @@ export default function LabDetailsPage() {
             <div className="space-y-4">
               <h3 className="text-sm font-bold text-foreground">Launch Environment</h3>
               
-              {/* Alert coming soon */}
-              <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-[11px] text-primary leading-relaxed flex items-start">
-                <AlertCircle className="h-4 w-4 mr-2 shrink-0 text-primary" />
-                <span>
-                  <strong>Phase 2 Notification:</strong> Interactive shell console connections are disabled. Lab instances will launch in Phase 3.
-                </span>
-              </div>
+              {/* Alert status */}
+              {lab.slug === "linux-command-line-basics" ? (
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-[11px] text-emerald-600 leading-relaxed flex items-start">
+                  <CheckCircle2 className="h-4 w-4 mr-2 shrink-0 text-emerald-600" />
+                  <span>
+                    <strong>Lab Status: Active.</strong> The Ubuntu 24.04 command sandbox is live! Click Launch below to start the interactive lesson.
+                  </span>
+                </div>
+              ) : (
+                <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-[11px] text-primary leading-relaxed flex items-start">
+                  <AlertCircle className="h-4 w-4 mr-2 shrink-0 text-primary" />
+                  <span>
+                    <strong>Coming Soon:</strong> Interactive shell sandbox connections for this module will boot up in future releases.
+                  </span>
+                </div>
+              )}
 
               {/* Prerequisites list */}
               <div className="space-y-2">
@@ -330,12 +339,22 @@ export default function LabDetailsPage() {
 
             {/* Launch Action */}
             <div className="space-y-3 pt-4 border-t border-border/40">
-              <Button
-                disabled
-                className="w-full bg-primary/40 text-primary-foreground/75 cursor-not-allowed py-2.5 rounded-md font-semibold text-xs shadow-sm border border-transparent"
-              >
-                Coming Soon
-              </Button>
+              {lab.slug === "linux-command-line-basics" ? (
+                <Link href="/labs/linux-basics" className="block w-full">
+                  <Button
+                    className="w-full bg-primary hover:bg-primary/95 text-primary-foreground py-2.5 rounded-md font-semibold text-xs shadow-sm border border-transparent"
+                  >
+                    Launch Lab
+                  </Button>
+                </Link>
+              ) : (
+                <Button
+                  disabled
+                  className="w-full bg-primary/40 text-primary-foreground/75 cursor-not-allowed py-2.5 rounded-md font-semibold text-xs shadow-sm border border-transparent"
+                >
+                  Coming Soon
+                </Button>
+              )}
               <Link href="/labs" className="block text-center text-xs text-muted-foreground hover:text-foreground">
                 Back to Explorer
               </Link>
