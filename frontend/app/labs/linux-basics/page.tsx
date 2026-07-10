@@ -27,6 +27,7 @@ interface TaskData {
   title: string;
   explanation: string;
   instruction: string;
+  example: string;
   expected: string;
   hint: string;
 }
@@ -37,6 +38,7 @@ const LINUX_TASKS: TaskData[] = [
     title: "1. Navigation (pwd)",
     explanation: "Before managing directories, you must know where you are located. In Linux, your current location is referred to as the Working Directory. The pwd (print working directory) command prints your absolute path.",
     instruction: "Run the pwd command in the terminal to inspect your current directory.",
+    example: "pwd",
     expected: "/home/student",
     hint: "Type 'pwd' and press Enter.",
   },
@@ -45,7 +47,8 @@ const LINUX_TASKS: TaskData[] = [
     title: "2. Working Directories (ls)",
     explanation: "The ls command lists the contents of a directory. By default, it hides files starting with a dot (hidden configuration files). The -a flag instructs ls to display all files, including hidden entries.",
     instruction: "List all contents inside your home directory including hidden configurations using ls -a.",
-    expected: "Output showing . .. .bashrc and other dotfiles.",
+    example: "ls -a",
+    expected: "Output showing . .. .bashrc .profile welcome.txt drafts/ old_logs/",
     hint: "Type 'ls -a' or 'ls -la' and hit Enter.",
   },
   {
@@ -53,6 +56,7 @@ const LINUX_TASKS: TaskData[] = [
     title: "3. Files (touch)",
     explanation: "The touch command creates empty files or updates access modification timestamps on existing ones.",
     instruction: "Create an empty text file named note.txt using touch.",
+    example: "touch note.txt",
     expected: "Successfully created note.txt in /home/student.",
     hint: "Run: touch note.txt",
   },
@@ -61,6 +65,7 @@ const LINUX_TASKS: TaskData[] = [
     title: "4. Directories (mkdir)",
     explanation: "To group files and structures, you create directories. The mkdir (make directory) command creates folders.",
     instruction: "Create a directory named backup in your home path.",
+    example: "mkdir backup",
     expected: "Directory /home/student/backup is created.",
     hint: "Run: mkdir backup",
   },
@@ -69,6 +74,7 @@ const LINUX_TASKS: TaskData[] = [
     title: "5. Copy (cp)",
     explanation: "The cp command copies files from a source path to a destination path.",
     instruction: "Copy note.txt into the backup directory under the name note_copy.txt.",
+    example: "cp note.txt backup/note_copy.txt",
     expected: "Copy is generated inside the backup subfolder.",
     hint: "Run: cp note.txt backup/note_copy.txt",
   },
@@ -77,14 +83,16 @@ const LINUX_TASKS: TaskData[] = [
     title: "6. Move (mv)",
     explanation: "The mv command moves files or directories from one location to another. Unlike copy, the source is removed.",
     instruction: "Move the note_copy.txt file back to your home directory /home/student.",
+    example: "mv backup/note_copy.txt .",
     expected: "note_copy.txt resides in /home/student, no longer in backup/.",
-    hint: "Run: mv backup/note_copy.txt .",
+    hint: "Run: mv backup/note_copy.txt .   (The dot represents your current directory)",
   },
   {
     id: 7,
     title: "7. Rename (mv)",
     explanation: "In Linux, renaming is also done using the mv command by moving a file to a new name in the same path.",
     instruction: "Rename note_copy.txt in your home directory to log.txt.",
+    example: "mv note_copy.txt log.txt",
     expected: "note_copy.txt is renamed to log.txt.",
     hint: "Run: mv note_copy.txt log.txt",
   },
@@ -93,6 +101,7 @@ const LINUX_TASKS: TaskData[] = [
     title: "8. Delete (rm)",
     explanation: "The rm (remove) command deletes files permanently. Be careful, there is no Recycle Bin!",
     instruction: "Delete the original note.txt file.",
+    example: "rm note.txt",
     expected: "note.txt is removed from your filesystem.",
     hint: "Run: rm note.txt",
   },
@@ -101,6 +110,7 @@ const LINUX_TASKS: TaskData[] = [
     title: "9. Viewing Files (cat)",
     explanation: "The cat (concatenate) command reads contents of text files and prints them directly to the console stream.",
     instruction: "Print the contents of log.txt using cat.",
+    example: "cat log.txt",
     expected: "Blank output or contents printed to stdout.",
     hint: "Run: cat log.txt",
   },
@@ -109,6 +119,7 @@ const LINUX_TASKS: TaskData[] = [
     title: "10. Permissions (chmod)",
     explanation: "In Linux, permissions dictate read (r), write (w), and execute (x) states for owner, group, and others. The chmod command updates these file mode bits (e.g. 600 limits access to owner only).",
     instruction: "Restrict log.txt permissions to owner read/write only (600).",
+    example: "chmod 600 log.txt",
     expected: "Permissions updated. verifying ls -l shows -rw-------.",
     hint: "Run: chmod 600 log.txt",
   },
@@ -117,6 +128,7 @@ const LINUX_TASKS: TaskData[] = [
     title: "11. Users (id)",
     explanation: "The id command details identifiers, group associations, and owner names for the current active account.",
     instruction: "Inspect your active identity information using id.",
+    example: "id",
     expected: "uid=1000(student) gid=1000(student) details.",
     hint: "Run: id",
   },
@@ -125,6 +137,7 @@ const LINUX_TASKS: TaskData[] = [
     title: "12. Groups (groups)",
     explanation: "The groups command prints a list of all user group memberships for the current user.",
     instruction: "Check what groups you are associated with.",
+    example: "groups",
     expected: "student sudo",
     hint: "Run: groups",
   },
@@ -133,6 +146,7 @@ const LINUX_TASKS: TaskData[] = [
     title: "13. Searching (grep)",
     explanation: "The grep command filters files for string matches. It prints matching lines containing the search pattern.",
     instruction: "Search for the keyword 'student' in log.txt using grep.",
+    example: "grep student log.txt",
     expected: "Filtered lines printed.",
     hint: "Run: grep student log.txt",
   },
@@ -141,6 +155,7 @@ const LINUX_TASKS: TaskData[] = [
     title: "14. Pipes (|)",
     explanation: "Pipes (|) send output of one command as the input to another command, enabling complex command chains.",
     instruction: "Pipe directory files list to grep to locate log.txt.",
+    example: "ls | grep log.txt",
     expected: "log.txt is printed.",
     hint: "Run: ls | grep log.txt",
   },
@@ -149,6 +164,7 @@ const LINUX_TASKS: TaskData[] = [
     title: "15. Redirection (>)",
     explanation: "Redirection operators write stdout directly into files. '>' overwrites a file; '>>' appends text.",
     instruction: "Write the text 'DevOps' directly into a new file named dynamic.txt.",
+    example: "echo \"DevOps\" > dynamic.txt",
     expected: "dynamic.txt file contains 'DevOps'.",
     hint: "Run: echo \"DevOps\" > dynamic.txt",
   },
@@ -157,6 +173,7 @@ const LINUX_TASKS: TaskData[] = [
     title: "16. Environment Variables",
     explanation: "Environment variables store config states globally. Use 'export KEY=VALUE' to set variables.",
     instruction: "Export an environment variable named REGISTRY with value 'local'.",
+    example: "export REGISTRY=local",
     expected: "REGISTRY=local is visible in printenv outputs.",
     hint: "Run: export REGISTRY=local",
   },
@@ -165,6 +182,7 @@ const LINUX_TASKS: TaskData[] = [
     title: "17. Processes (ps)",
     explanation: "The ps command lists active process instances running under the current terminal shell.",
     instruction: "View running system processes using ps.",
+    example: "ps",
     expected: "List showing bash and ps processes.",
     hint: "Run: ps",
   },
@@ -173,6 +191,7 @@ const LINUX_TASKS: TaskData[] = [
     title: "18. Networking (ip route)",
     explanation: "DevOps requires networking tasks. The ip route command views active gateways routing tables.",
     instruction: "Inspect routing configurations using ip route.",
+    example: "ip route",
     expected: "Default route details.",
     hint: "Run: ip route",
   },
@@ -181,6 +200,7 @@ const LINUX_TASKS: TaskData[] = [
     title: "19. Directory Deletions",
     explanation: "To delete directories containing files, use rm with recursive (-r) and force (-f) flags.",
     instruction: "Recursively delete the backup directory.",
+    example: "rm -rf backup",
     expected: "backup/ folder deleted.",
     hint: "Run: rm -rf backup",
   },
@@ -189,7 +209,8 @@ const LINUX_TASKS: TaskData[] = [
     title: "20. Workspace Cleanup",
     explanation: "Finally, check your workspace directories status. Only log.txt and dynamic.txt should remain.",
     instruction: "Execute ls -la to check final directories state.",
-    expected: "backup directory is gone.",
+    example: "ls -la",
+    expected: "backup directory is gone, note.txt is gone.",
     hint: "Run: ls -la",
   },
 ];
@@ -346,6 +367,16 @@ export default function LinuxBasicsLabPage() {
                 <p className="text-xs font-semibold text-foreground leading-relaxed">
                   {activeTask.instruction}
                 </p>
+              </div>
+
+              {/* Example Command Box */}
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  Example Command
+                </span>
+                <pre className="text-xs bg-[#1C1824] text-[#EFEBF4] p-3 rounded-lg border border-border/40 font-mono overflow-x-auto shadow-inner">
+                  {activeTask.example}
+                </pre>
               </div>
 
               {/* Expected Output */}
