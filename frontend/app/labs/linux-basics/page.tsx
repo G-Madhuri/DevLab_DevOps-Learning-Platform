@@ -40,88 +40,88 @@ const LINUX_TASKS: TaskData[] = [
     instruction: "Run the pwd command in the terminal to inspect your current directory.",
     example: "pwd",
     expected: "/home/student",
-    hint: "Type 'pwd' and press Enter.",
+    hint: "Run exact command: pwd",
   },
   {
     id: 2,
     title: "2. Working Directories (ls)",
     explanation: "The ls command lists the contents of a directory. By default, it hides files starting with a dot (hidden configuration files). The -a flag instructs ls to display all files, including hidden entries.",
     instruction: "List all contents inside your home directory including hidden configurations using ls -a.",
-    example: "ls -a",
+    example: "ls [options] [path]",
     expected: "Output showing . .. .bashrc .profile welcome.txt drafts/ old_logs/",
-    hint: "Type 'ls -a' or 'ls -la' and hit Enter.",
+    hint: "Run exact command: ls -a",
   },
   {
     id: 3,
     title: "3. Files (touch)",
     explanation: "The touch command creates empty files or updates access modification timestamps on existing ones.",
     instruction: "Create an empty text file named note.txt using touch.",
-    example: "touch note.txt",
+    example: "touch filename.txt",
     expected: "Successfully created note.txt in /home/student.",
-    hint: "Run: touch note.txt",
+    hint: "Run exact command: touch note.txt",
   },
   {
     id: 4,
     title: "4. Directories (mkdir)",
     explanation: "To group files and structures, you create directories. The mkdir (make directory) command creates folders.",
     instruction: "Create a directory named backup in your home path.",
-    example: "mkdir backup",
+    example: "mkdir folder_name",
     expected: "Directory /home/student/backup is created.",
-    hint: "Run: mkdir backup",
+    hint: "Run exact command: mkdir backup",
   },
   {
     id: 5,
     title: "5. Copy (cp)",
     explanation: "The cp command copies files from a source path to a destination path.",
     instruction: "Copy note.txt into the backup directory under the name note_copy.txt.",
-    example: "cp note.txt backup/note_copy.txt",
+    example: "cp src.txt dest.txt",
     expected: "Copy is generated inside the backup subfolder.",
-    hint: "Run: cp note.txt backup/note_copy.txt",
+    hint: "Run exact command: cp note.txt backup/note_copy.txt",
   },
   {
     id: 6,
     title: "6. Move (mv)",
     explanation: "The mv command moves files or directories from one location to another. Unlike copy, the source is removed.",
     instruction: "Move the note_copy.txt file back to your home directory /home/student.",
-    example: "mv backup/note_copy.txt .",
+    example: "mv src_file.txt destination_folder/",
     expected: "note_copy.txt resides in /home/student, no longer in backup/.",
-    hint: "Run: mv backup/note_copy.txt .   (The dot represents your current directory)",
+    hint: "Run exact command: mv backup/note_copy.txt .",
   },
   {
     id: 7,
     title: "7. Rename (mv)",
     explanation: "In Linux, renaming is also done using the mv command by moving a file to a new name in the same path.",
     instruction: "Rename note_copy.txt in your home directory to log.txt.",
-    example: "mv note_copy.txt log.txt",
+    example: "mv old_name.txt new_name.txt",
     expected: "note_copy.txt is renamed to log.txt.",
-    hint: "Run: mv note_copy.txt log.txt",
+    hint: "Run exact command: mv note_copy.txt log.txt",
   },
   {
     id: 8,
     title: "8. Delete (rm)",
     explanation: "The rm (remove) command deletes files permanently. Be careful, there is no Recycle Bin!",
     instruction: "Delete the original note.txt file.",
-    example: "rm note.txt",
+    example: "rm filename.txt",
     expected: "note.txt is removed from your filesystem.",
-    hint: "Run: rm note.txt",
+    hint: "Run exact command: rm note.txt",
   },
   {
     id: 9,
     title: "9. Viewing Files (cat)",
     explanation: "The cat (concatenate) command reads contents of text files and prints them directly to the console stream.",
     instruction: "Print the contents of log.txt using cat.",
-    example: "cat log.txt",
+    example: "cat filename.txt",
     expected: "Blank output or contents printed to stdout.",
-    hint: "Run: cat log.txt",
+    hint: "Run exact command: cat log.txt",
   },
   {
     id: 10,
     title: "10. Permissions (chmod)",
     explanation: "In Linux, permissions dictate read (r), write (w), and execute (x) states for owner, group, and others. The chmod command updates these file mode bits (e.g. 600 limits access to owner only).",
     instruction: "Restrict log.txt permissions to owner read/write only (600).",
-    example: "chmod 600 log.txt",
+    example: "chmod permissions_octal filename.txt",
     expected: "Permissions updated. verifying ls -l shows -rw-------.",
-    hint: "Run: chmod 600 log.txt",
+    hint: "Run exact command: chmod 600 log.txt",
   },
   {
     id: 11,
@@ -130,7 +130,7 @@ const LINUX_TASKS: TaskData[] = [
     instruction: "Inspect your active identity information using id.",
     example: "id",
     expected: "uid=1000(student) gid=1000(student) details.",
-    hint: "Run: id",
+    hint: "Run exact command: id",
   },
   {
     id: 12,
@@ -139,52 +139,52 @@ const LINUX_TASKS: TaskData[] = [
     instruction: "Check what groups you are associated with.",
     example: "groups",
     expected: "student sudo",
-    hint: "Run: groups",
+    hint: "Run exact command: groups",
   },
   {
     id: 13,
     title: "13. Searching (grep)",
     explanation: "The grep command filters files for string matches. It prints matching lines containing the search pattern.",
     instruction: "Search for the keyword 'student' in log.txt using grep.",
-    example: "grep student log.txt",
+    example: "grep 'search_string' filename.txt",
     expected: "Filtered lines printed.",
-    hint: "Run: grep student log.txt",
+    hint: "Run exact command: grep student log.txt",
   },
   {
     id: 14,
     title: "14. Pipes (|)",
     explanation: "Pipes (|) send output of one command as the input to another command, enabling complex command chains.",
     instruction: "Pipe directory files list to grep to locate log.txt.",
-    example: "ls | grep log.txt",
+    example: "command1 | command2",
     expected: "log.txt is printed.",
-    hint: "Run: ls | grep log.txt",
+    hint: "Run exact command: ls | grep log.txt",
   },
   {
     id: 15,
     title: "15. Redirection (>)",
     explanation: "Redirection operators write stdout directly into files. '>' overwrites a file; '>>' appends text.",
     instruction: "Write the text 'DevOps' directly into a new file named dynamic.txt.",
-    example: "echo \"DevOps\" > dynamic.txt",
+    example: "echo \"text\" > filename.txt",
     expected: "dynamic.txt file contains 'DevOps'.",
-    hint: "Run: echo \"DevOps\" > dynamic.txt",
+    hint: "Run exact command: echo \"DevOps\" > dynamic.txt",
   },
   {
     id: 16,
     title: "16. Environment Variables",
     explanation: "Environment variables store config states globally. Use 'export KEY=VALUE' to set variables.",
     instruction: "Export an environment variable named REGISTRY with value 'local'.",
-    example: "export REGISTRY=local",
+    example: "export VARIABLE_NAME=value",
     expected: "REGISTRY=local is visible in printenv outputs.",
-    hint: "Run: export REGISTRY=local",
+    hint: "Run exact command: export REGISTRY=local",
   },
   {
     id: 17,
     title: "17. Processes (ps)",
     explanation: "The ps command lists active process instances running under the current terminal shell.",
     instruction: "View running system processes using ps.",
-    example: "ps",
+    example: "ps [options]",
     expected: "List showing bash and ps processes.",
-    hint: "Run: ps",
+    hint: "Run exact command: ps",
   },
   {
     id: 18,
@@ -193,16 +193,16 @@ const LINUX_TASKS: TaskData[] = [
     instruction: "Inspect routing configurations using ip route.",
     example: "ip route",
     expected: "Default route details.",
-    hint: "Run: ip route",
+    hint: "Run exact command: ip route",
   },
   {
     id: 19,
     title: "19. Directory Deletions",
     explanation: "To delete directories containing files, use rm with recursive (-r) and force (-f) flags.",
     instruction: "Recursively delete the backup directory.",
-    example: "rm -rf backup",
+    example: "rm -rf folder_name",
     expected: "backup/ folder deleted.",
-    hint: "Run: rm -rf backup",
+    hint: "Run exact command: rm -rf backup",
   },
   {
     id: 20,
@@ -211,7 +211,7 @@ const LINUX_TASKS: TaskData[] = [
     instruction: "Execute ls -la to check final directories state.",
     example: "ls -la",
     expected: "backup directory is gone, note.txt is gone.",
-    hint: "Run: ls -la",
+    hint: "Run exact command: ls -la",
   },
 ];
 
@@ -358,6 +358,16 @@ export default function LinuxBasicsLabPage() {
                 {activeTask.explanation}
               </p>
 
+              {/* Example Command Box - Displayed ABOVE the Goal Box */}
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  Example Command
+                </span>
+                <pre className="text-xs bg-[#1C1824] text-[#EFEBF4] p-3 rounded-lg border border-border/40 font-mono overflow-x-auto shadow-inner">
+                  {activeTask.example}
+                </pre>
+              </div>
+
               {/* Task Goal Box */}
               <div className="p-4 bg-muted/40 border border-border/50 rounded-lg space-y-2">
                 <div className="flex items-center text-xs font-bold text-primary">
@@ -367,16 +377,6 @@ export default function LinuxBasicsLabPage() {
                 <p className="text-xs font-semibold text-foreground leading-relaxed">
                   {activeTask.instruction}
                 </p>
-              </div>
-
-              {/* Example Command Box */}
-              <div className="space-y-1">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                  Example Command
-                </span>
-                <pre className="text-xs bg-[#1C1824] text-[#EFEBF4] p-3 rounded-lg border border-border/40 font-mono overflow-x-auto shadow-inner">
-                  {activeTask.example}
-                </pre>
               </div>
 
               {/* Expected Output */}
