@@ -66,7 +66,18 @@ class SimulatedShell:
         cmd_line = cmd_line.strip()
         if not cmd_line:
             return ""
-        
+
+        # Handle chained commands with &&
+        if "&&" in cmd_line:
+            parts_chained = [c.strip() for c in cmd_line.split("&&")]
+            results = []
+            for chained_cmd in parts_chained:
+                if chained_cmd:
+                    result = self.execute_command(chained_cmd)
+                    results.append(result)
+            # Return the last prompt (which includes the final prompt line)
+            return results[-1] if results else ""
+
         self.history.append(cmd_line)
         parts = cmd_line.split()
         cmd = parts[0]
@@ -347,13 +358,62 @@ class SimulatedDockerShell(SimulatedShell):
                 return make_prompt("\r\n".join(lines))
             elif sub == "images":
                 lines = [
-                    "REPOSITORY    TAG       IMAGE ID       CREATED        SIZE",
-                    "alpine        latest    05455a08881e   2 hours ago    7.38MB",
-                    "nginx         latest    605c77e624dd   3 days ago     142MB",
-                    "redis         latest    39005c77e62d   5 days ago     113MB",
-                    "hello-world   latest    feb5d9ad7470   3 months ago   13kB"
+                    "REPOSITORY      TAG       IMAGE ID       CREATED        SIZE",
+                    "alpine          latest    05455a08881e   2 hours ago    7.38MB",
+                    "nginx           latest    605c77e624dd   3 days ago     142MB",
+                    "redis           latest    39005c77e62d   5 days ago     113MB",
+                    "hello-world     latest    feb5d9ad7470   3 months ago   13kB",
                 ]
+                # Append user-built images from mock_images list
+                for img in self.mock_images:
+                    if ":" in img and img not in ["alpine", "hello-world", "nginx", "redis"]:
+                        repo, tag_part = img.split(":", 1)
+                        lines.append(f"{repo:<16}{tag_part:<10}1f2113ea1a0c   just now       12.1MB")
                 return make_prompt("\r\n".join(lines))
+            elif sub == "build":
+                # Check if Dockerfile exists in current directory
+                local_df = self.get_local_path(os.path.join(self.cwd, "Dockerfile"))
+                if not os.path.exists(local_df):
+                    return make_prompt(
+                        "Error: failed to solve: failed to read dockerfile: "
+                        "open Dockerfile: no such file or directory\r\n"
+                        "Hint: Create a Dockerfile first using: echo \"FROM alpine\" > Dockerfile"
+                    )
+                # Parse the -t tag argument
+                tag = "unnamed_image:latest"
+                if "-t" in args:
+                    idx = args.index("-t")
+                    if idx + 1 < len(args):
+                        tag = args[idx + 1]
+                # Read Dockerfile contents for step count
+                try:
+                    with open(local_df, "r", encoding="utf-8", errors="ignore") as f:
+                        df_lines = [l.strip() for l in f.readlines() if l.strip() and not l.strip().startswith("#")]
+                except Exception:
+                    df_lines = ["FROM alpine"]
+
+                is_cached = tag in self.mock_images
+                if not is_cached:
+                    self.mock_images.append(tag)
+
+                # Build realistic step-by-step output
+                build_steps = []
+                build_steps.append("Sending build context to Docker daemon  2.048kB")
+                for i, step in enumerate(df_lines, start=1):
+                    build_steps.append(f"Step {i}/{len(df_lines)} : {step}")
+                    if is_cached:
+                        build_steps.append(" ---> Using cache")
+                        build_steps.append(" ---> 05455a08881e")
+                    else:
+                        if step.upper().startswith("FROM"):
+                            build_steps.append(" ---> 05455a08881e")
+                        else:
+                            build_steps.append(" ---> Running in 9481ad12415d")
+                            build_steps.append("Removing intermediate container 9481ad12415d")
+                            build_steps.append(" ---> 1f2113ea1a0c")
+                build_steps.append("Successfully built 1f2113ea1a0c")
+                build_steps.append(f"Successfully tagged {tag}")
+                return make_prompt("\r\n".join(build_steps))
             elif sub == "pull":
                 image = args[1] if len(args) > 1 else "alpine"
                 if image not in self.mock_images:
@@ -404,8 +464,21 @@ class SimulatedDockerShell(SimulatedShell):
                     return make_prompt("exec command completed.")
                 return make_prompt(f"Error: No such container: {c_name}")
             elif sub == "inspect":
-                c_name = args[1] if len(args) > 1 else ""
-                return make_prompt("[\n  {\n    \"Id\": \"mock-inspect-json\",\n    \"State\": {\"Status\": \"running\"}\n  }\n]")
+                resource = args[1] if len(args) > 1 else ""
+                mock_id = "d3adb33f1a2c"
+                mock_ip = "172.17.0.2"
+                return make_prompt(
+                    f'[\n'
+                    f'  {{\n'
+                    f'    "Id": "{mock_id}",\n'
+                    f'    "Name": "/{resource}",\n'
+                    f'    "State": {{"Status": "running", "Running": true}},\n'
+                    f'    "NetworkSettings": {{"IPAddress": "{mock_ip}", "Gateway": "172.17.0.1"}},\n'
+                    f'    "Mounts": [],\n'
+                    f'    "Config": {{"Hostname": "{resource}", "Env": []}}\n'
+                    f'  }}\n'
+                    f']'
+                )
             elif sub == "stop":
                 c_name = args[1] if len(args) > 1 else ""
                 if c_name in self.mock_containers:
@@ -414,14 +487,30 @@ class SimulatedDockerShell(SimulatedShell):
                 return make_prompt(f"Error: No such container: {c_name}")
             elif sub == "rm":
                 c_name = args[1] if len(args) > 1 else ""
+                # Allow removing exited containers
                 if c_name in self.mock_containers:
                     self.mock_containers.pop(c_name)
                     return make_prompt(c_name)
-                return make_prompt(f"Error: No such container: {c_name}")
+                # If not found but was already removed, confirm silently
+                return make_prompt(c_name)
+            elif sub == "system":
+                action = args[1] if len(args) > 1 else ""
+                if action == "prune":
+                    # Remove all exited containers
+                    to_remove = [k for k, v in self.mock_containers.items() if v.get("status") == "exited"]
+                    for k in to_remove:
+                        self.mock_containers.pop(k)
+                    freed = len(to_remove) * 142
+                    return make_prompt(
+                        f"WARNING! This will remove all stopped containers, unused networks, dangling images, and build cache.\r\n"
+                        f"Deleted Containers: {len(to_remove)}\r\n"
+                        f"Total reclaimed space: {freed}MB"
+                    )
+                return make_prompt(f"docker system: '{action}' is not a docker system command.")
             elif sub == "compose":
                 return make_prompt("Creating network \"student_default\" with the default driver\r\nCreating student_web_1 ... done\r\nCreating student_db_1  ... done")
             else:
-                return make_prompt(f"docker: '{sub}' is not a docker command.")
+                return make_prompt(f"docker: '{sub}' is not a docker command.\r\nSee 'docker --help' for a list of available commands.")
 
         return super().execute_command(cmd_line)
 
