@@ -27,7 +27,7 @@ def seed_labs():
                 "icon": "terminal",
                 "estimated_time": "30m",
                 "status": "Beta",
-                "coming_soon": True,
+                "coming_soon": False,
             },
             {
                 "title": "Linux Permissions & Users",
@@ -76,7 +76,7 @@ def seed_labs():
                 "icon": "box",
                 "estimated_time": "45m",
                 "status": "Active",
-                "coming_soon": True,
+                "coming_soon": False,
             },
             {
                 "title": "Multi-Container with Docker Compose",

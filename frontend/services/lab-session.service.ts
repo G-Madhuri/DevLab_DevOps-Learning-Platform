@@ -16,9 +16,16 @@ export interface ValidationResponse {
   message: string;
 }
 
+export interface CourseProgressInfo {
+  course_slug: string;
+  completed_lessons: number[];
+  current_lesson_id: number;
+  percentage: number;
+}
+
 export const labSessionService = {
-  async launchLinuxLab(): Promise<LabSession> {
-    const response = await apiClient.post("/labs/linux/launch");
+  async launchLinuxLab(labName: string = "linux-basics"): Promise<LabSession> {
+    const response = await apiClient.post(`/labs/linux/launch?lab_name=${labName}`);
     return response.data;
   },
 
@@ -36,6 +43,16 @@ export const labSessionService = {
     const response = await apiClient.post(`/labs/linux/${sessionId}/validate`, {
       task_id: taskId,
     });
+    return response.data;
+  },
+
+  async getCourseLessons(courseSlug: string): Promise<any[]> {
+    const response = await apiClient.get(`/labs/linux/${courseSlug}/lessons`);
+    return response.data;
+  },
+
+  async getCourseProgress(courseSlug: string): Promise<CourseProgressInfo> {
+    const response = await apiClient.get(`/labs/linux/${courseSlug}/progress`);
     return response.data;
   },
 };

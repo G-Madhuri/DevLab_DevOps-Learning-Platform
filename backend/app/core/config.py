@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     # Defaults to a local SQLite db if postgres isn't configured, but Neon is expected
     DATABASE_URL: str = "postgresql://your_user:your_password@your_host:5432/your_db?sslmode=require"
 
+    # Upstash Redis Settings
+    UPSTASH_REDIS_REST_URL: str = ""
+    UPSTASH_REDIS_REST_TOKEN: str = ""
+
     # CORS Settings
     BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",  # Frontend Next.js default dev port

@@ -1,14 +1,49 @@
 # DevLab — Cloud-Based DevOps Learning Platform
 
-> **Phase 3 Complete** — First Production Lab (Linux Command Line Basics) with browser-embedded terminal (xterm.js), dynamic Docker container orchestration (Docker SDK for Python), and a multi-step Validation check engine. Includes an offline Simulated terminal fallback mode.
+> **Phase 4 Complete** — Docker Learning Platform + Production Foundation. Introduces modular sandbox runtimes, Upstash Redis caching and rate-limiting middleware, Nginx reverse proxying, and comprehensive user course progress tracking databases.
 
 ---
 
-## Overview
+## Architecture Overview
 
-DevLab is an online platform where developers learn DevOps by launching isolated sandboxes directly from their browser. Users can launch Linux, Docker, Kubernetes, Terraform, and AWS environments with one click — each isolated per user and auto-expiring.
+```
+                               ┌────────────────────────────────┐
+                               │          User Browser          │
+                               │           (xterm.js)           │
+                               └───────────────┬────────────────┘
+                                               │
+                                       HTTP / WebSockets
+                                               │
+                                               ▼
+                               ┌────────────────────────────────┐
+                               │        Nginx Web Proxy         │
+                               │ (Reverse Proxy, Gzip, Headers) │
+                               └───────┬────────────────┬───────┘
+                                       │                │
+                             /api /ws  │                │  / (Frontend)
+                                       ▼                ▼
+                               ┌───────────────┐┌───────────────┐
+                               │ FastAPI App   ││ Next.js App   │
+                               └───────┬───────┘└───────────────┘
+                                       │
+                      ┌────────────────┴────────────────┐
+                      ▼                                 ▼
+             ┌─────────────────┐               ┌─────────────────┐
+             │ Upstash Redis   │               │ Neon PostgreSQL │
+             │  (REST Cache)   │               │  (Primary DB)   │
+             └─────────────────┘               └─────────────────┘
+                      │                                 │
+         ┌────────────┴────────────┐             ┌──────┴──────┐
+         ▼                         ▼             ▼             ▼
+  [Active Sessions]        [Rate Limiting] [User Accounts] [Course Progress]
+```
 
-**Phase 3** delivers the first interactive DevOps learning course: **Linux Basics**. Users type commands directly in a responsive terminal viewport connected via WebSockets to either a live Docker container or a simulated shell environment. An automated check engine verifies their directory states, permissions, variables, and files in real-time.
+DevLab features a **Clean Architecture** layout segregating core domain abstractions, polymorphic learning runtimes, dynamic validators, and API controller router gates.
+
+* **Modular Runtimes**: polymorphic runtimes `LinuxRuntime` and `DockerRuntime` inherit from a unified `BaseRuntime`. Docker workspaces launch nested Docker engines by mounting `/var/run/docker.sock` to student sandboxes, enabling actual Docker client instructions execution inside browser frames.
+* **Upstash Redis Integrations**: a robust client parses REST commands. Includes rate-limiting (100 requests per minute per IP) and active session locking with a resilient in-memory local fallback.
+* **Nginx Reverse Proxy**: standard reverse proxying for frontend Next.js server (`port 3000`), FastAPI application (`port 8000`), WebSocket handshakes upgrade headers mapping, gzip asset compression, and security headers injection.
+* **PostgreSQL Progress Schema**: tracks completed lesson IDs list, percentage progression metrics, and update checkpoints per user.
 
 ---
 
@@ -18,10 +53,11 @@ DevLab is an online platform where developers learn DevOps by launching isolated
 |---|---|
 | **Frontend** | Next.js 16 (Turbopack), React 19, TypeScript, xterm.js (browser terminal) |
 | **State / Data** | TanStack Query, React Hook Form, Zod |
-| **Backend** | FastAPI, SQLAlchemy, Alembic, Docker SDK for Python, WebSockets |
-| **Auth** | JWT (access + refresh tokens), bcrypt, Google Auth (Custom Popup selector) |
-| **Database** | Neon PostgreSQL |
-| **Container** | Docker Engine, Ubuntu 24.04-based student containers |
+| **Backend** | FastAPI, SQLAlchemy 2.0, Alembic, Docker SDK for Python, WebSockets |
+| **Caching / Security**| Upstash Redis (REST), HTTP Rate-Limiter |
+| **Proxy Gateway** | Nginx Web Server |
+| **Database** | Neon PostgreSQL (Primary Storage) |
+| **Containerization** | Docker Engine, Ubuntu 24.04, Docker-in-Docker |
 
 ---
 
@@ -29,105 +65,61 @@ DevLab is an online platform where developers learn DevOps by launching isolated
 
 ```
 DevLab/
+├── nginx/                  # Nginx web server gateway config
+│   └── nginx.conf          # Reverse proxy upstreams & compression settings
 ├── backend/                # FastAPI REST API & WebSockets
 │   ├── app/
 │   │   ├── api/v1/         # Route groups (auth, users, labs, labs_linux)
-│   │   ├── core/           # Security keys, database config
-│   │   ├── db/             # Base ORM config, initial seed fixtures
-│   │   ├── dependencies/   # Current user context & DB sessions
-│   │   ├── models/         # User, Lab, and LabSession SQLAlchemy models
-│   │   ├── repositories/   # Base CRUD repository abstractions
-│   │   ├── schemas/        # Pydantic validation structures
-│   │   └── services/       # Container orchestrator & check validators
-│   ├── alembic/            # DB migration revisions (lab_sessions table)
-│   └── tests/              # Pytest integration checks (26 tests passing)
+│   │   ├── core/           # Config settings, JWT, Upstash Redis client
+│   │   ├── courses/        # Course definitions (Linux & Docker syllabi data)
+│   │   ├── db/             # Base ORM config, database seed fixtures
+│   │   ├── models/         # User, LabSession, CourseProgress ORM models
+│   │   └── services/       # Modular Runtimes & check validators
+│   ├── alembic/            # DB migrations (course_progress table definitions)
+│   └── tests/              # Pytest verification suite (31 tests passing)
 ├── frontend/               # Next.js 16 Web App
-│   ├── app/                # App Router pages (/labs, /labs/linux-basics)
-│   ├── components/         # React layout shells & xterm viewport wrappers
+│   ├── app/                # App Router pages (/dashboard, /labs, /labs/docker-basics)
+│   ├── components/         # Reusable layouts & CourseViewer component
 │   └── services/           # Axios API connectors
+├── docker-compose.yml      # Orchestrates all multi-container services
 ```
 
 ---
 
-## Lab Container Lifecycle
+## Environment Variables
 
+The following parameters must be declared inside `.env` configurations:
+
+```env
+DATABASE_URL=postgresql://your_user:your_password@your_host:5432/your_db?sslmode=require
+JWT_SECRET=your_jwt_secret_key_here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_DAYS=7
+NEXT_PUBLIC_API_URL=http://localhost:80/api/v1
+UPSTASH_REDIS_REST_URL=https://your-upstash-redis-db.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_rest_token_here
 ```
-    Launch Clicked
-          │
-          ▼
-   POST /labs/linux/launch
-          │
-    ┌─────┴─────┐
-    ▼           ▼
-[Docker Ok]  [Docker Off]
-    │           │
-    │ (Provision PTY Container)
-    │           │
-    ▼           ▼
-[Docker Cont] [Simulated Directory]
-    │           │
-    └─────┬─────┘
-          ▼
-   WS /session/{id}/ws
-          │
-    (Terminal Active)
-          │
-   POST /validate (Inspect config state)
-          │
-   POST /stop (Destroy container/directories)
-```
-
-1. **Provisioning**: The student clicks "Launch Lab". The backend verifies there is no prior active session. It creates a `LabSession` in the database and spins up an isolated sandbox.
-   * **Docker Mode**: Downloads the base Ubuntu 24.04 image, launches a memory/CPU restricted container, and creates a non-root `student` account.
-   * **Simulated Mode**: Creates a temporary directory structure at `backend/scratch/sessions/{session_id}` and runs a custom Python parser to emulate Linux command outputs.
-2. **WebSocket Terminal Connection**: The browser terminal component (`xterm.js`) establishes a WebSocket connection to `/api/v1/labs/linux/session/{session_id}/ws`.
-   * **Docker Mode**: Direct stdin/stdout streams are bridged via a background thread listener from the running container's pseudo-terminal (PTY) socket descriptor.
-   * **Simulated Mode**: Keystrokes are buffered. Carriage returns trigger local command executions which modify directories on disk and return standard prompt lines.
-3. **Step Validation**: The student clicks "Verify Task" on a lesson stepper. The backend inspects files, permissions, parameters, and histories in the student's sandbox, providing immediate feedback.
-4. **Termination**: When the student terminates the lab, or the 60-minute duration expires, the sandbox (container or scratch folder) is destroyed, and the session status is set to `stopped`.
-
----
-
-## Database Schema updates
-
-### `lab_sessions`
-| Column | Type | Notes |
-|---|---|---|
-| `id` | UUID | Primary key |
-| `user_id` | UUID | FK → `users.id` (CASCADE) |
-| `lab_name` | VARCHAR(100) | e.g., `"linux-basics"` |
-| `container_id` | VARCHAR(128) | Nullable container ID or `"simulated-*"` |
-| `status` | VARCHAR(50) | `"starting"`, `"running"`, `"stopped"`, `"expired"` |
-| `started_at` | TIMESTAMPTZ | Start timestamp |
-| `expires_at` | TIMESTAMPTZ | Automatic termination threshold |
-| `created_at` | TIMESTAMPTZ | Record timestamp |
-
----
-
-## API Endpoints
-
-### Labs & Terminal Infrastructure
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/api/v1/labs/linux/launch` | ✅ | Launches/provisions a new Linux basics sandbox container |
-| POST | `/api/v1/labs/linux/{id}/stop` | ✅ | Terminates the active sandbox and cleans up resources |
-| GET | `/api/v1/labs/linux/{id}/status` | ✅ | Gets status details of a specific lab session |
-| GET | `/api/v1/labs/linux/active` | ✅ | Fetch the user's currently active running lab |
-| GET | `/api/v1/labs/linux/sessions` | ✅ | List historical logs of user lab sessions |
-| POST | `/api/v1/labs/linux/{id}/validate` | ✅ | Triggers verification check of active exercise task |
-| WS | `/api/v1/labs/linux/session/{id}/ws` | — | Raw WebSocket terminal keystroke/stdout piping |
 
 ---
 
 ## Local Development Setup
 
-### Prerequisites
-- Python 3.12+
-- Node.js 22+
-- Docker Desktop (Optional; if missing, app falls back to Simulated Linux Sandbox Mode automatically)
+### Option 1: Docker Compose (All Services)
 
-### Backend
+```bash
+# 1. Start all database, caching, web server gateway, and client services
+docker-compose up --build
 
+# 2. Access the platform at http://localhost
+```
+
+### Option 2: Local Run (Manual Launch)
+
+#### Caching (Redis)
+Ensure `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are set in `.env` inside the `backend` folder. If they are empty, the app will run with a resilient in-memory rate-limiter and cache.
+
+#### Backend
 ```bash
 cd backend
 python -m venv venv
@@ -135,30 +127,23 @@ python -m venv venv
 # source venv/bin/activate      # macOS/Linux
 
 pip install -r requirements.txt
-
-# Run migrations
 alembic upgrade head
-
-# Seed database catalog
 python app/db/seed.py
-
-# Start API server
 uvicorn app.main:app --reload --port 8000
 ```
 
-### Frontend
-
+#### Frontend
 ```bash
 cd frontend
 npm install
-npm run dev       # Active at http://localhost:3000
+npm run dev                     # Accessible at http://localhost:3000
 ```
 
 ---
 
 ## Running Integration Tests
 
-Our backend is fully verified with 26 integration tests covering Authentication, Users registration, Catalog filters, dynamic session launches, and Check Engine validation routines:
+To run the complete Pytest integration suite:
 
 ```bash
 cd backend
@@ -167,9 +152,9 @@ cd backend
 
 ---
 
-## Interactive Lab Syllabus (20 Exercises)
+## Reusable Course Syllabus
 
-The beginner Linuxbasics sandbox guides students through:
+### Course 1: Linux Basics (20 Exercises)
 1. **Navigation** (`pwd`)
 2. **Working Directories** (`ls -a`)
 3. **Files** (`touch note.txt`)
@@ -190,6 +175,26 @@ The beginner Linuxbasics sandbox guides students through:
 18. **Networking** (`ip route`)
 19. **Directory Deletions** (`rm -rf backup`)
 20. **Workspace Cleanup** (`ls -la`)
+
+### Course 2: Docker Basics (18 Exercises)
+1. **Docker Introduction** (`docker --version`)
+2. **Docker Architecture** (`docker info`)
+3. **Docker Installation Check** (`docker run hello-world`)
+4. **Images** (`docker pull alpine` & `docker images`)
+5. **Containers** (`docker run -d --name my_web nginx`)
+6. **Docker CLI** (`docker ps -a`)
+7. **Dockerfile** (Write base instructions)
+8. **Build & Layers** (`docker build -t custom_app:v1 .`)
+9. **Build Cache** (cached layer verification)
+10. **Volumes** (`docker volume create db_data`)
+11. **Networks** (`docker network create backend_net`)
+12. **Environment Variables** (`docker run -d -e PORT=8080 nginx`)
+13. **Logs** (`docker logs my_web`)
+14. **Exec** (`docker exec my_web date`)
+15. **Inspect** (`docker inspect bridge`)
+16. **Multi-stage Builds** (COPY --from instructions)
+17. **Stop & Cleanup** (`docker stop my_web` & `docker rm my_web`)
+18. **Final Project** (docker-compose YAML aggregations)
 
 ---
 

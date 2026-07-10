@@ -3,11 +3,11 @@
 import React from "react";
 import { CourseViewer } from "@/components/ui/course-viewer";
 
-export default function LinuxBasicsLabPage() {
+export default function DockerBasicsLabPage() {
   return (
     <CourseViewer
-      courseSlug="linux-basics"
-      courseTitle="Linux Basics"
+      courseSlug="docker-basics"
+      courseTitle="Docker Basics"
     />
   );
 }
