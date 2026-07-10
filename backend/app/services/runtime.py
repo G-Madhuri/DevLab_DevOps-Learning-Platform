@@ -25,6 +25,15 @@ class SimulatedShell:
         
         # Initialize virtual directory tree
         os.makedirs(self.student_home, exist_ok=True)
+        os.makedirs(os.path.join(self.student_home, "drafts"), exist_ok=True)
+        os.makedirs(os.path.join(self.student_home, "old_logs"), exist_ok=True)
+        
+        with open(os.path.join(self.student_home, "welcome.txt"), "w") as f:
+            f.write("Welcome to DevLab Linux Basics! Use this interactive shell to practice your commands.\n")
+        with open(os.path.join(self.student_home, ".bashrc"), "w") as f:
+            f.write("# Simulated bash config file\n")
+        with open(os.path.join(self.student_home, ".profile"), "w") as f:
+            f.write("# Simulated profile config file\n")
         
         # Track session current directory
         self.cwd = "/home/student"
@@ -393,7 +402,10 @@ class LabRuntimeService:
                     "useradd -m -s /bin/bash student",
                     "echo 'student:student' | chpasswd",
                     "usermod -aG sudo student",
-                    "mkdir -p /home/student",
+                    "mkdir -p /home/student/drafts /home/student/old_logs",
+                    "echo 'Welcome to DevLab Linux Basics! Use this interactive shell to practice your commands.' > /home/student/welcome.txt",
+                    "echo '# Bash config' > /home/student/.bashrc",
+                    "echo '# Profile config' > /home/student/.profile",
                     "chown -R student:student /home/student"
                 ]
                 for cmd in setup_cmds:
