@@ -36,48 +36,48 @@
 }
 
 :root {
-  --background: #FBEFEF;
-  --foreground: #3A2E39;
-  --card: #F5CBCB;
-  --card-foreground: #3A2E39;
-  --popover: #FFE2E2;
-  --popover-foreground: #3A2E39;
-  --primary: #C5B3D3;
-  --primary-foreground: #3A2E39;
-  --secondary: #FFE2E2;
-  --secondary-foreground: #3A2E39;
-  --muted: #F1D7D7;
-  --muted-foreground: #665A65;
-  --accent: #C5B3D3;
-  --accent-foreground: #3A2E39;
+  --background: #F4F7F6;
+  --foreground: #1E2022;
+  --card: #ffffff;
+  --card-foreground: #1E2022;
+  --popover: #EBF1EE;
+  --popover-foreground: #1E2022;
+  --primary: #7C73E6;
+  --primary-foreground: #ffffff;
+  --secondary: #EBF1EE;
+  --secondary-foreground: #1E2022;
+  --muted: #F0F4F2;
+  --muted-foreground: #5C646C;
+  --accent: #7C73E6;
+  --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #E6CFCF;
-  --input: #E6CFCF;
-  --ring: #C5B3D3;
+  --border: #E0E6E4;
+  --input: #E0E6E4;
+  --ring: #7C73E6;
   --radius: 0.75rem; /* Rounded cards */
 }
 
 .dark {
-  --background: #17141D;
-  --foreground: #F6F2F8;
-  --card: #2B2538;
-  --card-foreground: #F6F2F8;
-  --popover: #211D2B;
-  --popover-foreground: #F6F2F8;
-  --primary: #8E7AAE;
-  --primary-foreground: #F6F2F8;
-  --secondary: #211D2B;
-  --secondary-foreground: #F6F2F8;
-  --muted: #322C40;
-  --muted-foreground: #CFC6D7;
-  --accent: #8E7AAE;
-  --accent-foreground: #F6F2F8;
+  --background: #0B0A0F;
+  --foreground: #F1F0F5;
+  --card: #1A1829;
+  --card-foreground: #F1F0F5;
+  --popover: #14121F;
+  --popover-foreground: #F1F0F5;
+  --primary: #9A93EC;
+  --primary-foreground: #0B0A0F;
+  --secondary: #14121F;
+  --secondary-foreground: #F1F0F5;
+  --muted: #221E36;
+  --muted-foreground: #A6A2BA;
+  --accent: #9A93EC;
+  --accent-foreground: #0B0A0F;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #3B3348;
-  --input: #3B3348;
-  --ring: #8E7AAE;
+  --border: #26233B;
+  --input: #26233B;
+  --ring: #9A93EC;
 }
 
 @layer base {
