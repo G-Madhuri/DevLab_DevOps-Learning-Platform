@@ -508,20 +508,21 @@ class DockerRuntime(BaseRuntime):
                         "/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}
                     }
                 )
-                # Install docker.io client and create student user
-                setup_cmds = [
-                    "apt-get update",
-                    "apt-get install -y docker.io",
+                # 1. Setup student user immediately (synchronously, very fast)
+                fast_setup = [
                     "useradd -m -s /bin/bash student",
                     "echo 'student:student' | chpasswd",
                     "usermod -aG sudo student",
-                    "usermod -aG docker student",
                     "mkdir -p /home/student",
                     "chown -R student:student /home/student"
                 ]
-                # Exec docker installs in background thread or sequentially
-                for cmd in setup_cmds:
+                for cmd in fast_setup:
                     container.exec_run(cmd, user="root")
+
+                # 2. Install docker client in background (asynchronously, won't block launch)
+                install_cmd = "sh -c 'apt-get update && apt-get install -y docker.io && usermod -aG docker student'"
+                container.exec_run(install_cmd, user="root", detach=True)
+
                 return {"container_id": container.id, "status": "running", "mode": "docker"}
             except Exception as e:
                 logger.error(f"DockerRuntime failed to launch nested container: {e}. Falling back.")
@@ -587,8 +588,17 @@ class LabRuntimeService:
         else:
             self.linux_runtime.stop_session(session_id, container_id)
 
-    def get_session_shell(self, session_id: str) -> Optional[SimulatedShell]:
-        return self.simulated_sessions.get(session_id)
+    def get_session_shell(self, session_id: str, lab_name: Optional[str] = None) -> Optional[SimulatedShell]:
+        if session_id in self.simulated_sessions:
+            return self.simulated_sessions[session_id]
+        if lab_name:
+            if "docker" in lab_name:
+                shell = SimulatedDockerShell(session_id)
+            else:
+                shell = SimulatedShell(session_id)
+            self.simulated_sessions[session_id] = shell
+            return shell
+        return None
 
 
 # Global instance

@@ -256,8 +256,23 @@ async def websocket_terminal(websocket: WebSocket, session_id: str):
     await websocket.accept()
     logger.info(f"WebSocket terminal connection accepted for session {session_id}")
 
+    # Check session mode dynamically from db to handle server restarts
+    from app.db.session import SessionLocal
+    lab_name = None
+    container_id = None
+    try:
+        with SessionLocal() as db:
+            db_sess = session_repository.get(db, id=uuid.UUID(session_id))
+            if db_sess:
+                lab_name = db_sess.lab_name
+                container_id = db_sess.container_id
+    except Exception as e:
+        logger.error(f"Failed to query session details: {e}")
+
     # Check simulated shell
-    sim_shell = runtime_service.get_session_shell(session_id)
+    sim_shell = None
+    if container_id and container_id.startswith("simulated-"):
+        sim_shell = runtime_service.get_session_shell(session_id, lab_name)
 
     # Welcome Banner
     banner = (
@@ -328,10 +343,8 @@ async def websocket_terminal(websocket: WebSocket, session_id: str):
             socket = client.api.exec_start(exec_inst["Id"], socket=True)
             socket._sock.setblocking(False)
 
-            # Stream thread reader from docker container PTY to WebSocket client
-            def read_from_docker():
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
+            # Stream reader from docker container PTY to WebSocket client
+            async def read_from_docker():
                 try:
                     while True:
                         try:
@@ -340,23 +353,25 @@ async def websocket_terminal(websocket: WebSocket, session_id: str):
                             if not r_data:
                                 break
                             # Decode and forward to client
-                            loop.run_until_complete(websocket.send_text(r_data.decode("utf-8", errors="ignore")))
+                            await websocket.send_text(r_data.decode("utf-8", errors="ignore"))
                         except (BlockingIOError, InterruptedError):
-                            # Non blocking empty queue
-                            pass
+                            # Non blocking empty queue, yield to main loop
+                            await asyncio.sleep(0.01)
                         except Exception:
                             break
-                finally:
-                    loop.close()
+                except Exception as e:
+                    logger.error(f"Error in read_from_docker: {e}")
 
-            thread = threading.Thread(target=read_from_docker, daemon=True)
-            thread.start()
+            read_task = asyncio.create_task(read_from_docker())
 
             # Read websocket keystrokes and pipe to Docker shell
-            while True:
-                data = await websocket.receive_text()
-                # Write directly to container stdin socket
-                socket.send(data.encode("utf-8"))
+            try:
+                while True:
+                    data = await websocket.receive_text()
+                    # Write directly to container stdin socket
+                    socket.send(data.encode("utf-8"))
+            finally:
+                read_task.cancel()
 
         except Exception as e:
             logger.error(f"WebSocket Docker bridging failed: {e}")
