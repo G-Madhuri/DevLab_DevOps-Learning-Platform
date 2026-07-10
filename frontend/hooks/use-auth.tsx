@@ -13,6 +13,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (data: any) => Promise<any>;
   register: (data: any) => Promise<any>;
+  loginWithGoogle: (token: string, email?: string, name?: string) => Promise<any>;
   logout: () => void;
   updateProfile: (data: any) => Promise<any>;
   isLoggingOut: boolean;
@@ -67,6 +68,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     mutationFn: authService.register,
   });
 
+  // Google Login Mutation
+  const googleLoginMutation = useMutation({
+    mutationFn: ({ token, email, name }: { token: string; email?: string; name?: string }) =>
+      authService.googleLogin(token, email, name),
+    onSuccess: (data) => {
+      setHasToken(true);
+      queryClient.setQueryData(["current_user"], data.user);
+      queryClient.invalidateQueries({ queryKey: ["current_user"] });
+      router.push("/dashboard");
+    },
+  });
+
   // Logout Mutation
   const logoutMutation = useMutation({
     mutationFn: authService.logout,
@@ -92,6 +105,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: !!user,
     login: async (data: any) => loginMutation.mutateAsync(data),
     register: async (data: any) => registerMutation.mutateAsync(data),
+    loginWithGoogle: async (token: string, email?: string, name?: string) =>
+      googleLoginMutation.mutateAsync({ token, email, name }),
     logout: () => logoutMutation.mutate(),
     updateProfile: async (data: any) => updateProfileMutation.mutateAsync(data),
     isLoggingOut: logoutMutation.isPending,

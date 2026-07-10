@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 from app.schemas.user import UserSimpleResponse
 
 
@@ -26,3 +27,9 @@ class RefreshTokenResponse(BaseModel):
 
 class LogoutRequest(BaseModel):
     refresh_token: str
+
+
+class GoogleTokenRequest(BaseModel):
+    token: str
+    email: Optional[str] = None
+    name: Optional[str] = None

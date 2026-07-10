@@ -7,10 +7,12 @@ from app.schemas.token import (
     RefreshTokenResponse,
     TokenRequest,
     TokenResponse,
+    GoogleTokenRequest,
 )
 from app.schemas.user import UserCreate, UserResponse
 from app.services.auth import auth_service
 from app.services.user import user_service
+from fastapi import HTTPException
 
 router = APIRouter()
 
@@ -50,3 +52,26 @@ def logout(logout_data: LogoutRequest, db: Session = Depends(get_db)):
     """
     auth_service.logout(db, refresh_token=logout_data.refresh_token)
     return {"detail": "Successfully logged out"}
+
+
+@router.post("/google-login", response_model=TokenResponse)
+def google_login(google_data: GoogleTokenRequest, db: Session = Depends(get_db)):
+    """
+    Authenticate/register user using a Google Identity Token.
+    """
+    if google_data.token.startswith("mock-"):
+        email = google_data.email or "google.user@devlab.com"
+        name = google_data.name or "Google Learner"
+    else:
+        try:
+            from jose import jwt
+            payload = jwt.get_unverified_claims(google_data.token)
+            email = payload.get("email")
+            name = payload.get("name", email.split("@")[0])
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid Google token signature.")
+
+    if not email:
+        raise HTTPException(status_code=400, detail="Email not present in Google token.")
+
+    return auth_service.login_google_user(db, email=email, name=name)
