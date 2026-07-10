@@ -14,6 +14,12 @@ export function Terminal({ sessionId, onClose }: TerminalProps) {
   const [connecting, setConnecting] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const onCloseRef = useRef(onClose);
+
+  // Keep onClose callback ref updated without triggering effect rerun
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     let term: any;
@@ -81,7 +87,7 @@ export function Terminal({ sessionId, onClose }: TerminalProps) {
 
         ws.onclose = () => {
           setConnecting(false);
-          if (onClose) onClose();
+          if (onCloseRef.current) onCloseRef.current();
         };
 
         const handleResize = () => {
@@ -109,7 +115,7 @@ export function Terminal({ sessionId, onClose }: TerminalProps) {
       }
       window.removeEventListener("resize", () => {});
     };
-  }, [sessionId, onClose]);
+  }, [sessionId]);
 
   return (
     <div className="relative w-full h-[450px] bg-[#1C1824] rounded-xl border border-border p-3 overflow-hidden shadow-inner">
