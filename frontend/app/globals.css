@@ -36,48 +36,48 @@
 }
 
 :root {
-  --background: #F4F7F6;
-  --foreground: #1E2022;
-  --card: #ffffff;
-  --card-foreground: #1E2022;
-  --popover: #EBF1EE;
-  --popover-foreground: #1E2022;
-  --primary: #7C73E6;
+  --background: #EFF3F0; /* Soft pastel mint-sage background */
+  --foreground: #2C3531; /* Deep forest charcoal */
+  --card: #F9FAF9;       /* Light, clean sage card base */
+  --card-foreground: #2C3531;
+  --popover: #E3EBE6;    /* Distinct soft pastel sage surface */
+  --popover-foreground: #2C3531;
+  --primary: #756AD4;    /* Elegant, professional lavender violet accent */
   --primary-foreground: #ffffff;
-  --secondary: #EBF1EE;
-  --secondary-foreground: #1E2022;
-  --muted: #F0F4F2;
-  --muted-foreground: #5C646C;
-  --accent: #7C73E6;
+  --secondary: #E3EBE6;
+  --secondary-foreground: #2C3531;
+  --muted: #EBF0EC;
+  --muted-foreground: #606C66;
+  --accent: #756AD4;
   --accent-foreground: #ffffff;
-  --destructive: #ef4444;
+  --destructive: #e05252;
   --destructive-foreground: #ffffff;
-  --border: #E0E6E4;
-  --input: #E0E6E4;
-  --ring: #7C73E6;
-  --radius: 0.75rem; /* Rounded cards */
+  --border: #D5E0DA;     /* Muted sage-mint borders */
+  --input: #D5E0DA;
+  --ring: #756AD4;
+  --radius: 0.75rem;
 }
 
 .dark {
-  --background: #0B0A0F;
-  --foreground: #F1F0F5;
-  --card: #1A1829;
-  --card-foreground: #F1F0F5;
-  --popover: #14121F;
-  --popover-foreground: #F1F0F5;
-  --primary: #9A93EC;
-  --primary-foreground: #0B0A0F;
-  --secondary: #14121F;
-  --secondary-foreground: #F1F0F5;
-  --muted: #221E36;
-  --muted-foreground: #A6A2BA;
-  --accent: #9A93EC;
-  --accent-foreground: #0B0A0F;
-  --destructive: #ef4444;
+  --background: #110E15; /* Obsidian dark violet background */
+  --foreground: #EFEBF4; /* Light pastel white-violet */
+  --card: #1C1824;       /* Slate-obsidian card base */
+  --card-foreground: #EFEBF4;
+  --popover: #231E2C;    /* Muted violet popover/dropdown background */
+  --popover-foreground: #EFEBF4;
+  --primary: #9B91F5;    /* Bright pastel lavender accent */
+  --primary-foreground: #110E15;
+  --secondary: #231E2C;
+  --secondary-foreground: #EFEBF4;
+  --muted: #2A2536;
+  --muted-foreground: #AAA2B2;
+  --accent: #9B91F5;
+  --accent-foreground: #110E15;
+  --destructive: #e05252;
   --destructive-foreground: #ffffff;
-  --border: #26233B;
-  --input: #26233B;
-  --ring: #9A93EC;
+  --border: #2D273A;     /* Muted dark borders */
+  --input: #2D273A;
+  --ring: #9B91F5;
 }
 
 @layer base {
