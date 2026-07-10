@@ -24,3 +24,22 @@ export interface RefreshTokenResponse {
   refresh_token: string;
   token_type: string;
 }
+
+export interface Lab {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  difficulty: string;
+  duration: string;
+  category: string;
+  icon: string;
+  estimated_time: string;
+  status: string;
+  coming_soon: boolean;
+}
+
+export interface LabListResponse {
+  labs: Lab[];
+  total: number;
+}

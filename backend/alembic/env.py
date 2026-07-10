@@ -14,6 +14,7 @@ from app.db.base import Base
 # Import models explicitly so Alembic autogenerate detects all tables
 from app.models.user import User  # noqa
 from app.models.token import RefreshToken  # noqa
+from app.models.lab import Lab  # noqa
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
