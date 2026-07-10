@@ -15,6 +15,7 @@ from app.db.base import Base
 from app.models.user import User  # noqa
 from app.models.token import RefreshToken  # noqa
 from app.models.lab import Lab  # noqa
+from app.models.session import LabSession  # noqa
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)

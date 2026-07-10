@@ -315,13 +315,24 @@ export default function LabsCatalogPage() {
                     </Button>
                   </Link>
 
-                  <Button
-                    size="sm"
-                    disabled
-                    className="bg-primary/50 text-primary-foreground/70 cursor-not-allowed text-xs font-semibold rounded-md shadow-sm border border-transparent"
-                  >
-                    Coming Soon
-                  </Button>
+                  {lab.slug === "linux-command-line-basics" ? (
+                    <Link href="/labs/linux-basics">
+                      <Button
+                        size="sm"
+                        className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-semibold rounded-md shadow-sm border border-transparent"
+                      >
+                        Launch Lab
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button
+                      size="sm"
+                      disabled
+                      className="bg-primary/50 text-primary-foreground/70 cursor-not-allowed text-xs font-semibold rounded-md shadow-sm border border-transparent"
+                    >
+                      Coming Soon
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
