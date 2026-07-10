@@ -324,6 +324,15 @@ export default function LabsCatalogPage() {
                         Launch Lab
                       </Button>
                     </Link>
+                  ) : lab.slug === "docker-fundamentals" ? (
+                    <Link href="/labs/docker-basics">
+                      <Button
+                        size="sm"
+                        className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-semibold rounded-md shadow-sm border border-transparent"
+                      >
+                        Launch Lab
+                      </Button>
+                    </Link>
                   ) : (
                     <Button
                       size="sm"

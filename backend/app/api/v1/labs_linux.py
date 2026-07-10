@@ -21,6 +21,8 @@ from app.schemas.session import (
 )
 from app.services.runtime import runtime_service
 from app.services.validation import validation_engine
+from app.models.progress import CourseProgress
+from app.courses.engine import course_engine
 
 router = APIRouter()
 logger = logging.getLogger("app.api.v1.labs_linux")
@@ -28,6 +30,7 @@ logger = logging.getLogger("app.api.v1.labs_linux")
 
 @router.post("/launch", response_model=LabSessionResponse)
 def launch_lab(
+    lab_name: str = Query("linux-basics"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -43,7 +46,7 @@ def launch_lab(
     # Insert starting session into database
     session_data = {
         "user_id": current_user.id,
-        "lab_name": "linux-basics",
+        "lab_name": lab_name,
         "status": "starting",
         "container_id": None,
         "started_at": datetime.now(timezone.utc),
@@ -53,7 +56,7 @@ def launch_lab(
 
     try:
         # Create container
-        res = runtime_service.create_lab(str(db_session.id))
+        res = runtime_service.create_lab(str(db_session.id), db_session.lab_name)
         
         # Update session
         db_session.container_id = res["container_id"]
@@ -86,7 +89,7 @@ def stop_lab(
         raise HTTPException(status_code=404, detail="Lab session not found.")
 
     # Cleanup runtime
-    runtime_service.stop_lab(str(db_session.id), db_session.container_id)
+    runtime_service.stop_lab(str(db_session.id), db_session.container_id, db_session.lab_name)
 
     # Update database
     db_session.status = "stopped"
@@ -162,8 +165,84 @@ def validate_lab_task(
         container_id=db_session.container_id,
         task_id=req.task_id,
         mode=mode,
+        lab_name=db_session.lab_name,
     )
+
+    # Auto-update progress on successful check
+    if res.get("success") is True:
+        course_slug = db_session.lab_name
+        progress = db.query(CourseProgress).filter(
+            CourseProgress.user_id == current_user.id,
+            CourseProgress.course_slug == course_slug
+        ).first()
+
+        if not progress:
+            progress = CourseProgress(
+                user_id=current_user.id,
+                course_slug=course_slug,
+                completed_lessons=[],
+                current_lesson_id=1,
+                percentage=0
+            )
+            db.add(progress)
+            db.flush()
+
+        completed = list(progress.completed_lessons)
+        if req.task_id not in completed:
+            completed.append(req.task_id)
+            progress.completed_lessons = completed
+
+        # Calculate progress percentage dynamically
+        total_lessons = len(course_engine.get_lessons(course_slug))
+        if total_lessons > 0:
+            progress.percentage = int(len(completed) / total_lessons * 100)
+
+        # Set next pointer
+        if req.task_id + 1 <= total_lessons:
+            progress.current_lesson_id = max(progress.current_lesson_id, req.task_id + 1)
+
+        db.commit()
+
     return res
+
+
+@router.get("/{course_slug}/lessons")
+def get_course_lessons(
+    course_slug: str,
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Query lessons lists dynamically from config directories.
+    """
+    lessons = course_engine.get_lessons(course_slug)
+    if not lessons:
+        raise HTTPException(status_code=404, detail="Course lessons not found.")
+    return lessons
+
+
+@router.get("/{course_slug}/progress")
+def get_course_progress(
+    course_slug: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Retrieve progress tracker statistics details for a user course.
+    """
+    progress = db.query(CourseProgress).filter(
+        CourseProgress.user_id == current_user.id,
+        CourseProgress.course_slug == course_slug
+    ).first()
+
+    if not progress:
+        return {
+            "course_slug": course_slug,
+            "completed_lessons": [],
+            "current_lesson_id": 1,
+            "percentage": 0
+        }
+    return progress
+
 
 
 # ── WebSockets Terminal Streaming ───────────────────────

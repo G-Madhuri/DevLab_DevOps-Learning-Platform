@@ -21,6 +21,34 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
+import time
+from app.core.redis import redis_client
+
+@app.middleware("http")
+async def rate_limiting_middleware(request: Request, call_next):
+    # Only rate-limit API calls
+    if request.url.path.startswith(settings.API_V1_STR) and not request.url.path.endswith("/ws"):
+        client_ip = request.client.host if request.client else "127.0.0.1"
+        # Key windows per minute
+        minute_key = f"ratelimit:{client_ip}:{int(time.time() // 60)}"
+        try:
+            count = redis_client.incr(minute_key)
+            if count == 1:
+                redis_client.expire(minute_key, 60)
+            
+            # Limit rate to 100 requests per minute
+            if count > 100:
+                return JSONResponse(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    content={"detail": "Too many requests. Rate limit exceeded. Try again in a minute."},
+                )
+        except Exception as e:
+            # Resilient fallback: log exception and proceed so Redis failures don't block access
+            logger.error(f"Rate limiting failure: {e}")
+            
+    response = await call_next(request)
+    return response
+
 # Centralized validation exception handler
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):

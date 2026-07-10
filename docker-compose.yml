@@ -6,26 +6,47 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: devlab-backend
-    ports:
-      - "8000:8000"
     environment:
       DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET}
       ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: 30
       REFRESH_TOKEN_EXPIRE_DAYS: 7
+      UPSTASH_REDIS_REST_URL: ${UPSTASH_REDIS_REST_URL}
+      UPSTASH_REDIS_REST_TOKEN: ${UPSTASH_REDIS_REST_TOKEN}
       BACKEND_CORS_ORIGINS: '["http://localhost:3000"]'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
+    depends_on:
+      - redis
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: devlab-frontend
-    ports:
-      - "3000:3000"
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+      NEXT_PUBLIC_API_URL: http://localhost:80/api/v1
+    restart: unless-stopped
     depends_on:
+      - backend
+
+  redis:
+    image: redis:alpine
+    container_name: devlab-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: devlab-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
       - backend
     restart: unless-stopped

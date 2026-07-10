@@ -1,0 +1,164 @@
+[
+  {
+    "id": 1,
+    "title": "1. Docker Introduction",
+    "explanation": "Docker package tools isolate applications into container sandboxes containing system libraries, configs, and bin runtimes. Containers run natively on the host shared kernel.",
+    "instruction": "Run docker --version to check if the Docker command line client is ready on your host system.",
+    "example": "docker --version",
+    "expected": "Docker version 24.x or similar.",
+    "hint": "Run exact command: docker --version"
+  },
+  {
+    "id": 2,
+    "title": "2. Docker Architecture",
+    "explanation": "Docker uses a client-server architecture. The Docker client talks to the Docker daemon (dockerd), which handles building, running, and distributing containers.",
+    "instruction": "Query the Docker system-wide details to see running configurations using info.",
+    "example": "docker info",
+    "expected": "System-wide docker configuration details.",
+    "hint": "Run exact command: docker info"
+  },
+  {
+    "id": 3,
+    "title": "3. Docker Installation Check",
+    "explanation": "A simple way to verify your installation and permissions is running a test container. The hello-world container downloads and prints a diagnosis check.",
+    "instruction": "Launch a verification check container using run hello-world.",
+    "example": "docker run image_name",
+    "expected": "Hello from Docker! message.",
+    "hint": "Run exact command: docker run hello-world"
+  },
+  {
+    "id": 4,
+    "title": "4. Images (pull & images)",
+    "explanation": "Images are read-only templates used to create containers. The docker images command lists all cached images locally. docker pull downloads an image from Registry.",
+    "instruction": "Pull a small Alpine Linux image and view your local images using pull and images commands.",
+    "example": "docker pull image_name  &&  docker images",
+    "expected": "alpine list entry shows up under local images.",
+    "hint": "Run exact command sequence: docker pull alpine && docker images"
+  },
+  {
+    "id": 5,
+    "title": "5. Containers (run & ps)",
+    "explanation": "Containers are runnable instances of images. Use docker run to launch containers, and docker ps to inspect running ones. The -d flag runs it detached in the background.",
+    "instruction": "Launch a detached Nginx web server container named my_web running in background.",
+    "example": "docker run -d --name container_name image_name",
+    "expected": "Long container hex ID is printed.",
+    "hint": "Run exact command: docker run -d --name my_web nginx"
+  },
+  {
+    "id": 6,
+    "title": "6. Docker CLI (ps -a)",
+    "explanation": "docker ps shows active containers. By default, stopped or exited containers are hidden. The -a flag lists all containers in the system.",
+    "instruction": "List all containers in the sandbox environment including stopped/exited containers.",
+    "example": "docker ps -a",
+    "expected": "List showing active Nginx and stopped hello-world containers.",
+    "hint": "Run exact command: docker ps -a"
+  },
+  {
+    "id": 7,
+    "title": "7. Dockerfile",
+    "explanation": "A Dockerfile is a text document containing instructions to assemble an image. The FROM instruction sets the base image, and RUN runs commands.",
+    "instruction": "Create a file named Dockerfile in your directory with FROM alpine and RUN echo 'Hello' instructions.",
+    "example": "echo \"FROM alpine\" > Dockerfile",
+    "expected": "Dockerfile exists on disk.",
+    "hint": "Run: echo -e \"FROM alpine\\nRUN echo 'Hello'\" > Dockerfile"
+  },
+  {
+    "id": 8,
+    "title": "8. Build & Layers",
+    "explanation": "The docker build command compiles a Dockerfile into an image. Each instruction inside the Dockerfile creates a read-only Layer.",
+    "instruction": "Build an image tagged custom_app:v1 using the Dockerfile in the current directory.",
+    "example": "docker build -t image_tag .",
+    "expected": "Successfully built and tagged custom_app:v1.",
+    "hint": "Run exact command: docker build -t custom_app:v1 ."
+  },
+  {
+    "id": 9,
+    "title": "9. Build Cache",
+    "explanation": "During build, Docker reuses cached layers from previous builds if instructions haven't changed. This makes compilation extremely fast.",
+    "instruction": "Re-run the build command for custom_app:v1 to see caching layers speed (Using cache).",
+    "example": "docker build -t image_tag .",
+    "expected": "Build finishes instantly (using cache).",
+    "hint": "Run exact command: docker build -t custom_app:v1 ."
+  },
+  {
+    "id": 10,
+    "title": "10. Volumes (persistence)",
+    "explanation": "Containers are ephemeral. To persist and share data, Docker uses Volumes. Use docker volume create to define managed volumes.",
+    "instruction": "Create a Docker volume named db_data to store db logs.",
+    "example": "docker volume create volume_name",
+    "expected": "db_data volume is generated.",
+    "hint": "Run exact command: docker volume create db_data"
+  },
+  {
+    "id": 11,
+    "title": "11. Networks (isolation)",
+    "explanation": "Docker Networks isolate container communications. The default is bridge, but user-defined networks enable secure DNS resolutions.",
+    "instruction": "Create a custom bridge network named backend_net.",
+    "example": "docker network create network_name",
+    "expected": "backend_net is listed under docker network ls.",
+    "hint": "Run exact command: docker network create backend_net"
+  },
+  {
+    "id": 12,
+    "title": "12. Environment Variables (-e)",
+    "explanation": "Docker allows configuring services using environment variables. The -e flag passes environment variables to containers.",
+    "instruction": "Run a detached Nginx container named env_web with an environment variable PORT=8080.",
+    "example": "docker run -d --name container_name -e KEY=value image_name",
+    "expected": "env_web container launched with PORT variable.",
+    "hint": "Run exact command: docker run -d --name env_web -e PORT=8080 nginx"
+  },
+  {
+    "id": 13,
+    "title": "13. Logs (debugging)",
+    "explanation": "The docker logs command fetches stdout/stderr output from a background container.",
+    "instruction": "Query logs from the my_web container to inspect startup stdout.",
+    "example": "docker logs container_name",
+    "expected": "Nginx launch logs output.",
+    "hint": "Run exact command: docker logs my_web"
+  },
+  {
+    "id": 14,
+    "title": "14. Exec (interactive shell)",
+    "explanation": "The docker exec command runs a new command inside a running container. Use -it to open an interactive bash session.",
+    "instruction": "Run a diagnostic check command (e.g., date) inside my_web using exec.",
+    "example": "docker exec container_name command_args",
+    "expected": "Current system date from container printed.",
+    "hint": "Run exact command: docker exec my_web date"
+  },
+  {
+    "id": 15,
+    "title": "15. Inspect (metadata metadata)",
+    "explanation": "docker inspect returns low-level system configuration descriptors in JSON format for containers, images, volumes or networks.",
+    "instruction": "Inspect network properties of bridge using inspect.",
+    "example": "docker inspect resource_name",
+    "expected": "JSON array output with configuration parameters.",
+    "hint": "Run exact command: docker inspect bridge"
+  },
+  {
+    "id": 16,
+    "title": "16. Multi-stage Builds",
+    "explanation": "Multi-stage builds use multiple FROM blocks in a Dockerfile. You build components in early stages and copy artifacts to the final stage, reducing size.",
+    "instruction": "Add a COPY --from instruction to build structures in a Dockerfile.",
+    "example": "COPY --from=builder /app /app",
+    "expected": "Multi-stage instructions saved.",
+    "hint": "Create a file named Dockerfile.multistage containing: FROM alpine AS builder\\nRUN touch /app\\nFROM alpine\\nCOPY --from=builder /app /app"
+  },
+  {
+    "id": 17,
+    "title": "17. Stop & Cleanup (rm & prune)",
+    "explanation": "Containers occupy resources. The docker stop command halts execution, and docker rm deletes containers. docker system prune cleans all unused caches.",
+    "instruction": "Stop and remove the my_web container to free resources.",
+    "example": "docker stop container_name  &&  docker rm container_name",
+    "expected": "my_web container is stopped and deleted.",
+    "hint": "Run exact commands: docker stop my_web && docker rm my_web"
+  },
+  {
+    "id": 18,
+    "title": "18. Final Project (Docker Compose)",
+    "explanation": "Docker Compose aggregates configurations into a single docker-compose.yml file to coordinate multi-container applications (e.g., web-app + database).",
+    "instruction": "Write a docker-compose.yml file defining a web service running nginx and backend database service.",
+    "example": "services:\\n  web:\\n    image: nginx",
+    "expected": "docker-compose.yml exists.",
+    "hint": "Create docker-compose.yml containing: version: '3'\\nservices:\\n  web:\\n    image: nginx\\n  db:\\n    image: redis"
+  }
+]
