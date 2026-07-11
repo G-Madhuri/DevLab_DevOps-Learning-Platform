@@ -507,14 +507,12 @@ export default function LabsCatalogPage() {
                             <div className="space-y-1">
                               <h4 className="text-sm font-bold text-foreground">
                                 {academy.certificate_unlocked ? "🏆" : "🔒"}{" "}
-                                {academy.title.replace("Academy", "Fundamentals")} Certificate
+                                {academy.title} Certificate
                               </h4>
                               <p className="text-xs text-muted-foreground leading-relaxed max-w-md">
                                 {academy.certificate_unlocked
-                                  ? "Congratulations! You have completed every module and the Capstone project in this Academy. You are ready to generate your certificate."
-                                  : academy.id === "linux"
-                                  ? "Complete all Linux modules and the Linux Capstone to unlock this certificate."
-                                  : `Complete all ${academy.title.replace(" Academy", "")} modules and the Capstone to unlock this certificate.`}
+                                  ? `Congratulations! You have completed every course in ${academy.title}. You are ready to generate your certificate.`
+                                  : `Complete all ${academy.title} courses and the Capstone to unlock this certificate.`}
                               </p>
                             </div>
                           </div>

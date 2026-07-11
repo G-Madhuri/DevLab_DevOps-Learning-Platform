@@ -38,7 +38,6 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(0);
   const [showHint, setShowHint] = useState(false);
-  const [showExplanation, setShowExplanation] = useState(false);
   const [validationMsg, setValidationMsg] = useState<{ success: boolean; text: string } | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [activeTab, setActiveTab] = useState<"overview" | "theory" | "examples" | "lab" | "exercises" | "quiz" | "resources">("overview");
@@ -47,7 +46,12 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
   const [quizAnswers, setQuizAnswers] = useState<Record<number, string>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
+  const [quizPassed, setQuizPassed] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  // Finish Module Toast
+  const [showFinishToast, setShowFinishToast] = useState(false);
+  const [toastTimer, setToastTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   // Fetch active session query
   const { data: session, isLoading: isLoadingSession } = useQuery<LabSession | null>({
@@ -142,7 +146,6 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
     if (currentStep < lessons.length - 1) {
       setCurrentStep(currentStep + 1);
       setShowHint(false);
-      setShowExplanation(false);
       setValidationMsg(null);
     }
   };
@@ -151,9 +154,15 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
       setShowHint(false);
-      setShowExplanation(false);
       setValidationMsg(null);
     }
+  };
+
+  const handleFinishModule = () => {
+    if (showFinishToast) return;
+    setShowFinishToast(true);
+    const t = setTimeout(() => setShowFinishToast(false), 10000);
+    setToastTimer(t);
   };
 
   const isCompleted = (id: number) => {
@@ -175,7 +184,15 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
       }
     });
     setQuizScore(correctCount);
+    setQuizPassed(correctCount >= 8);
     setQuizSubmitted(true);
+  };
+
+  const handleQuizRetry = () => {
+    setQuizAnswers({});
+    setQuizSubmitted(false);
+    setQuizScore(0);
+    setQuizPassed(false);
   };
 
   const isCourseComplete = progress?.percentage === 100;
@@ -510,7 +527,6 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
                       onClick={() => {
                         setCurrentStep(i);
                         setShowHint(false);
-                        setShowExplanation(false);
                         setValidationMsg(null);
                       }}
                       className={`h-2.5 w-2.5 rounded-full border transition-all cursor-pointer ${
@@ -531,41 +547,11 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
                     {activeTask.title}
                   </h3>
 
-                  {activeTask.definition && (
-                    <p className="text-xs text-foreground/80 leading-relaxed">
-                      {activeTask.definition}
-                    </p>
-                  )}
-
-                  {activeTask.explanation && (
-                    <div className="border border-border/30 rounded-lg bg-muted/10 overflow-hidden">
-                      <button
-                        onClick={() => setShowExplanation(!showExplanation)}
-                        className="w-full flex items-center justify-between p-3 text-xs font-semibold text-primary hover:bg-muted/20 transition-colors cursor-pointer"
-                      >
-                        <span className="flex items-center space-x-1.5">
-                          <Code className="h-3.5 w-3.5" />
-                          <span>Command Anatomy Details</span>
-                        </span>
-                        {showExplanation ? (
-                          <ChevronDown className="h-4 w-4" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4" />
-                        )}
-                      </button>
-                      {showExplanation && (
-                        <div className="p-3 pt-0 text-xs text-muted-foreground border-t border-border/25 leading-relaxed bg-card animate-fadeIn">
-                          {activeTask.explanation}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Example Command Box */}
+                  {/* Syntax Example / Command */}
                   <div className="space-y-1">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                       <Lightbulb className="h-3 w-3 text-amber-500" />
-                      <span>Syntax Example</span>
+                      <span>Command Syntax</span>
                     </span>
                     <pre className="text-xs bg-[#1C1824] text-[#EFEBF4] p-3 rounded-lg border border-border/40 font-mono overflow-x-auto shadow-inner">
                       {activeTask.example}
@@ -576,7 +562,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
                   <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-2">
                     <div className="flex items-center text-xs font-bold text-primary">
                       <Code className="h-3.5 w-3.5 mr-1.5" />
-                      <span>Target Objective</span>
+                      <span>Your Task</span>
                     </div>
                     <p className="text-xs font-bold text-foreground leading-relaxed">
                       {activeTask.instruction}
@@ -875,19 +861,39 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
                 </div>
               ) : (
                 <div className="pt-6 border-t border-border/40 space-y-4 animate-fade-in text-center">
-                  <div className="p-5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl inline-block max-w-sm mx-auto">
-                    <h4 className="text-sm font-bold text-emerald-600">Evaluation Completed!</h4>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      You correctly answered <span className="font-bold text-foreground">{quizScore}</span> out of <span className="font-bold text-foreground">{quiz.length}</span> questions.
-                    </p>
-                  </div>
-                  <div>
+                  {quizPassed ? (
+                    <div className="p-5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl inline-block max-w-sm mx-auto">
+                      <div className="text-2xl mb-2">🏆</div>
+                      <h4 className="text-sm font-bold text-emerald-600">Quiz Passed!</h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        You scored <span className="font-bold text-foreground">{quizScore}</span> / <span className="font-bold text-foreground">{quiz.length}</span> — well done!
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-5 bg-red-500/10 border border-red-500/20 rounded-xl inline-block max-w-sm mx-auto">
+                      <div className="text-2xl mb-2">📝</div>
+                      <h4 className="text-sm font-bold text-red-500">Score Below Passing</h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        You scored <span className="font-bold text-foreground">{quizScore}</span> / <span className="font-bold text-foreground">{quiz.length}</span>. You need at least <span className="font-bold text-primary">8/10</span> to pass.
+                      </p>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-center gap-3 flex-wrap">
                     <Button
-                      className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-md px-6"
-                      onClick={() => setActiveTab("resources")}
+                      variant="outline"
+                      className="text-xs font-bold rounded-md px-5 border-primary/30 text-primary hover:bg-primary/10 cursor-pointer"
+                      onClick={handleQuizRetry}
                     >
-                      Continue to Resources Reference
+                      Retry Quiz
                     </Button>
+                    {quizPassed && (
+                      <Button
+                        className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-md px-6 cursor-pointer"
+                        onClick={() => setActiveTab("resources")}
+                      >
+                        Continue to Resources
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}
@@ -1046,12 +1052,39 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
             </div>
 
             <div className="pt-6 border-t border-border/40 text-center">
-              <Link href="/labs">
-                <Button className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-xl px-8 py-2.5">
-                  Finish Module Course
-                </Button>
-              </Link>
+              <Button
+                onClick={handleFinishModule}
+                className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-xl px-8 py-2.5 cursor-pointer"
+              >
+                Finish Module Course
+              </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Finish Module Toast — bottom-right, closes in 10s */}
+      {showFinishToast && (
+        <div className="fixed bottom-6 right-6 z-50 animate-fade-in max-w-sm w-full">
+          <div className="bg-card border border-border rounded-xl shadow-2xl p-4 flex items-start gap-3">
+            <div className="shrink-0 h-8 w-8 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-lg">
+              ℹ️
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-foreground mb-0.5">Complete All Content First</p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Please complete all the Overview, Theory, Examples, Lab tasks, Exercises, and pass the Quiz (8/10) before finishing this module.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setShowFinishToast(false);
+                if (toastTimer) clearTimeout(toastTimer);
+              }}
+              className="shrink-0 text-muted-foreground hover:text-foreground text-lg leading-none cursor-pointer"
+            >
+              ×
+            </button>
           </div>
         </div>
       )}
