@@ -1,0 +1,354 @@
+[
+  {
+    "id": "linux",
+    "title": "Linux Academy",
+    "description": "Master files navigation, path routing, permissions security, shell scripting, networking, processes, and service management.",
+    "icon": "terminal",
+    "difficulty": "Beginner",
+    "coming_soon": false,
+    "courses": [
+      {
+        "slug": "linux-command-line-basics",
+        "title": "Linux Command Line Basics",
+        "description": "Learn filesystem navigation, path routing, and basic CLI commands.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "linux-file-system-permissions",
+        "title": "Linux File System & Permissions",
+        "description": "Understand absolute/relative paths, chown, chmod, user management, and permissions security.",
+        "difficulty": "Beginner",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "bash-scripting-fundamentals",
+        "title": "Bash Scripting Fundamentals",
+        "description": "Write automation scripts, learn loops, conditional execution, variables, inputs, and shebangs.",
+        "difficulty": "Intermediate",
+        "duration": "60 minutes"
+      },
+      {
+        "slug": "linux-networking-processes",
+        "title": "Linux Networking & Processes",
+        "description": "Manage processes, inspect active socket routing tables, ports, networks, and services.",
+        "difficulty": "Advanced",
+        "duration": "60 minutes"
+      },
+      {
+        "slug": "linux-capstone-project",
+        "title": "Linux Capstone Project",
+        "description": "A comprehensive DevOps project combining scripting, user permissions, networking, log rotation, and app deployment.",
+        "difficulty": "Advanced",
+        "duration": "90 minutes",
+        "is_capstone": true
+      }
+    ]
+  },
+  {
+    "id": "docker",
+    "title": "Docker Academy",
+    "description": "Master container packaging, networking, storage, volume management, and multi-container architectures.",
+    "icon": "box",
+    "difficulty": "Beginner",
+    "coming_soon": false,
+    "courses": [
+      {
+        "slug": "docker-fundamentals",
+        "title": "Docker Fundamentals",
+        "description": "Introduction to container runtimes, pull operations, port mapping, and volume configurations.",
+        "difficulty": "Beginner",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "multi-container-with-docker-compose",
+        "title": "Multi-Container with Docker Compose",
+        "description": "Deploy a multi-tier database and web application stack locally using Docker Compose YAML.",
+        "difficulty": "Intermediate",
+        "duration": "60 minutes"
+      },
+      {
+        "slug": "optimizing-dockerfiles",
+        "title": "Optimizing Dockerfiles",
+        "description": "Build high-security minimal containers utilizing multi-stage configurations and alpine base runtimes.",
+        "difficulty": "Advanced",
+        "duration": "60 minutes"
+      },
+      {
+        "slug": "docker-networking-deep-dive",
+        "title": "Docker Networking Deep Dive",
+        "description": "Configure overlay networks, bridge adapter bindings, and investigate custom iptables routing.",
+        "difficulty": "Advanced",
+        "duration": "60 minutes"
+      }
+    ]
+  },
+  {
+    "id": "kubernetes",
+    "title": "Kubernetes Academy",
+    "description": "Learn production-grade container orchestration, deployments, ingress, storage claims, and service discovery.",
+    "icon": "layers",
+    "difficulty": "Intermediate",
+    "coming_soon": true,
+    "courses": [
+      {
+        "slug": "kubernetes-pods-and-deployments",
+        "title": "Kubernetes Pods & Deployments",
+        "description": "Deploy pods, manage replica counts, and perform rolling updates with custom YAML configurations.",
+        "difficulty": "Beginner",
+        "duration": "60 minutes"
+      },
+      {
+        "slug": "k8s-configmaps-and-secrets",
+        "title": "K8s ConfigMaps & Secrets",
+        "description": "Inject config maps and secure base64 secret credentials into live running containers.",
+        "difficulty": "Beginner",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "kubernetes-services-and-networking",
+        "title": "Kubernetes Services & Networking",
+        "description": "Expose container endpoints to internal and external networks using NodePort and Ingress controllers.",
+        "difficulty": "Intermediate",
+        "duration": "75 minutes"
+      },
+      {
+        "slug": "managing-state-with-pvcs",
+        "title": "Managing State with PVCs",
+        "description": "Configure persistent storage volumes, claims, and storage classes inside single-node clusters.",
+        "difficulty": "Advanced",
+        "duration": "90 minutes"
+      }
+    ]
+  },
+  {
+    "id": "git",
+    "title": "Git Academy",
+    "description": "Master distributed version control, branching models, interactive rebases, and merge conflict resolution.",
+    "icon": "git-branch",
+    "difficulty": "Beginner",
+    "coming_soon": true,
+    "courses": [
+      {
+        "slug": "git-branching-and-merging",
+        "title": "Git Branching & Merging",
+        "description": "Understand commits, check out references, merge branches, and resolve conflicts.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "advanced-git-workflows",
+        "title": "Advanced Git Workflows",
+        "description": "Clean project histories utilizing interactive rebase, squash commits, and reflog recoveries.",
+        "difficulty": "Advanced",
+        "duration": "60 minutes"
+      }
+    ]
+  },
+  {
+    "id": "terraform",
+    "title": "Terraform Academy",
+    "description": "Build Infrastructure as Code using HCL declarations, state storage, variables, and reusable modules.",
+    "icon": "cpu",
+    "difficulty": "Beginner",
+    "coming_soon": true,
+    "courses": [
+      {
+        "slug": "terraform-basics",
+        "title": "Terraform Basics",
+        "description": "Learn initializations, dry-run plans, applying configurations, and managing variables.",
+        "difficulty": "Beginner",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "state-management-in-terraform",
+        "title": "State Management in Terraform",
+        "description": "Understand lock mechanisms, workspace segregation, and migrating backends to remote stores.",
+        "difficulty": "Intermediate",
+        "duration": "60 minutes"
+      },
+      {
+        "slug": "designing-reusable-modules",
+        "title": "Designing Reusable Modules",
+        "description": "Author highly customizable infrastructure modules that scale across multiple environments.",
+        "difficulty": "Advanced",
+        "duration": "75 minutes"
+      }
+    ]
+  },
+  {
+    "id": "aws",
+    "title": "AWS Academy",
+    "description": "Implement enterprise cloud resources in Amazon Web Services including VPCs, IAM policies, and S3.",
+    "icon": "globe",
+    "difficulty": "Beginner",
+    "coming_soon": true,
+    "courses": [
+      {
+        "slug": "aws-s3-storage-basics",
+        "title": "AWS S3 Storage Basics",
+        "description": "Configure object versioning, access control lists, and bucket lifecycle policies.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "iam-users-and-policies",
+        "title": "IAM Users and Policies",
+        "description": "Configure user scopes, roles, groups, and authorize granular permissions using JSON templates.",
+        "difficulty": "Intermediate",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "multi-az-vpc-setup",
+        "title": "Multi-AZ VPC Setup",
+        "description": "Provision high-availability subnets, internet/NAT gateways, and custom route bindings.",
+        "difficulty": "Advanced",
+        "duration": "90 minutes"
+      }
+    ]
+  },
+  {
+    "id": "azure",
+    "title": "Azure Academy",
+    "description": "Deploy infrastructure components to Microsoft Azure cloud including VMs, blob storage, and identity management.",
+    "icon": "hard-drive",
+    "difficulty": "Beginner",
+    "coming_soon": true,
+    "courses": [
+      {
+        "slug": "azure-virtual-machines",
+        "title": "Azure Virtual Machines",
+        "description": "Provision Linux Virtual Machines on Azure and establish secure ssh keys associations.",
+        "difficulty": "Beginner",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "azure-blob-storage-configuration",
+        "title": "Azure Blob Storage Configuration",
+        "description": "Deploy blob storage containers, customize access tiers, and authorize access using SAS tokens.",
+        "difficulty": "Intermediate",
+        "duration": "45 minutes"
+      }
+    ]
+  },
+  {
+    "id": "ansible",
+    "title": "Ansible Academy",
+    "description": "Configure and automate system deployments via declarative Ansible Playbooks and Roles.",
+    "icon": "book-open",
+    "difficulty": "Beginner",
+    "coming_soon": true,
+    "courses": [
+      {
+        "slug": "ansible-playbooks-for-beginners",
+        "title": "Ansible Playbooks for Beginners",
+        "description": "Write declarative Playbooks to manage system updates and package installations.",
+        "difficulty": "Beginner",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "ansible-roles-and-galaxy",
+        "title": "Ansible Roles & Galaxy",
+        "description": "Re-engineer tasks, handlers, vars, and templates into modular, reusable Ansible Roles.",
+        "difficulty": "Intermediate",
+        "duration": "60 minutes"
+      }
+    ]
+  },
+  {
+    "id": "github-actions",
+    "title": "GitHub Actions Academy",
+    "description": "Automate linting, unit tests, container builds, and cloud deployments directly from GitHub events.",
+    "icon": "play",
+    "difficulty": "Beginner",
+    "coming_soon": true,
+    "courses": [
+      {
+        "slug": "ci-pipelines-with-github-actions",
+        "title": "CI Pipelines with GitHub Actions",
+        "description": "Author automated CI runs triggered on push actions to parse code structure and execute tests.",
+        "difficulty": "Beginner",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "automated-deployments",
+        "title": "Automated Deployments",
+        "description": "Deliver built container assets to cloud container registries using secure GitHub Secrets.",
+        "difficulty": "Intermediate",
+        "duration": "60 minutes"
+      }
+    ]
+  },
+  {
+    "id": "jenkins",
+    "title": "Jenkins Academy",
+    "description": "Build production declarative pipelines, deploy local agent runners, and build Groovy shared libraries.",
+    "icon": "settings",
+    "difficulty": "Intermediate",
+    "coming_soon": true,
+    "courses": [
+      {
+        "slug": "jenkins-pipelines-as-code",
+        "title": "Jenkins Pipelines as Code",
+        "description": "Write and structure robust declarative Jenkinsfiles to execute multi-stage CI operations.",
+        "difficulty": "Intermediate",
+        "duration": "60 minutes"
+      },
+      {
+        "slug": "jenkins-shared-libraries",
+        "title": "Jenkins Shared Libraries",
+        "description": "Write shared Groovy libraries to modularize and standardize CI workflows at scale.",
+        "difficulty": "Advanced",
+        "duration": "90 minutes"
+      }
+    ]
+  },
+  {
+    "id": "monitoring",
+    "title": "Monitoring Academy",
+    "description": "Scrape node metrics, query timeseries alerts, and configure dashboard visualizations using Prometheus.",
+    "icon": "bar-chart",
+    "difficulty": "Intermediate",
+    "coming_soon": true,
+    "courses": [
+      {
+        "slug": "prometheus-basics",
+        "title": "Prometheus Basics",
+        "description": "Scrape node metrics and write basic PromQL syntax to review system indicators.",
+        "difficulty": "Intermediate",
+        "duration": "60 minutes"
+      },
+      {
+        "slug": "grafana-visualization",
+        "title": "Grafana Visualization",
+        "description": "Author telemetry dashboards using Prometheus metrics and define dynamic alert hooks.",
+        "difficulty": "Beginner",
+        "duration": "45 minutes"
+      }
+    ]
+  },
+  {
+    "id": "observability",
+    "title": "Observability Academy",
+    "description": "Analyze distributed logs and traces using Elastic Stack (ELK), Jaeger tracing, and open telemetry.",
+    "icon": "activity",
+    "difficulty": "Intermediate",
+    "coming_soon": true,
+    "courses": [
+      {
+        "slug": "log-aggregation-with-elk",
+        "title": "Log Aggregation with ELK",
+        "description": "Collect, index, and visualize application logs using Elasticsearch, Logstash, and Kibana.",
+        "difficulty": "Intermediate",
+        "duration": "75 minutes"
+      },
+      {
+        "slug": "distributed-tracing-with-jaeger",
+        "title": "Distributed Tracing with Jaeger",
+        "description": "Trace request lifetimes across multi-service deployments using open telemetry tracing.",
+        "difficulty": "Advanced",
+        "duration": "90 minutes"
+      }
+    ]
+  }
+]

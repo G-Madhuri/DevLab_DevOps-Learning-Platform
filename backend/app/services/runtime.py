@@ -62,6 +62,61 @@ class SimulatedShell:
         relative_part = clean_vpath.lstrip("/")
         return os.path.join(self.base_dir, relative_part)
 
+    
+    def run_bash_script(self, script_path: str, script_args: list = []) -> str:
+        if not os.path.exists(script_path):
+            return f"bash: {os.path.basename(script_path)}: No such file or directory"
+        try:
+            with open(script_path, "r", encoding="utf-8") as f:
+                content = f.read()
+        except Exception as e:
+            return f"bash: error reading script: {e}"
+
+        lines = content.splitlines()
+        output_lines = []
+        variables = {**self.env}
+        
+        # Add positional parameters
+        for i, val in enumerate(script_args, start=1):
+            variables[str(i)] = val
+        variables["#"] = str(len(script_args))
+        variables["@"] = " ".join(script_args)
+        variables["?"] = "0"
+        
+        for line in lines:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            
+            # Simple variables expansion
+            for k, v in list(variables.items()):
+                line = line.replace(f"${k}", v)
+                
+            # Handle variable declarations
+            if "=" in line and not line.startswith("if") and not line.startswith("while") and not line.startswith("["):
+                parts = line.split("=", 1)
+                var_name = parts[0].strip()
+                var_val = parts[1].strip().strip('"\'')
+                variables[var_name] = var_val
+                continue
+                
+            if line.startswith("echo "):
+                val = line[5:].strip().strip('"\'')
+                output_lines.append(val)
+            elif line == "pwd":
+                output_lines.append(self.cwd)
+            elif line.startswith("cd "):
+                self.execute_command(line)
+            else:
+                res = self.execute_command(line)
+                if res:
+                    prompt_marker = "student@devlab:~"
+                    if prompt_marker in res:
+                        res = res.split(prompt_marker)[0].strip()
+                    output_lines.append(res)
+                    
+        return "\r\n".join(output_lines)
+
     def execute_command(self, cmd_line: str) -> str:
         cmd_line = cmd_line.strip()
         if not cmd_line:
@@ -245,15 +300,105 @@ class SimulatedShell:
             except Exception as e:
                 return make_prompt(f"mv: move error: {e}")
         elif cmd == "chmod":
-            if len(args) < 2:
+            recursive = "-R" in args
+            clean_args = [a for a in args if a != "-R"]
+            if len(clean_args) < 2:
                 return make_prompt("chmod: missing operand")
-            perms, target = args[0], args[1]
+            perms, target = clean_args[0], clean_args[1]
             local_path = self.get_local_path(os.path.join(self.cwd, target))
             if os.path.exists(local_path):
-                self.permissions[target] = perms
+                rel_target = os.path.relpath(local_path, self.base_dir).replace("\\", "/")
+                self.permissions[rel_target] = perms
+                if recursive and os.path.isdir(local_path):
+                    for root, dirs, files in os.walk(local_path):
+                        for d in dirs:
+                            p_dir = os.path.relpath(os.path.join(root, d), self.base_dir).replace("\\", "/")
+                            self.permissions[p_dir] = perms
+                        for f in files:
+                            p_file = os.path.relpath(os.path.join(root, f), self.base_dir).replace("\\", "/")
+                            self.permissions[p_file] = perms
                 return make_prompt()
             else:
                 return make_prompt(f"chmod: cannot access '{target}': No such file or directory")
+        elif cmd == "bash" or cmd.startswith("./"):
+            script_name = args[0] if (cmd == "bash" and args) else cmd
+            if script_name.startswith("./"):
+                script_name = script_name[2:]
+            
+            rel_path = os.path.relpath(self.get_local_path(os.path.join(self.cwd, script_name)), self.base_dir).replace("\\", "/")
+            if cmd.startswith("./"):
+                perm = self.permissions.get(rel_path, "")
+                if "x" not in perm and "7" not in perm and "5" not in perm:
+                    return make_prompt(f"bash: ./{script_name}: Permission denied")
+            
+            local_path = self.get_local_path(os.path.join(self.cwd, script_name))
+            script_args = args[1:] if cmd == "bash" else args
+            if os.path.exists(local_path) and os.path.isfile(local_path):
+                output = self.run_bash_script(local_path, script_args)
+                return make_prompt(output)
+            else:
+                return make_prompt(f"bash: {script_name}: No such file or directory")
+        elif cmd in ["ss", "netstat"]:
+            return make_prompt(
+                "State      Recv-Q Send-Q Local Address:Port               Peer Address:Port\r\n"
+                "LISTEN     0      128    0.0.0.0:80                       0.0.0.0:*\r\n"
+                "LISTEN     0      128    0.0.0.0:8080                     0.0.0.0:*\r\n"
+                "LISTEN     0      128       [::]:80                          [::]:*\r\n"
+                "LISTEN     0      128       [::]:8080                        [::]:*"
+            )
+        elif cmd in ["dig", "nslookup"]:
+            domain = args[0] if args else "google.com"
+            return make_prompt(
+                f";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 42183\r\n"
+                f";; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\r\n\r\n"
+                f";; QUESTION SECTION:\r\n"
+                f";{domain}.        IN  A\r\n\r\n"
+                f";; ANSWER SECTION:\r\n"
+                f"{domain}.  300 IN  A  142.250.190.46\r\n\r\n"
+                f";; Query time: 14 msec\r\n"
+                f";; SERVER: 127.0.0.11#53(127.0.0.11)"
+            )
+        elif cmd in ["curl", "wget"]:
+            is_headers = "-I" in args or "-i" in args
+            return make_prompt(
+                "HTTP/1.1 200 OK\r\n"
+                "Content-Type: text/html; charset=UTF-8\r\n"
+                "Server: gws\r\n"
+                "Content-Length: 21971\r\n"
+                "Connection: close" if is_headers else "<!doctype html><html><head><title>Google</title></head><body>Hello</body></html>"
+            )
+        elif cmd in ["systemctl", "service"]:
+            action = args[0] if args else ""
+            service_name = args[1] if len(args) > 1 else ""
+            if cmd == "service":
+                service_name = args[0] if args else ""
+                action = args[1] if len(args) > 1 else ""
+            
+            if "status" in action or "status" in args:
+                return make_prompt(
+                    f"● {service_name}.service - High performance web server\r\n"
+                    f"   Loaded: loaded (/lib/systemd/system/{service_name}.service; enabled; vendor preset: enabled)\r\n"
+                    f"   Active: active (running) since Sat 2026-07-11 09:03:55 UTC; 10min ago\r\n"
+                    f" Main PID: 812 ({service_name})\r\n"
+                    f"    Tasks: 2 (limit: 1153)\r\n"
+                    f"   Memory: 8.2M\r\n"
+                    f"   CGroup: /system.slice/{service_name}.service"
+                )
+            elif "restart" in action or "start" in action or "stop" in action:
+                return make_prompt()
+            return make_prompt("Usage: systemctl [start|stop|restart|status] service")
+        elif cmd in ["useradd", "chown", "chgrp", "kill"]:
+            return make_prompt()
+        elif cmd == "sleep":
+            if "&" in args or (len(args) > 1 and args[1] == "&"):
+                return make_prompt("[1] 10485")
+            return make_prompt()
+        elif cmd == "jobs":
+            return make_prompt("[1]+  Running                 bash capstone/src/app.sh > capstone/app.log &")
+        elif cmd == "fg":
+            return make_prompt("bash capstone/src/app.sh > capstone/app.log")
+        elif cmd == "umask":
+            return make_prompt("0022")
         elif cmd == "grep":
             if len(args) < 2:
                 return make_prompt("grep: missing search parameters")

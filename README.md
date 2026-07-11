@@ -152,49 +152,50 @@ cd backend
 
 ---
 
-## Reusable Course Syllabus
+## Reusable Academy Architecture
 
-### Course 1: Linux Basics (20 Exercises)
-1. **Navigation** (`pwd`)
-2. **Working Directories** (`ls -a`)
-3. **Files** (`touch note.txt`)
-4. **Directories** (`mkdir backup`)
-5. **Copy** (`cp note.txt backup/note_copy.txt`)
-6. **Move** (`mv backup/note_copy.txt .`)
-7. **Rename** (`mv note_copy.txt log.txt`)
-8. **Delete** (`rm note.txt`)
-9. **Viewing Files** (`cat log.txt`)
-10. **Permissions** (`chmod 600 log.txt`)
-11. **Users** (`id`)
-12. **Groups** (`groups`)
-13. **Searching** (`grep student log.txt`)
-14. **Pipes** (`ls | grep log.txt`)
-15. **Redirection** (`echo "DevOps" > dynamic.txt`)
-16. **Environment Variables** (`export REGISTRY=local`)
-17. **Processes** (`ps`)
-18. **Networking** (`ip route`)
-19. **Directory Deletions** (`rm -rf backup`)
-20. **Workspace Cleanup** (`ls -la`)
+DevLab follows a clean, decoupled **Academy → Courses → Lessons → Interactive Labs → Capstone → Certificate** hierarchy. This layout is dynamic and configurations-driven to allow adding new technical tracks (e.g. AWS, Git, Terraform) without modifying database schemas or writing hardcoded route pathways.
 
-### Course 2: Docker Basics (18 Exercises)
-1. **Docker Introduction** (`docker --version`)
-2. **Docker Architecture** (`docker info`)
-3. **Docker Installation Check** (`docker run hello-world`)
-4. **Images** (`docker pull alpine` & `docker images`)
-5. **Containers** (`docker run -d --name my_web nginx`)
-6. **Docker CLI** (`docker ps -a`)
-7. **Dockerfile** (Write base instructions)
-8. **Build & Layers** (`docker build -t custom_app:v1 .`)
-9. **Build Cache** (cached layer verification)
-10. **Volumes** (`docker volume create db_data`)
-11. **Networks** (`docker network create backend_net`)
-12. **Environment Variables** (`docker run -d -e PORT=8080 nginx`)
-13. **Logs** (`docker logs my_web`)
-14. **Exec** (`docker exec my_web date`)
-15. **Inspect** (`docker inspect bridge`)
-16. **Multi-stage Builds** (COPY --from instructions)
-17. **Stop & Cleanup** (`docker stop my_web` & `docker rm my_web`)
-18. **Final Project** (docker-compose YAML aggregations)
+### 1. The Configuration Blueprint (`academies.json`)
+The catalog is defined inside `backend/app/courses/academies.json`. It maps all learning tracks:
+- **Academy ID & Icon**: Unique slugs representing the academy (e.g. `linux`, `docker`).
+- **Difficulty & Duration**: Calculated metrics per track.
+- **Courses**: Child modules constituting the academy. Each has a unique `slug`, `title`, and optional `is_capstone: true` tag.
+
+### 2. Lesson Definitions Subfolder (`lessons/`)
+For each active course slug, a corresponding JSON file exists at `backend/app/courses/lessons/{course_slug}.json` containing a list of 15–20 lessons. Each lesson maps:
+- `id`: unique step sequence integer.
+- `title` & `definition`: core concept explanations.
+- `explanation`: collapsible detail shown via Chevron toggle.
+- `instruction`: explicit task description.
+- `example`: runnable prompt to copy-paste.
+- `expected`: verified output match pattern.
+- `hint`: troubleshooting guide.
+- `solution`: exact command required to pass.
+
+### 3. Reusable Frontend CourseViewer
+Workspace terminal console loops are completely modular. When a user launches any course module:
+1. The frontend routes to `/labs/workspace/{course_slug}`.
+2. The page dynamically mounts the `<CourseViewer>` component passing the slug.
+3. The component queries `GET /{course_slug}/lessons` and `GET /{course_slug}/progress`.
+4. It sets up an `xterm.js` PTY websocket bridging terminal inputs to backend container shells.
+
+### 4. Dynamic Certificate Unlock System
+The last item inside every Academy is always the Certificate slot.
+- **Locked State**: Initially, the certificate is locked.
+- **Verification Rule**: The backend calculates the user's progress percentage across all courses inside the academy (including the Capstone project).
+- **Unlocked State**: If all courses inside the academy reach `100%` completion, the certificate is unlocked, revealing `Preview Certificate`, `Generate Certificate`, and `Download PDF` controls.
+
+---
+
+## Pytest Integration Suite
+
+To run the complete validation and integration tests:
+
+```bash
+cd backend
+.\venv\Scripts\python -m pytest -q
+```
 
 ---
 

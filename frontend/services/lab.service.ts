@@ -23,4 +23,14 @@ export const labService = {
     const response = await apiClient.get("/labs/categories");
     return response.data;
   },
+
+  async listAcademies(): Promise<any[]> {
+    const response = await apiClient.get("/labs/academies/list");
+    return response.data;
+  },
+
+  async generateCertificate(academyId: string): Promise<any> {
+    const response = await apiClient.post(`/labs/academies/detail/${academyId}/certificate/generate`);
+    return response.data;
+  },
 };
