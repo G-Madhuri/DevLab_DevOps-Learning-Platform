@@ -73,7 +73,10 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
   // Launch mutation
   const launchMutation = useMutation({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["active_linux_session", courseSlug] });
+      queryClient.invalidateQueries({ queryKey: ["active_linux_session"] });
+      queryClient.invalidateQueries({ queryKey: ["all_active_sessions"] });
+      queryClient.invalidateQueries({ queryKey: ["user_sessions"] });
+      queryClient.invalidateQueries({ queryKey: ["academies_list"] });
       setValidationMsg(null);
     },
     mutationFn: () => labSessionService.launchLinuxLab(courseSlug),
@@ -82,7 +85,10 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
   // Stop mutation
   const stopMutation = useMutation({
     onSuccess: () => {
-      queryClient.setQueryData(["active_linux_session", courseSlug], null);
+      queryClient.invalidateQueries({ queryKey: ["active_linux_session"] });
+      queryClient.invalidateQueries({ queryKey: ["all_active_sessions"] });
+      queryClient.invalidateQueries({ queryKey: ["user_sessions"] });
+      queryClient.invalidateQueries({ queryKey: ["academies_list"] });
       setValidationMsg(null);
     },
     mutationFn: (id: string) => labSessionService.stopLinuxLab(id),

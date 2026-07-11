@@ -34,6 +34,10 @@ import {
 export default function LabsCatalogPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+  const [difficulty, setDifficulty] = useState("All");
+  const [sort, setSort] = useState("alphabetical");
+
   const [expandedAcademies, setExpandedAcademies] = useState<Record<string, boolean>>({
     linux: true, // Expand Linux Academy by default
   });
@@ -56,34 +60,50 @@ export default function LabsCatalogPage() {
     mutationFn: (academyId: string) => labService.generateCertificate(academyId),
   });
 
+  const categories = [
+    "All",
+    "Linux",
+    "Docker",
+    "Kubernetes",
+    "Terraform",
+    "AWS",
+    "Azure",
+    "Jenkins",
+    "Ansible",
+    "Git",
+    "GitHub Actions",
+    "Monitoring",
+    "Observability",
+  ];
+
   const getAcademyIcon = (iconName: string) => {
     switch (iconName.toLowerCase()) {
       case "terminal":
-        return <Terminal className="h-6 w-6 text-primary" />;
+        return <Terminal className="h-5 w-5 text-primary" />;
       case "box":
-        return <Container className="h-6 w-6 text-primary" />;
+        return <Container className="h-5 w-5 text-primary" />;
       case "layers":
-        return <Layers className="h-6 w-6 text-primary" />;
+        return <Layers className="h-5 w-5 text-primary" />;
       case "cpu":
-        return <Cpu className="h-6 w-6 text-primary" />;
+        return <Cpu className="h-5 w-5 text-primary" />;
       case "globe":
-        return <Globe className="h-6 w-6 text-primary" />;
+        return <Globe className="h-5 w-5 text-primary" />;
       case "hard-drive":
-        return <HardDrive className="h-6 w-6 text-primary" />;
+        return <HardDrive className="h-5 w-5 text-primary" />;
       case "settings":
-        return <SettingsIcon className="h-6 w-6 text-primary" />;
+        return <SettingsIcon className="h-5 w-5 text-primary" />;
       case "book-open":
-        return <BookOpen className="h-6 w-6 text-primary" />;
+        return <BookOpen className="h-5 w-5 text-primary" />;
       case "git-branch":
-        return <GitBranch className="h-6 w-6 text-primary" />;
+        return <GitBranch className="h-5 w-5 text-primary" />;
       case "play":
-        return <Play className="h-6 w-6 text-primary" />;
+        return <Play className="h-5 w-5 text-primary" />;
       case "bar-chart":
-        return <BarChart className="h-6 w-6 text-primary" />;
+        return <BarChart className="h-5 w-5 text-primary" />;
       case "activity":
-        return <Activity className="h-6 w-6 text-primary" />;
+        return <Activity className="h-5 w-5 text-primary" />;
       default:
-        return <HelpCircle className="h-6 w-6 text-primary" />;
+        return <HelpCircle className="h-5 w-5 text-primary" />;
     }
   };
 
@@ -107,18 +127,69 @@ export default function LabsCatalogPage() {
     }));
   };
 
-  // Filter academies client-side based on search query
-  const filteredAcademies = academies.filter((academy) => {
-    const query = search.toLowerCase();
-    const matchesTitle = academy.title.toLowerCase().includes(query);
-    const matchesDesc = academy.description.toLowerCase().includes(query);
-    const matchesCourses = academy.courses.some(
-      (c: any) =>
-        c.title.toLowerCase().includes(query) ||
-        c.description.toLowerCase().includes(query)
-    );
-    return matchesTitle || matchesDesc || matchesCourses;
-  });
+  const formatDuration = (totalMinutes: number) => {
+    const hrs = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
+    if (hrs > 0) {
+      return `${hrs} hr${hrs > 1 ? "s" : ""} ${mins > 0 ? `${mins} min${mins > 1 ? "s" : ""}` : ""}`.trim();
+    }
+    return `${totalMinutes} mins`;
+  };
+
+  // Filter & Sort academies client-side based on toolbar controls
+  const filteredAndSortedAcademies = academies
+    .filter((academy) => {
+      // 1. Search Query filter
+      const query = search.toLowerCase();
+      const matchesTitle = academy.title.toLowerCase().includes(query);
+      const matchesDesc = academy.description.toLowerCase().includes(query);
+      const matchesCourses = academy.courses.some(
+        (c: any) =>
+          c.title.toLowerCase().includes(query) ||
+          c.description.toLowerCase().includes(query)
+      );
+      if (search && !matchesTitle && !matchesDesc && !matchesCourses) {
+        return false;
+      }
+
+      // 2. Category filter
+      if (category !== "All") {
+        const categorySlug = category.toLowerCase().replace(" ", "-");
+        const matchesCat =
+          academy.id === categorySlug ||
+          academy.title.toLowerCase().includes(category.toLowerCase());
+        if (!matchesCat) return false;
+      }
+
+      // 3. Difficulty Level filter
+      if (difficulty !== "All") {
+        const matchesDiff = academy.difficulty.toLowerCase() === difficulty.toLowerCase();
+        if (!matchesDiff) return false;
+      }
+
+      return true;
+    })
+    .sort((a, b) => {
+      // 4. Sort calculations
+      if (sort === "alphabetical") {
+        return a.title.localeCompare(b.title);
+      }
+      if (sort === "difficulty") {
+        const diffWeight = (d: string) => {
+          const l = d.toLowerCase();
+          if (l === "beginner") return 1;
+          if (l === "intermediate") return 2;
+          return 3;
+        };
+        return diffWeight(a.difficulty) - diffWeight(b.difficulty);
+      }
+      if (sort === "duration") {
+        const getDuration = (ac: any) =>
+          ac.courses.reduce((sum: number, c: any) => sum + (parseInt(c.duration) || 30), 0);
+        return getDuration(b) - getDuration(a); // Sort descending (longer duration first)
+      }
+      return 0;
+    });
 
   return (
     <DashboardShell>
@@ -130,15 +201,70 @@ export default function LabsCatalogPage() {
         </p>
       </div>
 
-      {/* Search Bar */}
-      <div className="relative w-full max-w-xl">
-        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search academies or courses..."
-          className="pl-9 w-full bg-card border border-border rounded-xl"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      {/* Categories Scroller */}
+      <div className="flex overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 gap-2 scrollbar-none">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setCategory(cat)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0 transition-all cursor-pointer ${
+              category === cat
+                ? "bg-primary border-primary text-primary-foreground shadow-sm font-bold"
+                : "bg-card border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+            }`}
+          >
+            <span className="flex items-center space-x-1.5">
+              {cat !== "All" && getAcademyIcon(cat === "Git" ? "git-branch" : cat === "Docker" ? "box" : cat)}
+              <span>{cat}</span>
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Search & Filter Toolbar */}
+      <div className="flex flex-col md:flex-row gap-4 items-center bg-card border border-border p-4 rounded-xl shadow-sm">
+        {/* Search */}
+        <div className="relative w-full md:flex-1">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search academies or courses by title and description..."
+            className="pl-9 w-full bg-background border border-input rounded-md"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        {/* Filters */}
+        <div className="flex w-full md:w-auto items-center gap-2">
+          {/* Difficulty Filter */}
+          <div className="flex items-center space-x-2 bg-background border border-input px-3 py-1.5 rounded-md min-w-[140px]">
+            <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+            <select
+              value={difficulty}
+              onChange={(e) => setDifficulty(e.target.value)}
+              className="bg-transparent border-none text-xs font-semibold focus:outline-none w-full cursor-pointer text-foreground"
+            >
+              <option value="All">All Levels</option>
+              <option value="Beginner">Beginner</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced">Advanced</option>
+            </select>
+          </div>
+
+          {/* Sort Filter */}
+          <div className="flex items-center space-x-2 bg-background border border-input px-3 py-1.5 rounded-md min-w-[140px]">
+            <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="bg-transparent border-none text-xs font-semibold focus:outline-none w-full cursor-pointer text-foreground"
+            >
+              <option value="alphabetical">Alphabetical</option>
+              <option value="difficulty">Difficulty</option>
+              <option value="duration">Estimated Time</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* Loader */}
@@ -159,27 +285,31 @@ export default function LabsCatalogPage() {
             </div>
           ))}
         </div>
-      ) : filteredAcademies.length === 0 ? (
+      ) : filteredAndSortedAcademies.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-12 text-center shadow-sm">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted border border-border">
             <Search className="h-5 w-5 text-muted-foreground" />
           </div>
           <h3 className="mt-4 text-base font-bold text-foreground">No academies match search</h3>
           <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
-            We couldn&apos;t find any academies matching your filters. Try checking spelling or keywords.
+            We couldn&apos;t find any academies matching your filters. Try clearing search fields or filters.
           </p>
           <Button
             variant="outline"
             className="mt-4 rounded-xl text-xs font-semibold"
-            onClick={() => setSearch("")}
+            onClick={() => {
+              setSearch("");
+              setCategory("All");
+              setDifficulty("All");
+            }}
           >
-            Clear Search
+            Clear Filters
           </Button>
         </div>
       ) : (
         /* Academies Stack */
         <div className="space-y-6">
-          {filteredAcademies.map((academy) => {
+          {filteredAndSortedAcademies.map((academy) => {
             const isExpanded = !!expandedAcademies[academy.id];
             const coursesCount = academy.courses.length;
             // Calculate total time
@@ -232,7 +362,7 @@ export default function LabsCatalogPage() {
                       </div>
                       <div className="space-y-0.5">
                         <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Duration</p>
-                        <p className="font-bold text-foreground">{totalDurationMinutes} mins</p>
+                        <p className="font-bold text-foreground">{formatDuration(totalDurationMinutes)}</p>
                       </div>
                     </div>
 
