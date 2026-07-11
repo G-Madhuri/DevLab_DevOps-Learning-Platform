@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { labSessionService, LabSession } from "@/services/lab-session.service";
 import { labService } from "@/services/lab.service";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
@@ -23,6 +23,18 @@ import {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  const stopMutation = useMutation({
+    mutationFn: (id: string) => labSessionService.stopLinuxLab(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["active_linux_session"] });
+      queryClient.invalidateQueries({ queryKey: ["all_active_sessions"] });
+      queryClient.invalidateQueries({ queryKey: ["user_lab_sessions"] });
+      queryClient.invalidateQueries({ queryKey: ["academies_list"] });
+    },
+  });
+
   const [quoteIndex, setQuoteIndex] = useState(0);
 
   const motivationalQuotes = [
@@ -161,11 +173,21 @@ export default function DashboardPage() {
                   </p>
                 </div>
               </div>
-              <Link href={sess.lab_name === "docker-basics" ? "/labs/docker-basics" : `/labs/workspace/${sess.lab_name}`}>
-                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold px-6 py-2.5 shadow-sm transition-transform hover:scale-[1.02] cursor-pointer">
-                  Resume Lab
+              <div className="flex flex-row gap-2">
+                <Link href={sess.lab_name === "docker-basics" ? "/labs/docker-basics" : `/labs/workspace/${sess.lab_name}`}>
+                  <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold px-6 py-2.5 shadow-sm transition-transform hover:scale-[1.02] cursor-pointer">
+                    Resume Lab
+                  </Button>
+                </Link>
+                <Button
+                  variant="destructive"
+                  disabled={stopMutation.isPending}
+                  onClick={() => stopMutation.mutate(sess.id)}
+                  className="rounded-xl text-xs font-bold px-4 py-2.5 transition-transform hover:scale-[1.02] cursor-pointer"
+                >
+                  {stopMutation.isPending ? "Stopping..." : "Terminate"}
                 </Button>
-              </Link>
+              </div>
             </div>
           ))}
 
