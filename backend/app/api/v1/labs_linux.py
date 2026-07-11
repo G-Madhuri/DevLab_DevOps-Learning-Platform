@@ -100,12 +100,15 @@ def stop_lab(
 
 @router.get("/active", response_model=Optional[LabSessionResponse])
 def get_active_session(
+    lab_name: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """
     Retrieve the user's currently active running lab.
     """
+    if lab_name:
+        return session_repository.get_active_session(db, user_id=current_user.id, lab_name=lab_name)
     return session_repository.get_running_session_for_user(db, user_id=current_user.id)
 
 
