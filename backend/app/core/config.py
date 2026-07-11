@@ -15,14 +15,14 @@ class Settings(BaseSettings):
 
     # JWT Settings
     # In production, these must be overridden via environment variables
-    JWT_SECRET: str = "supersecretkeychangeinproduction1234567890!"
+    JWT_SECRET: str = "your_jwt_secret_key_here"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     # Database Settings
     # Defaults to a local SQLite db if postgres isn't configured, but Neon is expected
-    DATABASE_URL: str = "sqlite:///./test.db"
+    DATABASE_URL: str = "postgresql://your_user:your_password@your_host:5432/your_db"
 
     # Upstash Redis Settings
     UPSTASH_REDIS_REST_URL: str = ""
