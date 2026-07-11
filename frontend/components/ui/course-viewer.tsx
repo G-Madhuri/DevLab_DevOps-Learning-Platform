@@ -428,7 +428,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
                     <h3 className="text-base font-bold text-foreground tracking-tight">{sub.title}</h3>
                     <p className="text-xs text-primary font-semibold">{sub.definition}</p>
                   </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{sub.explanation}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">{sub.explanation}</p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border/40 text-xs">
                     <div>
@@ -556,7 +556,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
       {(activeTab === "lab" || activeTab === "exercises") && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fade-in">
           {/* Left Column: Lab instructions Stepper OR Exercises list */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-5 space-y-6">
             {activeTab === "lab" ? (
               <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-5">
                 <div className="flex justify-between items-center border-b border-border/40 pb-3">
@@ -793,7 +793,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
           </div>
 
           {/* Right Column: Sandbox Terminal Console */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="lg:col-span-7 space-y-6">
             {isLoadingSession ? (
               <div className="rounded-xl border border-border bg-card p-12 text-center animate-pulse">
                 <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
@@ -823,7 +823,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
                 <div className="bg-[#18141F] border-b border-[#2E2838] px-4 py-3 flex justify-between items-center shrink-0">
                   <div className="flex items-center space-x-2">
                     <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[10px] font-extrabold text-foreground uppercase tracking-widest">
+                    <span className="text-[10px] font-extrabold text-white uppercase tracking-widest">
                       Linux Container Sandbox (Active)
                     </span>
                   </div>
