@@ -2,575 +2,627 @@
   "slug": "linux-capstone-project",
   "title": "Linux Capstone Project",
   "overview": {
-    "introduction": [
-      "In this final Capstone Project, you will step into the shoes of a DevOps Engineer tasked with deploying and securing a production environment. You will pull together all the individual concepts from the previous modules: navigating the directory tree, configuring restrictive permissions, writing automated bash utility scripts, managing system service accounts, and auditing active network sockets.",
-      "This is not a theoretical exercise. You will build a simulated deployment workflow: creating the workspace structure under a dedicated path, writing server configurations, automating log rotations, running script services in the background, redirecting outputs, and verifying port bounds.",
-      "This module serves as the final integration benchmark. Success in this module demonstrates that you are ready to transition to container orchestrations with Docker, cloud infrastructure with Terraform, and Kubernetes cluster deployments."
-    ],
-    "what_you_will_learn": [
-      "Creating nested application workspaces structure.",
-      "Configuring secure permission profiles on server settings.",
-      "Writing log rotation backup scripts.",
-      "Managing system administration permissions boundaries.",
-      "Deploying application scripts in background daemon mode.",
-      "Auditing TCP sockets and active system jobs listings."
-    ],
-    "prerequisites": "Completion of Linux Networking & Processes course.",
+    "introduction": "This capstone applies everything you have learned across all four Linux modules into a single realistic DevOps scenario: configuring a Linux server from scratch — directory structure, user permissions, shell scripts, and network validation.",
+    "why_it_matters": "Real interviews and real jobs don't test commands in isolation. They test whether you can combine ls, chmod, bash, ps, ss, and curl to solve an actual problem under pressure.",
+    "industry_usage": "The tasks in this capstone mirror day-1 activities for a junior DevOps engineer: provisioning a server, setting up deployment automation, configuring permissions, and validating the environment.",
+    "what_you_will_build": "A complete server setup simulation: project directory structure, protected config files with correct permissions, a deployment validation script, and a network connectivity health check.",
+    "prerequisites": "All four previous modules: Linux CLI Basics, File Permissions, Bash Scripting, and Networking & Processes.",
     "estimated_time": "120 mins",
-    "difficulty": "Advanced",
+    "difficulty": "Intermediate",
     "learning_outcomes": [
-      "Deploy a complete, secured application framework in Linux.",
-      "Enforce least-privilege permissions boundaries across files and processes.",
-      "Create automated scripts that rotate and clear log files.",
-      "Audit active ports and verify background daemon execution status."
+      "Combine CLI navigation, file operations, and permissions in a realistic workflow.",
+      "Write a multi-step deployment validation script from scratch.",
+      "Apply correct permissions to configs, scripts, and directories.",
+      "Perform process and port verification as part of a server health check.",
+      "Document and present your work as a completed DevOps project."
     ]
   },
-  "theory": [
+  "key_concepts": [
     {
-      "title": "Production Workspaces: Organizing Your Virtual Office",
-      "definition": "Designing directory structures and service accounts so that your apps can run securely without exposing the entire server.",
-      "explanation": "Imagine running a business where you give every intern a key to the company vault, the main database, and the CEO's office. Sounds like a disaster waiting to happen, right? Instead, you give people access only to their own desk and filing cabinet.\n\nIn Linux server deployment, we do the exact same thing using Application Workspaces:\n- src/: Where your program's code lives (read-only for the running app).\n- config/: Configuration keys and DB connection settings (highly restricted permissions!).\n- backups/: Saved zip files of old database states.\n\nTo make sure things stay secure, we never run apps as the administrator (root). Instead, we create a dedicated, low-privilege system account (like a service user) who owns only this workspace folder. If a hacker breaks into your app, they are trapped inside this folder and cannot damage the rest of the server!",
-      "why_exists": "Minimizes the blast radius of any potential security breach, keeping your database and system files safe.",
-      "real_world_example": "Setting up a folder /var/www/my-app that is owned by the user account www-data, locking out all other non-admin users.",
-      "remember": "System service accounts (like www-data or nginx) are designed to run background processes and do not have login shells for human use. This adds an extra layer of security.",
-      "pro_tip": "Use chown -R (recursive flag) to change the owner of a folder and all files and subfolders inside it at the exact same time.",
-      "common_mistakes": "Running your web applications as the root user. If the app gets compromised, the attacker has full access to delete the entire server!",
-      "best_practices": "Always group your application folders cleanly under a single parent project folder, and restrict its write permissions to only the necessary user accounts.",
+      "title": "Combining Commands: The Unix Philosophy",
+      "definition": "Linux commands are designed to be combined using pipes (|) and redirection (>, >>) to perform complex tasks. This is the Unix Philosophy: small tools that do one thing well, chained together.",
+      "why_important": [
+        "Complex tasks are solved by combining simple commands — not writing new programs.",
+        "Pipes let you process data through multiple steps in a single command line.",
+        "Redirection saves command output to files for logging and reporting.",
+        "Command substitution $() captures output to use as input for another step."
+      ],
+      "explanation": "Pipes pass the output of one command to the input of the next:\n\n```bash\nps aux | grep nginx | awk '{print $2}'\n```\nStep 1: ps aux — list all processes\nStep 2: grep nginx — filter for nginx lines\nStep 3: awk '{print $2}' — extract just the PID column\n\nChaining commands conditionally:\n\n| Operator | Meaning | Example |\n|:---|:---|:---|\n| `\\|` | Pipe stdout to next cmd | `ls \\| grep .log` |\n| `>` | Redirect stdout to file | `ls > files.txt` |\n| `>>` | Append stdout to file | `ls >> files.txt` |\n| `&&` | Run next only if first succeeds | `mkdir dir && cd dir` |\n| `\\|\\|` | Run next only if first fails | `mkdir dir \\|\\| echo 'exists'` |\n| `;` | Run both regardless of exit code | `cmd1; cmd2` |",
       "commands": [
         {
-          "name": "chown -R",
-          "purpose": "Recursively changes the owner user and group of a folder and all its contents.",
-          "syntax": "chown -R owner:group folder_name",
-          "parameters": "-R: Recursive execution. owner:group: The target user account and group account.",
-          "example": "chown -R student:student drafts",
-          "expected_output": "(Folder ownership updated recursively without terminal output)",
-          "output_explanation": "Updates ownership of drafts folder and all files inside it to the student user and group.",
-          "when_to_use": "Run this when initializing workspaces or importing files that need permission alignment."
+          "name": "Pipe (|)",
+          "purpose": "Connects the output of one command to the input of the next.",
+          "syntax": "command1 | command2 | command3",
+          "parameters": "Each command in the chain processes the output of the previous one.",
+          "example": "ps aux | grep -v grep | grep nginx | wc -l",
+          "expected_output": "2",
+          "output_explanation": "This pipeline counts how many nginx processes are running. ps aux → filter out the grep process itself → filter for nginx → count lines.",
+          "when_to_use": "Use pipes whenever you need to filter, transform, or count command output.",
+          "real_world_use": "count running docker containers: docker ps | wc -l"
         }
       ],
-      "summary": "Secure workspaces restrict access by isolating application folders and running services under dedicated low-privilege accounts instead of root."
+      "pro_tip": "Use `tee` to both display output AND save it to a file simultaneously: `command | tee output.log`",
+      "best_practices": "Build complex pipelines step by step — test each stage before adding the next pipe.",
+      "common_mistakes": "Using ; instead of && for dependent steps — if mkdir fails with ;, cd runs anyway and succeeds incorrectly.",
+      "real_world_example": "A DevOps engineer runs a single pipeline: `ps aux | grep java | grep -v grep | awk '{print $2}' | xargs kill` to kill all java processes in one command.",
+      "remember": "Each command in a pipeline runs in its own subshell. Variable assignments in a pipeline don't persist after the pipe.",
+      "summary": "The pipe | chains commands. && chains dependent steps. || provides fallback. These are the building blocks of automation."
     },
     {
-      "title": "Log Rotators & Disk Cleanup: The Server Janitors",
-      "definition": "An automated system that compresses or clears old logs to prevent disk space exhaustion and server failures.",
-      "explanation": "When a web server is running, it writes down every single visitor request in a log file. If you get millions of visitors, this text file grows larger and larger every second.\n\nHere is the catch: if a file grows too big and consumes 100% of your disk space, the database will refuse to write new data, the operating system will freeze, and your website will go down!\n\nThis is where Log Rotation and Compression come in. Old log files are compressed into tiny .gz archives to save space, and logs older than a threshold (like 30 days) are deleted.",
-      "why_exists": "Guarantees that your server can run continuously for years without running out of disk storage space.",
-      "real_world_example": "A background job running a simple bash script that compresses last week's log folders and cleans up the server disk.",
-      "remember": "Always truncate log files using redirect operators (e.g. echo -n '' > app.log) instead of deleting the log file entirely, as deleting it can crash running programs that hold file handles.",
-      "pro_tip": "Run df -h (disk free, human-readable) to quickly audit how much storage space is available across all directories on your server.",
-      "common_mistakes": "Deleting active log files completely. The running application will fail to find the file handle and crash.",
-      "best_practices": "Automate log cleanups using system cron jobs, compressing historical logs to ensure minimal space usage.",
+      "title": "Capstone Project Architecture",
+      "definition": "The capstone simulates a real server provisioning task — creating the structure, securing it, scripting it, and verifying it.",
+      "why_important": [
+        "Reinforces every concept from all four modules in one connected workflow.",
+        "Demonstrates competency to employers — this is a real-world DevOps task.",
+        "Builds the muscle memory of the correct order: structure → permissions → script → verify.",
+        "Creates a reference project you can explain in interviews."
+      ],
+      "explanation": "Project structure you will build:\n\n```\n~/devops-project/\n├── app/\n│   ├── src/             # Application source\n│   └── config/\n│       └── app.env      # Protected (600)\n├── scripts/\n│   ├── deploy.sh        # Executable (755)\n│   ├── healthcheck.sh   # Executable (755)\n│   └── setup.sh         # Executable (755)\n├── logs/\n│   └── deploy.log       # Log output\n└── backups/             # Config backups\n```\n\n**Workflow:**\n1. Create the directory structure (mkdir -p)\n2. Write config files and set 600 permissions\n3. Write and test bash scripts\n4. Set correct script permissions (755)\n5. Run health checks and save output to logs\n6. Verify everything with ls -la",
       "commands": [
         {
-          "name": "df -h",
-          "purpose": "Shows current disk storage usage for all mounted filesystems.",
-          "syntax": "df -h",
-          "parameters": "-h: Human-readable output (displays sizes in K, M, G instead of raw blocks).",
-          "example": "df -h",
-          "expected_output": "/dev/sda1       40G   24G   16G  60% /",
-          "output_explanation": "Tells you the primary disk partition has 40G total capacity, with 24G used and 16G free space.",
-          "when_to_use": "Use this regularly to audit server storage availability and prevent system locking."
-        },
-        {
-          "name": "tar",
-          "purpose": "Compresses multiple files or folders into a single archive file (tarball).",
-          "syntax": "tar -czf archive_name.tar.gz folder_to_compress",
-          "parameters": "-c: Create archive. -z: Compress using gzip. -f: Specify filename.",
-          "example": "tar -czf logs_backup.tar.gz drafts",
-          "expected_output": "(Archive created without terminal output)",
-          "output_explanation": "Compreses drafts folder contents into a single compressed archive file named logs_backup.tar.gz.",
-          "when_to_use": "Use this to pack up system logs or source code folders before transferring or cleanups."
+          "name": "mkdir -p (nested directories)",
+          "purpose": "Creates an entire nested directory tree in a single command.",
+          "syntax": "mkdir -p parent/child/grandchild",
+          "parameters": "-p: create parent directories as needed, no error if already exists.",
+          "example": "mkdir -p ~/devops-project/app/config ~/devops-project/scripts ~/devops-project/logs ~/devops-project/backups",
+          "expected_output": "(No output — all directories created silently)",
+          "output_explanation": "The entire project directory tree is created. Use ls -la ~/devops-project/ to verify.",
+          "when_to_use": "Always use -p when creating nested structures. Without it, mkdir fails if the parent doesn't exist.",
+          "real_world_use": "Provisioning scripts use mkdir -p to create the complete directory layout for an application in one step."
         }
       ],
-      "summary": "Log rotation and compression (using tar or gzip) clean up server storage. Always check space usage with df -h to prevent disks locking up."
+      "pro_tip": "Use `tree` command (if available) to visualize the entire directory structure: `tree ~/devops-project/`",
+      "best_practices": "Always create directory structures before writing files into them. Start with the full tree before any content.",
+      "common_mistakes": "Creating directories one at a time — mkdir -p handles the entire tree in one command.",
+      "real_world_example": "A Terraform null_resource provisioner runs a script that creates the entire application directory structure with mkdir -p before copying binaries.",
+      "remember": "mkdir -p never fails if the directory already exists. This makes it safe to re-run provisioning scripts.",
+      "summary": "Plan your directory structure first, then create it all with mkdir -p. Build depth before breadth."
     }
   ],
   "interactive_examples": [
     {
-      "objective": "Recursively assign directory ownership to a service user account.",
-      "command": "chown -R devops_admin capstone",
-      "explanation": "Sets devops_admin as the owner of capstone and all its child files recursively.",
-      "expected_output": "",
-      "common_mistakes": "Forgetting the uppercase recursion flag -R.",
-      "tips": "Always run ls -la to check if the owner column shows the new service user name."
+      "objective": "Build the complete project directory structure.",
+      "scenario": "You are provisioning a new server for a web application. The first step is always creating the directory layout.",
+      "command": "mkdir -p ~/devops-project/{app/{src,config},scripts,logs,backups} && ls -la ~/devops-project/",
+      "explanation": "Brace expansion {a,b,c} creates multiple paths at once. mkdir -p handles nested paths. ls -la verifies the structure.",
+      "expected_output": "total 28\ndrwxr-xr-x 6 student student 4096 Jan 12 .\ndrwxr-xr-x 5 student student 4096 Jan 12 ..\ndrwxr-xr-x 4 student student 4096 Jan 12 app\ndrwxr-xr-x 2 student student 4096 Jan 12 backups\ndrwxr-xr-x 2 student student 4096 Jan 12 logs\ndrwxr-xr-x 2 student student 4096 Jan 12 scripts",
+      "output_explanation": "All four top-level directories are created. The app directory contains src and config subdirectories.",
+      "real_world_use": "Server provisioning playbooks (Ansible) and Terraform provisioners use this exact pattern to set up application directories.",
+      "common_mistakes": "Creating directories without -p — if a parent doesn't exist, mkdir fails with 'No such file or directory'.",
+      "tips": "Brace expansion {a,b} is a powerful shortcut: mkdir {dir1,dir2,dir3} creates three directories in one command."
     },
     {
-      "objective": "Launch a process in the background and redirect output to a log.",
-      "command": "bash app.sh > app.log &",
-      "explanation": "Spawns the app.sh script in the background, piping stdout to app.log and keeping terminal active.",
-      "expected_output": "[1] 14502",
-      "common_mistakes": "Forgetting the ampersand, which locks your foreground session.",
-      "tips": "Ensure the target log file has write permission before starting the background redirection."
+      "objective": "Create and protect a configuration file.",
+      "scenario": "Write the application's environment variables into a config file and immediately lock it down so only the owner can read it.",
+      "command": "echo 'APP_ENV=production\\nDB_HOST=localhost\\nDB_PORT=5432\\nSECRET_KEY=abc123' > ~/devops-project/app/config/app.env && chmod 600 ~/devops-project/app/config/app.env && ls -l ~/devops-project/app/config/",
+      "explanation": "echo writes config values. chmod 600 immediately restricts access. ls -l verifies -rw------- permissions.",
+      "expected_output": "total 4\n-rw------- 1 student student 52 Jan 12 app.env",
+      "output_explanation": "-rw------- confirms only the owner can read or write this file. No one else has any access.",
+      "real_world_use": "Never leave .env files at 644. Always chmod 600 immediately after creation — before any other user could read it.",
+      "common_mistakes": "Writing the config first, then forgetting to chmod 600 — leaving it readable by other users.",
+      "tips": "Chain the commands: echo '...' > .env && chmod 600 .env — use && so chmod only runs if echo succeeds."
+    },
+    {
+      "objective": "Write a deployment validation script.",
+      "scenario": "Create a script that checks if all required files and directories exist before a deployment proceeds.",
+      "command": "cat > ~/devops-project/scripts/validate.sh << 'EOF'\n#!/bin/bash\nset -e\necho 'Running pre-deployment validation...'\n[ -f ~/devops-project/app/config/app.env ] && echo '[OK] Config file found' || echo '[FAIL] Config file missing'\n[ -d ~/devops-project/logs ] && echo '[OK] Logs directory found' || echo '[FAIL] Logs directory missing'\n[ -d ~/devops-project/backups ] && echo '[OK] Backups directory found' || echo '[FAIL] Backups directory missing'\necho 'Validation complete.'\nEOF\nchmod 755 ~/devops-project/scripts/validate.sh && ~/devops-project/scripts/validate.sh",
+      "explanation": "Heredoc (<<'EOF') writes multi-line content to a file. chmod 755 makes it executable. Running it immediately tests all three checks.",
+      "expected_output": "Running pre-deployment validation...\n[OK] Config file found\n[OK] Logs directory found\n[OK] Backups directory found\nValidation complete.",
+      "output_explanation": "All three checks passed. The script correctly detected existing directories and the config file.",
+      "real_world_use": "Every production deployment pipeline includes a pre-flight validation script that runs before any changes are applied.",
+      "common_mistakes": "Not setting chmod 755 on the script before running it — results in Permission denied.",
+      "tips": "Use [OK]/[FAIL] prefixes in script output — makes it easy to grep for failures in CI logs."
+    },
+    {
+      "objective": "Log a deployment event with timestamp.",
+      "scenario": "Your deployment script should write a timestamped entry to a log file whenever it runs.",
+      "command": "TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S') && USER=$(whoami) && echo \"[$TIMESTAMP] Deployment triggered by $USER\" >> ~/devops-project/logs/deploy.log && cat ~/devops-project/logs/deploy.log",
+      "explanation": "Timestamp and user are captured with command substitution. >> appends to the log file. cat verifies the entry was written.",
+      "expected_output": "[2026-01-12 10:30:00] Deployment triggered by student",
+      "output_explanation": "The log entry shows exactly when and who triggered the deployment.",
+      "real_world_use": "Production deployment logs are audit trails — they record every deployment event for compliance and debugging.",
+      "common_mistakes": "Using > instead of >> — this overwrites the log file with each deployment, destroying the audit trail.",
+      "tips": "Append the exit code too: echo \"[$TIMESTAMP] Deployment by $USER - EXIT: $?\" >> deploy.log"
+    },
+    {
+      "objective": "Run a complete server health check.",
+      "scenario": "After setup is complete, verify the server is in a healthy state before going live.",
+      "command": "echo '=== SERVER HEALTH CHECK ===' && echo \"User: $(whoami)\" && echo \"Hostname: $(hostname)\" && echo \"Uptime: $(uptime -p)\" && echo \"Project dir exists: $(ls -d ~/devops-project 2>/dev/null && echo YES || echo NO)\" && echo \"Open ports:\" && ss -lntp | grep LISTEN",
+      "explanation": "Each echo combines a label with command substitution to report system state. The final ss -lntp shows listening ports. 2>/dev/null suppresses errors if the directory doesn't exist.",
+      "expected_output": "=== SERVER HEALTH CHECK ===\nUser: student\nHostname: devlab\nUptime: up 2 days, 3 hours\nProject dir exists: YES\nOpen ports:\nLISTEN  0  128  0.0.0.0:22  users:((\"sshd\",pid=890,fd=3))",
+      "output_explanation": "The health check report shows system identity, uptime, project directory status, and open network ports.",
+      "real_world_use": "SRE teams run health check scripts after every server provisioning to validate the environment before handing it off.",
+      "common_mistakes": "Running health checks only once — health checks should be automated and run on a schedule (cron jobs).",
+      "tips": "Save the health report to a file: ./healthcheck.sh | tee /var/log/healthcheck.log"
     }
   ],
   "lessons": [
     {
       "id": 1,
-      "title": "1. Create Capstone Workspace",
-      "definition": "The Capstone Project combines directories setup, variables configuration, and permissions.",
-      "explanation": "Create nested subfolders inside capstone to structure source codes, variables configurations, and backup stores.",
-      "instruction": "Create directories: capstone/src, capstone/configs, and capstone/backups using mkdir.",
-      "example": "mkdir -p project/app project/config project/logs",
-      "expected": "",
-      "hint": "Type: mkdir -p capstone/src capstone/configs capstone/backups",
-      "solution": "mkdir -p capstone/src capstone/configs capstone/backups",
-      "difficulty": "Advanced",
+      "title": "1. Create Project Structure",
+      "definition": "A well-organized directory structure is the foundation of any DevOps project.",
+      "explanation": "Use mkdir -p to create nested directories: app, scripts, logs, and backups.",
+      "instruction": "Create a directory ~/devops-project with subdirectories: app, scripts, logs, backups.",
+      "example": "mkdir -p ~/myapp/{src,config,tests}",
+      "expected": "devops-project",
+      "hint": "Type: mkdir -p ~/devops-project/app ~/devops-project/scripts ~/devops-project/logs ~/devops-project/backups",
+      "solution": "mkdir -p ~/devops-project/app ~/devops-project/scripts ~/devops-project/logs ~/devops-project/backups",
+      "difficulty": "Intermediate",
       "estimated_duration": "5m"
     },
     {
       "id": 2,
-      "title": "2. Create Server Configuration",
-      "definition": "Configuration files store system parameters, environment variables, and ports settings.",
-      "explanation": "Use echo to populate a simple server.conf file mapping PORT=8080.",
-      "instruction": "Write PORT=8080 into capstone/configs/server.conf.",
-      "example": "echo 'ENV=dev' > config.txt",
-      "expected": "",
-      "hint": "Type: echo 'PORT=8080' > capstone/configs/server.conf",
-      "solution": "echo 'PORT=8080' > capstone/configs/server.conf",
-      "difficulty": "Advanced",
-      "estimated_duration": "5m"
+      "title": "2. Create Protected Config",
+      "definition": "Application configuration files containing credentials must be permission 600.",
+      "explanation": "Create app.env with environment variables and immediately set 600 permissions.",
+      "instruction": "Create ~/devops-project/app/app.env with content 'ENV=production' and set permissions to 600.",
+      "example": "touch .env && chmod 600 .env",
+      "expected": "600",
+      "hint": "Type: echo 'ENV=production' > ~/devops-project/app/app.env && chmod 600 ~/devops-project/app/app.env",
+      "solution": "echo 'ENV=production' > ~/devops-project/app/app.env && chmod 600 ~/devops-project/app/app.env",
+      "difficulty": "Intermediate",
+      "estimated_duration": "6m"
     },
     {
       "id": 3,
-      "title": "3. Create Application Script",
-      "definition": "Shell scripts automate system operations, status reporting, and background processes.",
-      "explanation": "Create app.sh that prints status outputs, loop delays, and log paths.",
-      "instruction": "Write shebang and a startup message into capstone/src/app.sh.",
-      "example": "echo -e '#!/bin/bash\\necho \"Started\"' > script.sh",
-      "expected": "",
-      "hint": "Type: echo -e '#!/bin/bash\\necho \"App starting on port 8080...\"' > capstone/src/app.sh",
-      "solution": "echo -e '#!/bin/bash\\necho \"App starting on port 8080...\"' > capstone/src/app.sh",
-      "difficulty": "Advanced",
-      "estimated_duration": "5m"
+      "title": "3. Write and Execute Deploy Script",
+      "definition": "Deployment scripts automate multi-step processes as a single executable file.",
+      "explanation": "Create a deploy.sh script that echoes 'Deployment starting...' and set it to chmod 755.",
+      "instruction": "Create ~/devops-project/scripts/deploy.sh with shebang and an echo statement. Make it executable.",
+      "example": "echo '#!/bin/bash\\necho deploying' > run.sh && chmod +x run.sh",
+      "expected": "Deployment starting",
+      "hint": "Type: echo -e '#!/bin/bash\\necho Deployment starting...' > ~/devops-project/scripts/deploy.sh && chmod 755 ~/devops-project/scripts/deploy.sh && ~/devops-project/scripts/deploy.sh",
+      "solution": "echo -e '#!/bin/bash\\necho Deployment starting...' > ~/devops-project/scripts/deploy.sh && chmod 755 ~/devops-project/scripts/deploy.sh && ~/devops-project/scripts/deploy.sh",
+      "difficulty": "Intermediate",
+      "estimated_duration": "7m"
     },
     {
       "id": 4,
-      "title": "4. Set Execution Permissions",
-      "definition": "Execution flags allow scripts to run directly from shell pathways.",
-      "explanation": "Add execute (+x) permission flag to the application script.",
-      "instruction": "Make the script capstone/src/app.sh executable.",
-      "example": "chmod +x backup.sh",
-      "expected": "",
-      "hint": "Type: chmod +x capstone/src/app.sh",
-      "solution": "chmod +x capstone/src/app.sh",
-      "difficulty": "Advanced",
-      "estimated_duration": "4m"
+      "title": "4. Log a Deployment Event",
+      "definition": "Deployment logs record when and by whom changes were made to a system.",
+      "explanation": "Capture the timestamp with $() and write to deploy.log using >>.",
+      "instruction": "Append a timestamped deployment entry to ~/devops-project/logs/deploy.log.",
+      "example": "echo \"[$(date)] Deploy\" >> app.log",
+      "expected": "student",
+      "hint": "Type: echo \"[$(date)] Deployment by $(whoami)\" >> ~/devops-project/logs/deploy.log",
+      "solution": "echo \"[$(date)] Deployment by $(whoami)\" >> ~/devops-project/logs/deploy.log",
+      "difficulty": "Intermediate",
+      "estimated_duration": "6m"
     },
     {
       "id": 5,
-      "title": "5. Create Administration Account",
-      "definition": "Administrative operations require dedicated restricted service accounts.",
-      "explanation": "Add a new simulation system user account named devops_admin.",
-      "instruction": "Add a new system user named devops_admin. (Use simulated useradd)",
-      "example": "useradd admin_user",
-      "expected": "",
-      "hint": "Type: useradd devops_admin",
-      "solution": "useradd devops_admin",
-      "difficulty": "Advanced",
-      "estimated_duration": "5m"
+      "title": "5. Backup Config File",
+      "definition": "Backing up config files before changes ensures you can recover if something breaks.",
+      "explanation": "Copy app.env to backups/ with a timestamped filename.",
+      "instruction": "Copy app.env to ~/devops-project/backups/app.env.bak.",
+      "example": "cp config.conf backups/config.conf.bak",
+      "expected": "app.env.bak",
+      "hint": "Type: cp ~/devops-project/app/app.env ~/devops-project/backups/app.env.bak",
+      "solution": "cp ~/devops-project/app/app.env ~/devops-project/backups/app.env.bak",
+      "difficulty": "Intermediate",
+      "estimated_duration": "4m"
     },
     {
       "id": 6,
-      "title": "6. Reassign Workspace Ownership",
-      "definition": "Securing configurations requires assigning file ownership to the service user.",
-      "explanation": "Use chown to reassign the capstone folder tree owner to devops_admin.",
-      "instruction": "Recursively assign ownership of the capstone folder to devops_admin.",
-      "example": "chown -R admin_user /var/www",
-      "expected": "",
-      "hint": "Type: chown -R devops_admin capstone",
-      "solution": "chown -R devops_admin capstone",
-      "difficulty": "Advanced",
-      "estimated_duration": "5m"
+      "title": "6. Verify Project Permissions",
+      "definition": "Permission auditing ensures that all files have the correct access levels before going live.",
+      "explanation": "Run ls -la recursively to verify permissions across your entire project structure.",
+      "instruction": "List all files in ~/devops-project/ with permissions using ls -la.",
+      "example": "ls -la /var/www/html",
+      "expected": "app.env",
+      "hint": "Type: ls -la ~/devops-project/ && ls -la ~/devops-project/app/ && ls -la ~/devops-project/scripts/",
+      "solution": "ls -la ~/devops-project/ && ls -la ~/devops-project/app/ && ls -la ~/devops-project/scripts/",
+      "difficulty": "Intermediate",
+      "estimated_duration": "4m"
     },
     {
       "id": 7,
-      "title": "7. Lock Configuration Secrets",
-      "definition": "Configuration values containing passwords or ports should be owner-read only.",
-      "explanation": "chmod 600 restricts access to only the file owner, hiding parameters from other system users.",
-      "instruction": "Change capstone/configs/server.conf permissions to 600.",
-      "example": "chmod 600 auth.json",
-      "expected": "",
-      "hint": "Type: chmod 600 capstone/configs/server.conf",
-      "solution": "chmod 600 capstone/configs/server.conf",
-      "difficulty": "Advanced",
+      "title": "7. Run Process Health Check",
+      "definition": "Verifying running processes confirms services started correctly after deployment.",
+      "explanation": "Use ps aux and ss -lntp to check what is running and what ports are open.",
+      "instruction": "Check all listening ports using ss -lntp.",
+      "example": "ss -lntu",
+      "expected": "LISTEN",
+      "hint": "Type: ss -lntp",
+      "solution": "ss -lntp",
+      "difficulty": "Intermediate",
       "estimated_duration": "4m"
     },
     {
       "id": 8,
-      "title": "8. Write Archival Script",
-      "definition": "Backup scripts copy source structures into compressed storage archives.",
-      "explanation": "Create backup.sh containing simple files cloning steps.",
-      "instruction": "Write shebang and copy instructions to capstone/src/backup.sh.",
-      "example": "echo -e '#!/bin/bash\\ntar -czf backup.tar.gz src/' > backup.sh",
-      "expected": "",
-      "hint": "Type: echo -e '#!/bin/bash\\ncp -R capstone/src capstone/backups/' > capstone/src/backup.sh",
-      "solution": "echo -e '#!/bin/bash\\ncp -R capstone/src capstone/backups/' > capstone/src/backup.sh",
-      "difficulty": "Advanced",
-      "estimated_duration": "5m"
+      "title": "8. Test Network Connectivity",
+      "definition": "Connectivity tests verify that the server can reach required external services.",
+      "explanation": "Use ping to test the network stack and curl to test HTTP endpoints.",
+      "instruction": "Ping localhost 4 times to verify network stack is functional.",
+      "example": "ping -c 3 8.8.8.8",
+      "expected": "bytes from",
+      "hint": "Type: ping -c 4 localhost",
+      "solution": "ping -c 4 localhost",
+      "difficulty": "Intermediate",
+      "estimated_duration": "3m"
     },
     {
       "id": 9,
-      "title": "9. Script Executable Flag",
-      "definition": "Backup utilities must be executable to run inside automation cron loops.",
-      "explanation": "Add execution permission flag to backup.sh.",
-      "instruction": "Set executable permissions on capstone/src/backup.sh.",
-      "example": "chmod +x deploy.sh",
-      "expected": "",
-      "hint": "Type: chmod +x capstone/src/backup.sh",
-      "solution": "chmod +x capstone/src/backup.sh",
+      "title": "9. Write a Complete Health Check Script",
+      "definition": "A health check script combines multiple verification steps into a single executable report.",
+      "explanation": "Write healthcheck.sh that verifies: user identity, project directory exists, app.env is 600, and lists listening ports.",
+      "instruction": "Create and run ~/devops-project/scripts/healthcheck.sh that reports environment status.",
+      "example": "echo '#!/bin/bash\\necho status' > check.sh && chmod +x check.sh",
+      "expected": "Health Check",
+      "hint": "Type: echo -e '#!/bin/bash\\necho === Health Check ===\\necho User: $(whoami)\\n[ -f ~/devops-project/app/app.env ] && echo Config: OK || echo Config: MISSING\\nss -lntp' > ~/devops-project/scripts/healthcheck.sh && chmod 755 ~/devops-project/scripts/healthcheck.sh && ~/devops-project/scripts/healthcheck.sh",
+      "solution": "echo -e '#!/bin/bash\\necho === Health Check ===\\necho User: $(whoami)\\n[ -f ~/devops-project/app/app.env ] && echo Config: OK || echo Config: MISSING\\nss -lntp' > ~/devops-project/scripts/healthcheck.sh && chmod 755 ~/devops-project/scripts/healthcheck.sh && ~/devops-project/scripts/healthcheck.sh",
       "difficulty": "Advanced",
-      "estimated_duration": "4m"
+      "estimated_duration": "10m"
     },
     {
       "id": 10,
-      "title": "10. Test System Backup",
-      "definition": "Validating backups before deployment checks copy scripts syntax.",
-      "explanation": "Run backup.sh command to copy source directories into backup folders.",
-      "instruction": "Run the backup script using the bash interpreter.",
-      "example": "bash deploy.sh",
-      "expected": "",
-      "hint": "Type: bash capstone/src/backup.sh",
-      "solution": "bash capstone/src/backup.sh",
-      "difficulty": "Advanced",
-      "estimated_duration": "5m"
-    },
-    {
-      "id": 11,
-      "title": "11. Verify Network Ports Bindings",
-      "definition": "Verify active port allocations using ss or netstat.",
-      "explanation": "Confirm which socket ports are active and open.",
-      "instruction": "Display active TCP listening socket routes.",
-      "example": "netstat -plnt",
-      "expected": "State",
-      "hint": "Type: ss -lnt",
-      "solution": "ss -lnt",
-      "difficulty": "Advanced",
-      "estimated_duration": "4m"
-    },
-    {
-      "id": 12,
-      "title": "12. Create Log Rotator",
-      "definition": "Log rotation clears old outputs preventing disk depletion.",
-      "explanation": "Write rotation scripts to empty log files periodically.",
-      "instruction": "Create capstone/src/rotate.sh containing echo command clearing app logs.",
-      "example": "echo -e '#!/bin/bash\\ncat /dev/null > error.log' > rotate.sh",
-      "expected": "",
-      "hint": "Type: echo -e '#!/bin/bash\\necho \"\" > capstone/app.log' > capstone/src/rotate.sh",
-      "solution": "echo -e '#!/bin/bash\\necho \"\" > capstone/app.log' > capstone/src/rotate.sh",
-      "difficulty": "Advanced",
-      "estimated_duration": "5m"
-    },
-    {
-      "id": 13,
-      "title": "13. Deploy Application Daemon",
-      "definition": "Running scripts in background launches them as persistent services.",
-      "explanation": "Launch app.sh redirecting outputs to capstone/app.log.",
-      "instruction": "Launch capstone/src/app.sh in background, redirecting stdout to capstone/app.log.",
-      "example": "bash script.sh > out.log &",
-      "expected": "[1]",
-      "hint": "Type: bash capstone/src/app.sh > capstone/app.log &",
-      "solution": "bash capstone/src/app.sh > capstone/app.log &",
-      "difficulty": "Advanced",
-      "estimated_duration": "5m"
-    },
-    {
-      "id": 14,
-      "title": "14. Inspect Active Log Output",
-      "definition": "tail views trailing parts of active logs to diagnose startup issues.",
-      "explanation": "Prints log tail configurations containing application output lines.",
-      "instruction": "Inspect active log output of capstone/app.log.",
-      "example": "tail -n 10 server.log",
-      "expected": "App starting on port 8080...",
-      "hint": "Type: cat capstone/app.log",
-      "solution": "cat capstone/app.log",
-      "difficulty": "Advanced",
-      "estimated_duration": "4m"
-    },
-    {
-      "id": 15,
-      "title": "15. Complete Capstone Review",
-      "definition": "Final validation of running background configurations and variables settings.",
-      "explanation": "Run process audit to check background execution is active.",
-      "instruction": "Expose background jobs list status to verify app completion.",
-      "example": "ps aux | grep script",
-      "expected": "Running",
-      "hint": "Type: jobs",
-      "solution": "jobs",
-      "difficulty": "Advanced",
-      "estimated_duration": "5m"
+      "title": "10. Final Project Audit",
+      "definition": "A final audit verifies the complete project is correctly structured, secured, and documented.",
+      "explanation": "Run ls -laR to recursively list all files with permissions across the entire project.",
+      "instruction": "Recursively list all files and permissions in ~/devops-project/.",
+      "example": "ls -laR /var/app/",
+      "expected": "scripts",
+      "hint": "Type: ls -laR ~/devops-project/",
+      "solution": "ls -laR ~/devops-project/",
+      "difficulty": "Intermediate",
+      "estimated_duration": "3m"
     }
   ],
   "exercises": [
     {
-      "title": "Full system backup automation",
-      "problem": "Create a scheduled backup task that copies your config files to the backup drive every hour.",
-      "difficulty": "Advanced",
-      "hint": "Use a cron expression or a while loop containing sleep.",
-      "expected_result": "Autosave backup file instances visible in backups/.",
-      "objective": "Integrate scheduling automation scripts."
+      "title": "Project Directory Audit",
+      "problem": "List all files in the devops-project recursively and verify: app.env is 600, deploy.sh and healthcheck.sh are 755, and all directories are 755.",
+      "difficulty": "easy",
+      "hint": "Use ls -laR ~/devops-project/. Check permissions visually: -rw------- is 600, -rwxr-xr-x is 755.",
+      "expected_result": "Correct permissions on all files as specified.",
+      "objective": "Practice permission auditing — a key SRE skill."
     },
     {
-      "title": "Reassign and inspect permissions",
-      "problem": "Check chown modifications results recursively to ensure all subfiles are restricted.",
-      "difficulty": "Intermediate",
-      "hint": "Inspect using `ls -laR capstone`.",
-      "expected_result": "Owner show as devops_admin for all directories.",
-      "objective": "Learn verification patterns."
+      "title": "Deployment Log Analysis",
+      "problem": "Your deploy.log contains multiple entries. Count how many deployments occurred using wc -l. Then show only the last 3 entries using tail.",
+      "difficulty": "easy",
+      "hint": "wc -l ~/devops-project/logs/deploy.log counts lines. tail -3 ~/devops-project/logs/deploy.log shows last 3.",
+      "expected_result": "Line count and last 3 log entries displayed.",
+      "objective": "Practice log analysis — critical for post-deployment reviews."
     },
     {
-      "title": "Simulate log rotation failures",
-      "problem": "Test log rotator output if target log path does not exist, and write error logs.",
-      "difficulty": "Advanced",
-      "hint": "Evaluate directory check before truncating.",
-      "expected_result": "Outputs error logs when missing directories are tested.",
-      "objective": "Integrate error handlers inside automation utilities."
+      "title": "Add Argument Support to Deploy Script",
+      "problem": "Modify deploy.sh to accept one argument (environment name). If no argument given, print usage and exit 1. If given, print 'Deploying to ENV'.",
+      "difficulty": "medium",
+      "hint": "Add `if [ $# -eq 0 ]; then echo 'Usage: deploy.sh <env>'; exit 1; fi` then `echo \"Deploying to $1\"`",
+      "expected_result": "./deploy.sh staging prints 'Deploying to staging'. Without args prints usage.",
+      "objective": "Add argument validation to scripts — an essential production scripting pattern."
     },
     {
-      "title": "Audit active network ports",
-      "problem": "Inspect listening sockets on the host before and after starting your app daemon.",
-      "difficulty": "Intermediate",
-      "hint": "Compare `ss -lnt` output frames.",
-      "expected_result": "Port 8080 binds only when daemon script is running.",
-      "objective": "Master ports lifecycle debugging."
+      "title": "Automated Config Backup",
+      "problem": "Write a script backup.sh that copies app.env to backups/ with a timestamp in the filename (e.g., app.env.20260112_1030). Verify the backup exists.",
+      "difficulty": "medium",
+      "hint": "TIMESTAMP=$(date +%Y%m%d_%H%M) && cp ~/devops-project/app/app.env ~/devops-project/backups/app.env.$TIMESTAMP",
+      "expected_result": "A timestamped backup file appears in the backups/ directory.",
+      "objective": "Implement a timestamped backup pattern used in real deployment workflows."
     },
     {
-      "title": "Background daemon validation",
-      "problem": "Audit variables export parameters mapping within a running background job.",
-      "difficulty": "Advanced",
-      "hint": "Run `ps -ef | grep app.sh`.",
-      "expected_result": "Confirm PID matches active jobs list.",
-      "objective": "Master background debugging."
+      "title": "Process Count Reporter",
+      "problem": "Write a script that reports: total running processes, your own processes count, and current system load average.",
+      "difficulty": "medium",
+      "hint": "Total: ps aux | wc -l. Your processes: ps aux | grep $(whoami) | wc -l. Load: cat /proc/loadavg or uptime.",
+      "expected_result": "Three-line report with process counts and load average.",
+      "objective": "Combine process inspection commands into a meaningful report."
     },
     {
-      "title": "Secure workspace cleanup",
-      "problem": "Safely archive all configuration files before truncating workspace blocks.",
-      "difficulty": "Intermediate",
-      "hint": "Run cp backups before executing deletions.",
-      "expected_result": "Files successfully backed up before cleanup.",
-      "objective": "Learn safe environment management practices."
+      "title": "Port Availability Checker",
+      "problem": "Write a script check_port.sh that accepts a port number as an argument. It should check if that port is in LISTEN state and print OPEN or CLOSED.",
+      "difficulty": "hard",
+      "hint": "Use `ss -lntp | grep :$1` in the if condition. If it finds a match, print OPEN; else CLOSED.",
+      "expected_result": "./check_port.sh 22 prints OPEN. ./check_port.sh 9999 prints CLOSED.",
+      "objective": "Build a reusable port checker utility script."
+    },
+    {
+      "title": "Complete Deployment Simulation",
+      "problem": "Write a full deploy.sh that: (1) validates .env exists, (2) backs up current config, (3) logs the deployment, (4) checks port 22 is listening, (5) prints 'Deployment successful'.",
+      "difficulty": "hard",
+      "hint": "Combine file existence checks ([ -f ]), cp for backup, echo >> for logging, ss -lntp | grep for port check, all with && or if/else.",
+      "expected_result": "Script runs all 5 steps sequentially and prints 'Deployment successful' at the end.",
+      "objective": "Build a production-quality multi-step deployment script from scratch."
+    },
+    {
+      "title": "Rollback Script",
+      "problem": "Write rollback.sh that: checks if a backup exists in backups/, copies it back over app.env, logs the rollback event, and confirms the config was restored.",
+      "difficulty": "hard",
+      "hint": "Find the latest backup with ls backups/app.env.* | sort | tail -1. Restore with cp. Log with echo >> deploy.log.",
+      "expected_result": "Rollback script restores the most recent backup and logs the event.",
+      "objective": "Implement a rollback mechanism — an essential safety feature in all deployment pipelines."
+    },
+    {
+      "title": "Cron Job Setup",
+      "problem": "Configure your healthcheck.sh to run every 5 minutes using cron. Check the crontab entry, then verify the script produces valid output.",
+      "difficulty": "challenge",
+      "hint": "crontab -e to edit. Add: */5 * * * * ~/devops-project/scripts/healthcheck.sh >> ~/devops-project/logs/health.log 2>&1",
+      "expected_result": "crontab -l shows the entry. health.log grows every 5 minutes.",
+      "objective": "Understand how to schedule automation with cron — used for health monitoring and backup jobs."
+    },
+    {
+      "title": "Full Server Provisioning Script",
+      "problem": "Write a single script provision.sh that: creates the complete project directory structure, writes app.env, sets all correct permissions (600 for .env, 755 for scripts), and runs the health check. The script should be completely idempotent (safe to run multiple times).",
+      "difficulty": "challenge",
+      "hint": "Use mkdir -p (safe to re-run), conditional creation for files (if [ ! -f .env ]), chmod on all files, and call ./healthcheck.sh at the end.",
+      "expected_result": "Running provision.sh twice produces the same result with no errors.",
+      "objective": "Build an idempotent server provisioning script — the foundation of Infrastructure as Code."
     }
   ],
   "quiz": [
     {
-      "question": "What is the primary role of the Capstone project?",
+      "question": "What does the `&&` operator do in `mkdir dir && cd dir`?",
+      "type": "MCQ",
       "options": [
-        "Deploy and scale clusters",
-        "Integrate file operations, permissions, scripting, and networking into a deployment scenario",
-        "Configure AWS networks gateways",
-        "Write frontend frameworks pages"
+        "Runs both commands simultaneously",
+        "Runs cd dir only if mkdir dir succeeded",
+        "Runs mkdir dir only if cd dir fails",
+        "Combines the two commands into one"
       ],
-      "answer": "Integrate file operations, permissions, scripting, and networking into a deployment scenario",
-      "explanation": "The capstone aggregates all sysadmin skills to establish a production environment from scratch.",
+      "answer": "Runs cd dir only if mkdir dir succeeded",
+      "explanation": "&& is 'AND' — the second command runs only if the first exits with code 0 (success). If mkdir fails, cd is skipped.",
       "incorrect_explanations": {
-        "Deploy and scale clusters": "This is a Kubernetes task, not a basic Linux capstone.",
-        "Configure AWS networks gateways": "This is a cloud engineer path module.",
-        "Write frontend frameworks pages": "DevLab frontend relies on Next.js pages, not sysadmin commands."
+        "Runs both commands simultaneously": "& (single ampersand) runs in background. && is sequential conditional.",
+        "Runs mkdir dir only if cd dir fails": "This describes || (OR), not && (AND).",
+        "Combines the two commands into one": "&& doesn't combine — it chains sequentially with success dependency."
       }
     },
     {
-      "question": "What permission setting is set on config files to ensure they are owner-read only?",
-      "options": [
-        "777",
-        "755",
-        "600",
-        "444"
-      ],
-      "answer": "600",
-      "explanation": "600 (owner read/write) blocks all group and public reads, protecting access keys.",
+      "question": "Which command creates nested directories in a single operation?",
+      "type": "MCQ",
+      "options": ["mkdir dir", "mkdir -p a/b/c", "touch a/b/c", "mkdir -r a/b/c"],
+      "answer": "mkdir -p a/b/c",
+      "explanation": "-p (parents) creates parent directories as needed. Without -p, mkdir fails if parent doesn't exist.",
       "incorrect_explanations": {
-        "777": "Permits public writes and is highly insecure.",
-        "755": "Allows everyone to read and execute the file.",
-        "444": "Makes the file read-only for everyone, including the owner."
+        "mkdir dir": "Without -p, mkdir only creates a single directory and fails if the parent doesn't exist.",
+        "touch a/b/c": "touch creates files, not directories.",
+        "mkdir -r a/b/c": "-r is not a valid mkdir flag. The correct flag is -p."
       }
     },
     {
-      "question": "Which flag is appended to chown to recursively modify ownership inside folders?",
+      "question": "You create app.env and write a database password into it. What should you do immediately after?",
+      "type": "Scenario",
       "options": [
-        "-r",
-        "-v",
-        "-f",
-        "-R"
+        "chmod 777 app.env to make it accessible",
+        "chmod 600 app.env to restrict access to owner only",
+        "chown root app.env to protect it",
+        "mv app.env /etc/ for system-wide access"
       ],
-      "answer": "-R",
-      "explanation": "-R is the standard recursive flag for ownership and permission changes.",
+      "answer": "chmod 600 app.env to restrict access to owner only",
+      "explanation": "600 = rw------- means only the owner can read or write. Other users on the system have no access. This protects credentials.",
       "incorrect_explanations": {
-        "-r": "Not the correct recursion flag.",
-        "-v": "Verbose logs changes details.",
-        "-f": "Force option."
+        "chmod 777 app.env to make it accessible": "777 gives everyone read/write/execute — anyone on the system could read your database password.",
+        "chown root app.env to protect it": "Transferring ownership to root doesn't help if permissions are too open.",
+        "mv app.env /etc/ for system-wide access": "Credentials should never be placed in /etc — that directory is often world-readable."
       }
     },
     {
-      "question": "How do you run a shell script in the background while redirecting stdout logs?",
-      "options": [
-        "bash script.sh > output.log &",
-        "bash script.sh >> output.log",
-        "bash script.sh & > output.log",
-        "systemctl start script.sh"
-      ],
-      "answer": "bash script.sh > output.log &",
-      "explanation": "> output.log redirects stdout, and & tells the shell to run it in the background.",
+      "question": "Which operator appends command output to a log file without overwriting existing content?",
+      "type": "MCQ",
+      "options": [">", ">>", "|", "&"],
+      "answer": ">>",
+      "explanation": ">> appends to the end of the file. > truncates (overwrites) the file completely. This is critical for log files where history must be preserved.",
       "incorrect_explanations": {
-        "bash script.sh >> output.log": "Runs script in the foreground, locking the terminal.",
-        "bash script.sh & > output.log": "Syntax is invalid since the ampersand should be at the end.",
-        "systemctl start script.sh": "systemctl only runs configured system services scripts, not raw path files."
+        ">": "> overwrites the entire file — you would lose all previous log entries.",
+        "|": "| pipes output to another command's input — not to a file.",
+        "&": "& sends the command to the background — not related to file redirection."
       }
     },
     {
-      "question": "What is the purpose of log rotation?",
+      "question": "You want to verify that deploy.sh is executable before running it. What do you check?",
+      "type": "MCQ",
       "options": [
-        "Increase application execution speed",
-        "Prevent disk space depletion by archiving/truncating log files",
-        "Encrypt logs directories contents",
-        "Transmit log outputs to database tables"
+        "cat deploy.sh",
+        "ls -l deploy.sh — look for x in the permission string",
+        "file deploy.sh",
+        "echo deploy.sh"
       ],
-      "answer": "Prevent disk space depletion by archiving/truncating log files",
-      "explanation": "Active logs are truncated or rotated to keep storage consumption within boundary configurations.",
+      "answer": "ls -l deploy.sh — look for x in the permission string",
+      "explanation": "ls -l shows the permission string. If you see -rwxr-xr-x (x in positions 4, 7, 10), the file is executable.",
       "incorrect_explanations": {
-        "Increase application execution speed": "Has no effect on execution speed.",
-        "Encrypt logs directories contents": "Rotators do not encrypt files.",
-        "Transmit log outputs to database tables": "Rotators write to file storage, not DB."
+        "cat deploy.sh": "cat shows file content but not permissions.",
+        "file deploy.sh": "file shows file type (text, binary) but not permissions.",
+        "echo deploy.sh": "echo just prints the filename as text — no information about permissions."
       }
     },
     {
-      "question": "Which command is used to inspect active TCP socket binds?",
+      "question": "What does `ps aux | grep nginx | grep -v grep | wc -l` count?",
+      "type": "Output Prediction",
       "options": [
-        "ip route",
-        "ss -lnt",
-        "ps aux",
-        "jobs"
+        "The number of lines in /etc/nginx config",
+        "The number of nginx processes currently running",
+        "The size of the nginx binary",
+        "The number of grep processes running"
       ],
-      "answer": "ss -lnt",
-      "explanation": "ss -lnt lists all active TCP listening sockets.",
+      "answer": "The number of nginx processes currently running",
+      "explanation": "ps aux lists all processes → grep nginx filters for nginx → grep -v grep removes the grep command itself → wc -l counts remaining lines (= nginx processes).",
       "incorrect_explanations": {
-        "ip route": "Displays gateway routing information.",
-        "ps aux": "Lists active processes.",
-        "jobs": "Lists shell background tasks."
+        "The number of lines in /etc/nginx config": "This pipeline inspects running processes, not config files.",
+        "The size of the nginx binary": "wc -l counts lines, not file sizes. Use wc -c for bytes.",
+        "The number of grep processes running": "grep -v grep removes grep itself from the count."
       }
     },
     {
-      "question": "True or False: Deleting a log file is always identical to truncating it using `echo > file`.",
+      "question": "Scenario: Your deploy script ran successfully but the app isn't responding. What is your first check?",
+      "type": "Scenario",
       "options": [
-        "True",
-        "False"
+        "Reboot the server",
+        "Check ss -lntp to see if the app is listening on its expected port",
+        "Delete and redeploy everything",
+        "Check DNS settings first"
       ],
-      "answer": "False",
-      "explanation": "Deleting standard logs breaks the process holding the file descriptor, whereas truncating clears contents safely.",
+      "answer": "Check ss -lntp to see if the app is listening on its expected port",
+      "explanation": "ss -lntp confirms if the application process bound to the expected port. No LISTEN = process crashed or configured wrong port.",
       "incorrect_explanations": {
-        "True": "Deleting files causes log write failures until process restarts."
+        "Reboot the server": "Rebooting destroys the current state and any debugging evidence. Always investigate first.",
+        "Delete and redeploy everything": "This destroys evidence. Always diagnose before making changes.",
+        "Check DNS settings first": "DNS issues cause name resolution failures. The first check should be local port binding."
       }
     },
     {
-      "question": "Which directory commonly stores deployment executable script source files?",
+      "question": "What makes a provisioning script 'idempotent'?",
+      "type": "MCQ",
       "options": [
-        "configs/",
-        "src/",
-        "backups/",
-        "logs/"
+        "It runs faster on each subsequent run",
+        "Running it multiple times produces the same result without errors",
+        "It only runs once and refuses to run again",
+        "It uses variables instead of hardcoded values"
       ],
-      "answer": "src/",
-      "explanation": "src/ (source) is the standard folder for project binaries and script files.",
+      "answer": "Running it multiple times produces the same result without errors",
+      "explanation": "Idempotent scripts are safe to re-run. Commands like mkdir -p and conditional file creation make scripts idempotent — the result is the same whether run once or ten times.",
       "incorrect_explanations": {
-        "configs/": "Used for configuration files, not script source files.",
-        "backups/": "Used for archived files.",
-        "logs/": "Used for operational log files."
+        "It runs faster on each subsequent run": "Speed is not related to idempotency.",
+        "It only runs once and refuses to run again": "This is the opposite of idempotent — idempotent means safe to run many times.",
+        "It uses variables instead of hardcoded values": "Variables improve maintainability but are not related to idempotency."
       }
     },
     {
-      "question": "What is the function of the `jobs` command in process controls?",
+      "question": "Which command shows a timestamped audit log of the last 5 deployment events in deploy.log?",
+      "type": "Command Prediction",
       "options": [
-        "Displays CPU cycles",
-        "Lists background tasks spawned by the current shell",
-        "Terminates stuck processes",
-        "Configures network routes"
+        "cat deploy.log",
+        "head -5 deploy.log",
+        "tail -5 deploy.log",
+        "ls -5 deploy.log"
       ],
-      "answer": "Lists background tasks spawned by the current shell",
-      "explanation": "jobs lists active shell-controlled processes like sleep or bg tasks.",
+      "answer": "tail -5 deploy.log",
+      "explanation": "tail -N shows the last N lines — perfect for viewing recent log entries. Deployments append to the end, so tail shows the most recent ones.",
       "incorrect_explanations": {
-        "Displays CPU cycles": "top or ps displays CPU cycles.",
-        "Terminates stuck processes": "kill terminates processes.",
-        "Configures network routes": "ip route handles routing."
+        "cat deploy.log": "cat shows the entire file — impractical for large log files.",
+        "head -5 deploy.log": "head shows the FIRST 5 lines (oldest entries) — not the most recent.",
+        "ls -5 deploy.log": "ls is for listing directory contents, not reading file content."
       }
     },
     {
-      "question": "Scenario: You deployed an application daemon in background redirecting to `app.log`. What command lets you audit the real-time startup lines?",
+      "question": "You want to copy app.env with a timestamp in the backup name. Which command is correct?",
+      "type": "Command Prediction",
       "options": [
-        "cat app.log",
-        "tail -f app.log",
-        "ss -lntp",
-        "ps aux"
+        "cp app.env app.env.backup",
+        "cp app.env backups/app.env.$(date +%Y%m%d)",
+        "mv app.env backups/",
+        "copy app.env backups/"
       ],
-      "answer": "tail -f app.log",
-      "explanation": "tail -f follows the file in real-time as lines are appended, displaying startup logs.",
+      "answer": "cp app.env backups/app.env.$(date +%Y%m%d)",
+      "explanation": "$(date +%Y%m%d) captures the current date in YYYYMMDD format. Combined with cp, this creates a timestamped backup file.",
       "incorrect_explanations": {
-        "cat app.log": "Prints static contents once, does not trace active updates.",
-        "ss -lntp": "Audits active ports, does not output file log texts.",
-        "ps aux": "Audits active PIDs, does not display app console logs."
+        "cp app.env app.env.backup": "This works but uses a generic name — multiple backups overwrite each other.",
+        "mv app.env backups/": "mv moves and removes the original — you'd lose the active config file.",
+        "copy app.env backups/": "copy is a Windows command. Linux uses cp."
+      }
+    },
+    {
+      "question": "What does `2>&1` mean in `./script.sh > output.log 2>&1`?",
+      "type": "MCQ",
+      "options": [
+        "Run the script twice",
+        "Redirect stderr (2) to the same place as stdout (1) — capturing all output",
+        "Split output between two files",
+        "Run in background with 2 threads"
+      ],
+      "answer": "Redirect stderr (2) to the same place as stdout (1) — capturing all output",
+      "explanation": "File descriptor 1 is stdout, 2 is stderr. 2>&1 merges stderr into stdout so both are written to output.log. Without it, error messages would go to the terminal.",
+      "incorrect_explanations": {
+        "Run the script twice": "2>&1 is a redirection operator, not a loop.",
+        "Split output between two files": "2>&1 combines both streams into one destination, not splits them.",
+        "Run in background with 2 threads": "& at the end runs in background. 2>&1 is only about file descriptors."
+      }
+    },
+    {
+      "question": "Your rollback script needs to find the most recent backup file in backups/. Which command gets the filename?",
+      "type": "Command Prediction",
+      "options": [
+        "ls backups/",
+        "ls backups/ | sort | head -1",
+        "ls backups/ | sort | tail -1",
+        "find backups/ -type f"
+      ],
+      "answer": "ls backups/ | sort | tail -1",
+      "explanation": "ls lists files. sort alphabetically orders them (timestamps in YYYYMMDD format sort chronologically). tail -1 gets the last line = most recent file.",
+      "incorrect_explanations": {
+        "ls backups/": "Lists all files but doesn't select the most recent one.",
+        "ls backups/ | sort | head -1": "head -1 gets the FIRST (oldest) file after sort, not the most recent.",
+        "find backups/ -type f": "find lists files but doesn't select the most recent — you'd need additional sorting."
       }
     }
   ],
   "resources": {
-    "summary": "The Capstone project integrates nested directories creation, file permissions restriction chmod 600, owner delegation chown -R, background execution script redirects, port checks ss, and logs rotation script validations.",
-    "cheat_sheet": "mkdir -p [dirs] - build paths\nchmod 600 [file] - restrict permissions\nchown -R [owner] [dir] - change owner recursively\nbash [script].sh > [log] &\nss -lnt - check ports\njobs - check background jobs",
-    "commands_table": [
+    "summary": "The capstone project brings together all Linux skills: file navigation, permissions, bash scripting, process management, and networking — in a realistic DevOps server provisioning workflow. This is the foundation of Infrastructure as Code and production environment management.",
+    "links": [
       {
-        "name": "chown",
-        "syntax": "chown -R [owner] [path]",
-        "description": "Delegates workspace ownership recursively."
+        "title": "OverTheWire: Bandit",
+        "url": "https://overthewire.org/wargames/bandit/",
+        "description": "Gamified Linux challenges from beginner to advanced — perfect for solidifying CLI skills."
       },
       {
-        "name": "ss",
-        "syntax": "ss -lnt",
-        "description": "Verifies network listening socket binds."
+        "title": "Killercoda Linux Scenarios",
+        "url": "https://killercoda.com/",
+        "description": "Interactive Linux and DevOps labs in a browser — great for extra practice."
       },
       {
-        "name": "jobs",
-        "syntax": "jobs",
-        "description": "Audits active background jobs states."
+        "title": "DevOps Roadmap",
+        "url": "https://roadmap.sh/devops",
+        "description": "Complete visual DevOps learning roadmap — shows where Linux fits in the bigger picture."
+      },
+      {
+        "title": "TLDR Pages",
+        "url": "https://tldr.sh/",
+        "description": "Simplified command examples for quick reference when working in the terminal."
+      },
+      {
+        "title": "Bash Reference Manual",
+        "url": "https://www.gnu.org/software/bash/manual/",
+        "description": "Complete official bash documentation for all scripting features."
       }
     ],
-    "revision_notes": [
-      "Always secure secrets using chmod 600 before launching scripts.",
-      "Redirect stdout using > filename, and stderr using 2> filename.",
-      "Verify jobs status inside terminal to confirm daemon loops remain active."
+    "cheat_sheet": "# Linux Capstone Quick Reference\n\n## Project Setup\nmkdir -p project/{app/config,scripts,logs,backups}\nchmod 600 project/app/config/app.env\nchmod 755 project/scripts/*.sh\n\n## Pipe Chaining Operators\ncmd1 | cmd2     # Pipe stdout to cmd2\ncmd1 && cmd2    # Run cmd2 only if cmd1 succeeds\ncmd1 || cmd2    # Run cmd2 only if cmd1 fails\ncmd1 ; cmd2     # Always run both\n> file          # Redirect (overwrite)\n>> file         # Append to file\n2>&1            # Merge stderr into stdout\n\n## Logging Pattern\necho \"[$(date '+%Y-%m-%d %H:%M:%S')] Event by $(whoami)\" >> app.log\n\n## Timestamped Backup\ncp config.env backups/config.env.$(date +%Y%m%d_%H%M)\n\n## Health Check Pattern\n[ -f config.env ] && echo 'Config: OK' || echo 'Config: MISSING'\nss -lntp | grep :PORT && echo 'Port OPEN' || echo 'Port CLOSED'\n\n## Background with Logging\n./script.sh > output.log 2>&1 &\ntail -f output.log   # Monitor in real-time\n\n## Idempotent Directory Creation\nmkdir -p dir    # Safe to run multiple times\n[ -d dir ] || mkdir dir   # Only create if missing\n[ -f file ] || touch file # Only create file if missing",
+    "commands_table": [
+      { "name": "mkdir -p", "syntax": "mkdir -p path/to/nested/dir", "description": "Create nested directories safely." },
+      { "name": "|", "syntax": "cmd1 | cmd2", "description": "Pipe output of cmd1 to input of cmd2." },
+      { "name": "&&", "syntax": "cmd1 && cmd2", "description": "Run cmd2 only if cmd1 succeeds." },
+      { "name": ">>", "syntax": "cmd >> file", "description": "Append command output to a file." },
+      { "name": "2>&1", "syntax": "cmd > file 2>&1", "description": "Redirect both stdout and stderr to file." },
+      { "name": "tee", "syntax": "cmd | tee file", "description": "Print output AND save to file simultaneously." },
+      { "name": "tail -f", "syntax": "tail -f logfile", "description": "Follow a log file in real-time." },
+      { "name": "wc -l", "syntax": "cmd | wc -l", "description": "Count the number of lines in output." }
     ],
-    "beginner_mistakes": [
-      "Forgetting to allocate execution permissions on backup.sh.",
-      "Deleting files instead of truncating them when working with active process descriptors."
+    "revision_notes": [
+      "The project setup order: directories first → files second → permissions third → scripts fourth → verification last.",
+      "Always use mkdir -p for nested directories — it's idempotent and never fails on existing directories.",
+      "Config files with credentials: 600. Scripts meant to run: 755. Private directories: 700.",
+      ">> preserves log history. > destroys it. Never use > for log files.",
+      "&& chains steps safely — if one fails, the rest don't run."
     ],
     "best_practices": [
-      "Create modular directories architectures for clean microservice separation.",
-      "Deploy background processes using restricted user accounts instead of root."
+      "Build provisioning scripts to be idempotent — safe to run multiple times without side effects.",
+      "Always log deployments with timestamps and the triggering user for auditability.",
+      "Backup config files before modifying them — use timestamped names for version tracking.",
+      "Run a health check script after every deployment before announcing success."
+    ],
+    "beginner_mistakes": [
+      "Using ; instead of && to chain dependent steps — if mkdir fails, ; still runs cd.",
+      "Forgetting to redirect stderr (2>&1) in background scripts — errors are lost.",
+      "Not testing health checks after deployment — services can start partially broken.",
+      "Using > instead of >> for log files — destroying deployment history."
     ],
     "interview_questions": [
       {
-        "question": "How do you verify if a process is running in the background?",
-        "answer": "Run jobs command or ps aux grep searches."
+        "question": "How would you create an idempotent server provisioning script?",
+        "answer": "Use mkdir -p for directories (never fails if exists), conditional file creation ([ -f file ] || echo '...' > file), chmod in absolute mode (not relative), and test-first patterns. The script should produce the same result on every run."
       },
       {
-        "question": "How do you append both stdout and stderr to a log file?",
-        "answer": "Use command >> file.log 2>&1."
+        "question": "A deployment succeeded but the app isn't responding. Walk through your debugging steps.",
+        "answer": "1) ss -lntp to check the app is listening on the correct port. 2) ps aux | grep appname to verify the process is running. 3) tail -f logs/app.log for error messages. 4) curl -I localhost:PORT to test HTTP response. 5) Check permissions on config files."
       }
-    ],
-    "additional_practice": [
-      "Build a complete multi-user workspace secure configuration directory tree.",
-      "Write a backup cron job utility replicating deployment setups."
     ],
     "books": [
       {
-        "title": "DevOps Handbook by Gene Kim",
-        "description": "Core textbook for automation and system architectures."
-      }
-    ],
-    "documentation": [
+        "title": "The Phoenix Project — Gene Kim",
+        "description": "A novel about DevOps transformation — read to understand why automation and reliability matter."
+      },
       {
-        "title": "GNU Coreutils System Reference",
-        "url": "https://www.gnu.org/software/coreutils/"
-      }
-    ],
-    "external_resources": [
-      {
-        "title": "Linux Automation Capstones Guides",
-        "url": "https://linuxacademy.com/"
+        "title": "The DevOps Handbook — Gene Kim, Jez Humble",
+        "description": "Practical guidance on implementing DevOps practices including automation and scripting."
       }
     ]
   }

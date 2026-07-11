@@ -2,570 +2,669 @@
   "slug": "bash-scripting-fundamentals",
   "title": "Bash Scripting Fundamentals",
   "overview": {
-    "introduction": [
-      "At its core, a shell script is a simple text file containing a list of commands that the shell parses and executes sequentially. Instead of typing the same commands manually every day, DevOps engineers write Bash scripts to automate complex software builds, trigger daily database backups, clean up server disk sectors, and launch local development clusters.",
-      "Bash (Bourne Again SHell) scripting is the absolute baseline programming language of infrastructure automation. When a virtual machine boots in AWS, or a container initializes inside Kubernetes, it runs boot configuration scripts written in Bash. Understanding how to use variables, loops, conditional statements, and error codes is what allows you to replace hours of manual administration work with a single automated script.",
-      "This module starts from the absolute beginning: configuring your script files with the shebang syntax header, declaring and using local variables, performing numerical calculations, constructing logical checks with if-else conditionals, using loop statements to process files lists, and writing helper functions with positional parameters."
-    ],
-    "what_you_will_learn": [
-      "The role of the shebang header line and files executable flags.",
-      "Declaring shell variables and referencing scopes values.",
-      "Performing numerical math calculations in the shell.",
-      "Constructing logical checks and if-else branches.",
-      "Writing loops (for and while) to process variables sets.",
-      "Encapsulating logic blocks inside custom shell functions."
-    ],
-    "prerequisites": "Completion of Linux File System & Permissions course.",
-    "estimated_time": "120 mins",
-    "difficulty": "Intermediate",
+    "introduction": "Bash scripting lets you automate repetitive terminal tasks by writing commands into a reusable script file. Instead of typing 20 commands manually every time, you run one script.",
+    "why_it_matters": "Every CI/CD pipeline, server setup, and infrastructure task involves shell scripts. Knowing bash scripting is the difference between manual and fully automated DevOps workflows.",
+    "industry_usage": "Used in CI/CD pipelines (GitHub Actions, Jenkins), server provisioning scripts, cron jobs, Docker entrypoints, Kubernetes init containers, and cloud infrastructure automation.",
+    "what_you_will_build": "An automated deployment validation script that checks system state, uses variables, reads user input, and applies conditional logic — just like real-world DevOps scripts.",
+    "prerequisites": "Linux Command Line Basics and File Permissions — you should know how to navigate, create files, and set execute permissions.",
+    "estimated_time": "90 mins",
+    "difficulty": "Beginner",
     "learning_outcomes": [
-      "Build fully automated executable scripting utilities from scratch.",
-      "Incorporate variable values, conditions, and computations.",
-      "Write loops that scan directories lists and perform operations.",
-      "Audit exit status codes to check success flags."
+      "Create executable bash scripts with the correct shebang line.",
+      "Define and use variables to store and reuse values.",
+      "Write if/else conditionals to make decisions.",
+      "Use for and while loops to automate repetitive tasks.",
+      "Read user input and use command-line arguments in scripts.",
+      "Use functions to organize and reuse code blocks."
     ]
   },
-  "theory": [
+  "key_concepts": [
     {
-      "title": "The Magic of the Shebang: How Scripts Boot",
-      "definition": "The special combination of characters #!/bin/bash at the very beginning of a file that tells your computer exactly which program should run the script.",
-      "explanation": "Imagine you write a letter, but you write it in French. If you hand it to an English speaker, they'll stare at it blankly. You need to write a little note at the top saying: 'Translator, please read this!'\n\nIn the world of coding, files containing shell commands are just plain text. When you run a script, the Linux kernel looks at the very first line of the file. If it sees the characters #! (called the 'Shebang' or 'Hash-bang'), it knows it needs to hand the file over to an interpreter.\n\nBy writing #!/bin/bash at the very top, you are saying: 'Hey Linux, feed all the text in this file directly into the Bash interpreter so it can execute them!' Without this, Linux might use a different, more basic shell, and your advanced script might crash.",
-      "why_exists": "Ensures your script executes reliably on any Linux machine, regardless of which shell the current user is active in.",
-      "real_world_example": "Writing #!/bin/bash on line 1 of your backup script, followed by echo 'Starting backup...' on line 2.",
-      "remember": "The shebang must be on the absolute first line of your script file. Do not put spaces before the # or after the !.",
-      "pro_tip": "You can locate the path of your active bash binary by running the command: which bash.",
-      "common_mistakes": "Writing comments or blank lines before the shebang. The shebang MUST be on line 1, character 1, or Linux will completely ignore it!",
-      "best_practices": "Always write #!/bin/bash instead of plain #!/bin/sh to ensure access to modern Bash features like arrays and advanced conditions.",
+      "title": "Creating Your First Bash Script",
+      "definition": "A bash script is a plain text file containing a sequence of shell commands, starting with a shebang line that tells the OS which interpreter to use.",
+      "why_important": [
+        "Scripts automate multi-step tasks so you never have to type them manually again.",
+        "The shebang ensures the script runs with bash, not sh or another shell.",
+        "Execute permission (+x) must be set before a script can be run.",
+        "Scripts are version-controlled — your automation lives in Git alongside your code."
+      ],
+      "explanation": "A minimal bash script looks like this:\n\n```bash\n#!/bin/bash\necho \"Hello, DevOps!\"\n```\n\nLine by line:\n- `#!/bin/bash` — the shebang. Tells the OS to use /bin/bash to run this file.\n- `echo \"Hello, DevOps!\"` — prints a message to the terminal.\n\nTo create and run the script:\n```bash\ntouch hello.sh            # 1. Create the file\necho '#!/bin/bash' > hello.sh  # 2. Add shebang\nchmod +x hello.sh         # 3. Make executable\n./hello.sh                # 4. Run it\n```\n\nWhy `./hello.sh` and not just `hello.sh`?\n- `./` means 'look in current directory'. Without it, bash looks in PATH directories only.",
       "commands": [
         {
-          "name": "chmod +x",
-          "purpose": "Grants executable permissions to a script file so it can be run directly.",
-          "syntax": "chmod +x filename.sh",
-          "parameters": "filename.sh: The script file to make executable.",
-          "example": "chmod +x backup.sh",
-          "expected_output": "(Permissions updated without terminal output)",
-          "output_explanation": "Marks backup.sh as runnable, enabling execution using standard ./ path notation.",
-          "when_to_use": "Run this once immediately after creating a new script file."
-        },
-        {
-          "name": "./filename.sh",
-          "purpose": "Executes a script file in the current folder path.",
-          "syntax": "./filename.sh",
-          "parameters": "filename.sh: The name of the script file.",
-          "example": "./backup.sh",
-          "expected_output": "(Runs the commands stored inside your backup.sh script)",
-          "output_explanation": "The shell loads backup.sh, reads shebang interpreter, and executes commands line by line.",
-          "when_to_use": "Use this whenever you need to run your custom automation scripts."
+          "name": "#!/bin/bash (shebang)",
+          "purpose": "Declares that bash is the interpreter for this script.",
+          "syntax": "#!/bin/bash",
+          "parameters": "Must be the very first line of the file with no spaces before #!",
+          "example": "echo '#!/bin/bash\\necho Hello' > hi.sh && chmod +x hi.sh && ./hi.sh",
+          "expected_output": "Hello",
+          "output_explanation": "The shebang told the OS to use bash, which executed the echo command.",
+          "when_to_use": "Always start every bash script with #!/bin/bash on line 1.",
+          "real_world_use": "Every GitHub Actions step script, Jenkins pipeline script, and Docker ENTRYPOINT script starts with a shebang."
         }
       ],
-      "summary": "The shebang (#!/bin/bash) on line 1 tells Linux to interpret the file using Bash. Run chmod +x and use ./ to execute the script."
+      "pro_tip": "Use `bash -n script.sh` to check for syntax errors without running the script. Use `bash -x script.sh` to run with debug output showing each command.",
+      "best_practices": "Always include `set -e` on line 2 of production scripts — it makes the script exit immediately if any command fails.",
+      "common_mistakes": "Forgetting chmod +x and getting 'Permission denied'. Or forgetting the ./ prefix and getting 'command not found'.",
+      "real_world_example": "A Jenkins pipeline runs ./scripts/deploy.sh to automate building a Docker image, pushing to a registry, and updating a Kubernetes deployment — all in one script.",
+      "remember": "#!/bin/bash must be the FIRST line — no blank lines or spaces before it. Even a single blank line breaks the shebang.",
+      "summary": "Scripts start with #!/bin/bash, need chmod +x to be executable, and are run with ./scriptname.sh."
     },
     {
-      "title": "Variables & The Golden Rule of No Spaces",
-      "definition": "Named boxes in memory where you can store text or numbers to reuse them throughout your script.",
-      "explanation": "Variables in Bash are like labeled drawers. You put some text inside the drawer, write a label on it, and slide it shut. Later, you can pull the drawer open by using its label!\n\nHere is how you declare a variable in Bash:\nSERVER_NAME=\"production-db\"\n\nTo retrieve and print the variable, prefix it with a dollar sign ($):\necho \"Connecting to $SERVER_NAME...\"\n\n| Operator / Syntax | Description | Example |\n| :--- | :--- | :--- |\n| = | Declares variable (no spaces allowed) | NAME=\"John\" |\n| $ | References value of a variable | echo $NAME |",
-      "why_exists": "Allows your scripts to be dynamic and reusable, so you can change a single variable at the top instead of editing fifty lines of code.",
-      "real_world_example": "Setting DB_BACKUP_PATH=\"/var/backups/db\" and then copying database dumps to $DB_BACKUP_PATH.",
-      "remember": "You MUST NOT put spaces around the equal sign (=) when assigning variables! If you write SERVER_NAME = \"production-db\" (with spaces), Bash will get confused and try to run SERVER_NAME as a command!",
-      "pro_tip": "You can wrap your variable names in curly braces ${VARIABLE_NAME} to safely isolate them from surrounding text (e.g. echo \"${NAME}_backup\").",
-      "common_mistakes": "Adding spaces around the = sign when declaring, or forgetting the $ when referencing the variable value.",
-      "best_practices": "Use uppercase letters for environment and global variables, and lowercase for temporary local variables.",
+      "title": "Variables and Data",
+      "definition": "Variables store values (text, numbers, command output) that you can reuse throughout a script.",
+      "why_important": [
+        "Avoid hardcoding values — change one variable instead of every occurrence.",
+        "Store command output to use later in the script.",
+        "Pass data between different parts of your script.",
+        "Make scripts configurable without editing the code."
+      ],
+      "explanation": "**Defining variables:**\n```bash\nNAME=\"DevLab\"         # String variable (NO spaces around =)\nPORT=8080              # Numeric value\nDATE=$(date +%Y-%m-%d) # Store command output with $(...)\n```\n\n**Using variables:**\n```bash\necho $NAME             # Simple reference\necho ${NAME}           # Safer — use braces for clarity\necho \"Hello, $NAME!\"   # Inside double quotes — variable expands\necho 'Hello, $NAME!'   # Inside single quotes — NOT expanded (literal)\n```\n\n**Special variables:**\n\n| Variable | Meaning |\n|:---|:---|\n| `$0` | Script name |\n| `$1`, `$2` | First, second argument |\n| `$#` | Number of arguments |\n| `$?` | Exit code of last command |\n| `$$` | Process ID of current script |",
       "commands": [
         {
-          "name": "read",
-          "purpose": "Prompts the user for input keyboard values and saves it into a variable.",
-          "syntax": "read [-p prompt_msg] variable_name",
-          "parameters": "-p prompt_msg: Displays a message before waiting for input. variable_name: The target storage variable.",
-          "example": "read -p \"Enter server username: \" input_user",
-          "expected_output": "Enter server username: (waits for keyboard typing)",
-          "output_explanation": "Prompts you to type a value, then saves whatever you type into $input_user.",
-          "when_to_use": "Use this when you want to build interactive scripts that require user input at runtime."
+          "name": "Variable assignment",
+          "purpose": "Store a value in a named variable for later use.",
+          "syntax": "VARIABLE_NAME=\"value\"",
+          "parameters": "NO spaces around the = sign. Use quotes for values with spaces.",
+          "example": "APP_NAME=\"myapp\" && echo \"Deploying $APP_NAME\"",
+          "expected_output": "Deploying myapp",
+          "output_explanation": "The variable APP_NAME holds 'myapp'. $APP_NAME inside double quotes is replaced by its value.",
+          "when_to_use": "Define variables at the top of the script for all configurable values.",
+          "real_world_use": "Store the Docker image tag, server IP, or deployment environment in variables for easy configuration changes."
+        },
+        {
+          "name": "Command substitution $()",
+          "purpose": "Capture the output of a command and store it in a variable.",
+          "syntax": "VARIABLE=$(command)",
+          "parameters": "command: any valid shell command whose output you want to capture.",
+          "example": "CURRENT_USER=$(whoami) && echo \"Running as: $CURRENT_USER\"",
+          "expected_output": "Running as: student",
+          "output_explanation": "The $(whoami) runs whoami and captures its output — 'student' — into CURRENT_USER.",
+          "when_to_use": "Use to capture dynamic values like current date, disk usage, git commit hash.",
+          "real_world_use": "GIT_HASH=$(git rev-parse --short HEAD) stores the current commit hash for tagging Docker images."
         }
       ],
-      "summary": "Bash variables are defined using NAME=\"value\" (strictly no spaces around =). Access them using $NAME or ${NAME}. Use read to prompt for inputs."
+      "pro_tip": "Use UPPERCASE names for environment variables and lowercase for local script variables. It's a widely followed convention.",
+      "best_practices": "Always quote variable expansions: \"$VARIABLE\" not $VARIABLE. Unquoted variables can break if the value contains spaces.",
+      "common_mistakes": "Adding spaces around = in assignment: `NAME = value` fails. Correct is `NAME=value` (no spaces).",
+      "real_world_example": "A deployment script stores the current git commit hash, timestamp, and target environment in variables — then uses them to name the Docker image and log the deployment.",
+      "remember": "No spaces around = for assignment. Use $VAR or ${VAR} to read. Single quotes prevent variable expansion.",
+      "summary": "Variables avoid hardcoding. Assign with NAME=value, read with $NAME. Use $(...) to capture command output."
+    },
+    {
+      "title": "Conditionals: if / else / elif",
+      "definition": "if statements let your script make decisions — running different commands based on whether a condition is true or false.",
+      "why_important": [
+        "Check if a file or directory exists before operating on it.",
+        "Validate that required arguments were passed to the script.",
+        "Branch logic based on environment (dev vs production).",
+        "Handle errors gracefully instead of crashing silently."
+      ],
+      "explanation": "Basic if/else structure:\n```bash\nif [ condition ]; then\n    # commands if true\nelif [ other_condition ]; then\n    # commands if elif is true\nelse\n    # commands if false\nfi\n```\n\n**Comparison operators:**\n\n| Operator | Numbers | Strings |\n|:---|:---|:---|\n| Equal | `-eq` | `=` or `==` |\n| Not equal | `-ne` | `!=` |\n| Greater than | `-gt` | N/A |\n| Less than | `-lt` | N/A |\n\n**File tests:**\n\n| Test | Meaning |\n|:---|:---|\n| `-f file` | File exists and is regular |\n| `-d dir` | Directory exists |\n| `-e path` | Path exists (any type) |\n| `-r file` | File is readable |\n| `-x file` | File is executable |",
+      "commands": [
+        {
+          "name": "if [ -f file ]",
+          "purpose": "Checks if a file exists before attempting to read or modify it.",
+          "syntax": "if [ -f filename ]; then ... fi",
+          "parameters": "-f: tests for regular file. -d: for directory. -e: for any path.",
+          "example": "if [ -f deploy.sh ]; then echo 'Script exists'; else echo 'Script missing'; fi",
+          "expected_output": "Script exists",
+          "output_explanation": "The condition [-f deploy.sh] is true (file exists), so the 'exists' branch runs.",
+          "when_to_use": "Always check if files exist before cat, source, or executing them.",
+          "real_world_use": "CI scripts check if .env exists before reading environment variables. If missing, they exit with an error message."
+        }
+      ],
+      "pro_tip": "Use `[[ ]]` (double brackets) instead of `[ ]` in bash scripts — it's more powerful and handles edge cases better.",
+      "best_practices": "Always validate script arguments: `if [ $# -eq 0 ]; then echo 'Usage: script.sh <env>'; exit 1; fi`",
+      "common_mistakes": "Forgetting spaces inside [ condition ] — `[-f file]` fails. Must be `[ -f file ]` with spaces around brackets.",
+      "real_world_example": "A deployment script checks: if the target environment is 'production', require manual approval; else deploy automatically. This prevents accidental production deployments.",
+      "remember": "Spaces matter: `[ -f file ]` works, `[-f file]` does not. The fi closes the if block — it's 'if' backwards.",
+      "summary": "if/elif/else let your script branch based on conditions. Test files with -f/-d, compare strings with = and numbers with -eq/-gt."
+    },
+    {
+      "title": "Loops: for and while",
+      "definition": "Loops repeat a block of commands multiple times — either over a list of items (for) or while a condition is true (while).",
+      "why_important": [
+        "Process multiple files, servers, or users with a single script.",
+        "Retry a failing operation a set number of times before giving up.",
+        "Iterate over command output line by line.",
+        "Avoid writing the same command manually dozens of times."
+      ],
+      "explanation": "**For loop — iterate over a list:**\n```bash\nfor server in web01 web02 web03; do\n    echo \"Deploying to $server\"\ndone\n```\n\n**For loop — iterate over files:**\n```bash\nfor file in *.log; do\n    echo \"Processing: $file\"\ndone\n```\n\n**For loop — C-style numeric:**\n```bash\nfor i in $(seq 1 5); do\n    echo \"Attempt $i\"\ndone\n```\n\n**While loop — run until condition becomes false:**\n```bash\nCOUNT=0\nwhile [ $COUNT -lt 3 ]; do\n    echo \"Count: $COUNT\"\n    COUNT=$((COUNT + 1))\ndone\n```",
+      "commands": [
+        {
+          "name": "for loop",
+          "purpose": "Iterates over a list of values, running commands for each item.",
+          "syntax": "for VARIABLE in list; do\n  commands\ndone",
+          "parameters": "VARIABLE: loop variable name. list: space-separated values or pattern.",
+          "example": "for env in dev staging prod; do echo \"Checking $env\"; done",
+          "expected_output": "Checking dev\nChecking staging\nChecking prod",
+          "output_explanation": "The loop runs three times, setting env to 'dev', 'staging', 'prod' in sequence.",
+          "when_to_use": "Use to run the same operation across multiple environments, servers, or files.",
+          "real_world_use": "Loop over a list of servers to deploy a new version of an application to each one."
+        },
+        {
+          "name": "while loop",
+          "purpose": "Repeats commands as long as a condition remains true.",
+          "syntax": "while [ condition ]; do\n  commands\ndone",
+          "parameters": "condition: any valid test expression. Loop stops when condition becomes false.",
+          "example": "ATTEMPTS=0; while [ $ATTEMPTS -lt 3 ]; do echo \"Try $ATTEMPTS\"; ATTEMPTS=$((ATTEMPTS+1)); done",
+          "expected_output": "Try 0\nTry 1\nTry 2",
+          "output_explanation": "The loop runs 3 times (while ATTEMPTS is less than 3), incrementing ATTEMPTS each iteration.",
+          "when_to_use": "Use for retry logic — wait for a service to start, retry failed health checks.",
+          "real_world_use": "A deployment script retries connecting to a database up to 5 times with a 2-second sleep between attempts."
+        }
+      ],
+      "pro_tip": "Use `break` to exit a loop early and `continue` to skip to the next iteration.",
+      "best_practices": "Add a max retry counter to while loops to prevent infinite loops that could hang a pipeline.",
+      "common_mistakes": "Forgetting `done` to close a for or while loop — bash reports a syntax error.",
+      "real_world_example": "A CI/CD pipeline loops over a list of Docker images to pull, scan for vulnerabilities, and tag them — all in one script instead of repeating commands.",
+      "remember": "for loops need 'do' before the commands and 'done' to close. Same for while loops.",
+      "summary": "for loops iterate over lists. while loops repeat while a condition is true. Both need do...done around the body."
     }
   ],
   "interactive_examples": [
     {
-      "objective": "Perform dynamic integer math calculations.",
-      "command": "echo $(( 10 + 20 ))",
-      "explanation": "Evaluates math sum inside double parentheses and outputs result to standard stdout.",
-      "expected_output": "30",
-      "common_mistakes": "Using single parentheses which prints string brackets instead.",
-      "tips": "Store calculations directly in variables: `SUM=$(( 5 + 10 ))`."
+      "objective": "Write and run a simple hello world bash script.",
+      "scenario": "Your first bash script — confirm the workflow of creating, permissioning, and running a script.",
+      "command": "echo '#!/bin/bash\\necho \"Hello from DevLab!\"' > hello.sh && chmod +x hello.sh && ./hello.sh",
+      "explanation": "echo writes the script content, chmod +x makes it executable, ./ runs it from the current directory.",
+      "expected_output": "Hello from DevLab!",
+      "output_explanation": "The shebang told the OS to use bash, which executed the echo command inside the script.",
+      "real_world_use": "Every new CI/CD automation script follows this exact create-permission-run workflow.",
+      "common_mistakes": "Running `hello.sh` without ./ — bash searches PATH directories only, not the current folder.",
+      "tips": "Use `bash -x hello.sh` to see each command printed as it runs — great for debugging."
     },
     {
-      "objective": "Verify if a file exists using test command conditionals.",
-      "command": "[ -f welcome.txt ] && echo 'File exists'",
-      "explanation": "Evaluates if welcome.txt is a regular file. If true (exit code 0), prints string using &&.",
-      "expected_output": "File exists",
-      "common_mistakes": "Forgetting spacing inside brackets (e.g. typing `[-f welcome.txt]` instead of `[ -f welcome.txt ]`).",
-      "tips": "Spacing inside bracket tests is strictly required by the bash parser."
+      "objective": "Use variables to make a script configurable.",
+      "scenario": "A deployment script should use variables for the app name and environment so it can be reused.",
+      "command": "APP=myapp && ENV=staging && echo \"Deploying $APP to $ENV environment\"",
+      "explanation": "Two variables are set and then referenced inside the echo string. This is the foundation of configurable scripts.",
+      "expected_output": "Deploying myapp to staging environment",
+      "output_explanation": "$APP and $ENV are expanded to their values inside the double-quoted string.",
+      "real_world_use": "Deployment scripts define APP, VERSION, and ENVIRONMENT at the top, then use them throughout.",
+      "common_mistakes": "Using single quotes: echo 'Deploying $APP' would print literally $APP without expanding it.",
+      "tips": "Define all configuration variables at the top of the script, grouped together, for easy editing."
+    },
+    {
+      "objective": "Check if a file exists before reading it.",
+      "scenario": "Your script reads a config file. If the file is missing, the script should print an error and exit gracefully.",
+      "command": "if [ -f .env ]; then echo 'Config found'; else echo 'ERROR: .env missing. Exiting.'; fi",
+      "explanation": "[-f .env] tests if .env is a regular file. The if/else branches handle both outcomes.",
+      "expected_output": "ERROR: .env missing. Exiting.",
+      "output_explanation": ".env doesn't exist in this example, so the else branch runs with the error message.",
+      "real_world_use": "Every production script validates required files exist before attempting to use them.",
+      "common_mistakes": "Not checking for file existence — the script crashes with 'No such file or directory' instead of a helpful message.",
+      "tips": "Add `exit 1` after the error message to make the script return a non-zero exit code, signaling failure to the calling process."
+    },
+    {
+      "objective": "Loop over a list of environments to check deployment status.",
+      "scenario": "You need to print a status check message for each of your three environments.",
+      "command": "for env in development staging production; do echo \"[CHECK] Environment: $env\"; done",
+      "explanation": "The for loop iterates over the three environment names. Each iteration, $env holds the current value and the echo runs.",
+      "expected_output": "[CHECK] Environment: development\n[CHECK] Environment: staging\n[CHECK] Environment: production",
+      "output_explanation": "Three lines are printed — one for each environment in the list.",
+      "real_world_use": "Loop over server hostnames to SSH into each one and run the same health check command.",
+      "common_mistakes": "Forgetting `done` at the end of the loop — bash will wait for more input or throw a syntax error.",
+      "tips": "Store the list in a variable: ENVS='dev staging prod' then: for env in $ENVS; do ..."
+    },
+    {
+      "objective": "Capture command output in a variable and use it.",
+      "scenario": "Your deployment script needs to log when it runs and who triggered it.",
+      "command": "TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S') && USER=$(whoami) && echo \"[$TIMESTAMP] Deployment started by $USER\"",
+      "explanation": "$() captures command output. date formats the current timestamp. whoami gets the current user. Both are stored and used in the log line.",
+      "expected_output": "[2026-01-12 10:30:00] Deployment started by student",
+      "output_explanation": "The timestamp and username are dynamically captured and embedded in the log message.",
+      "real_world_use": "Production deployment scripts log timestamps and the triggering user to an audit trail file.",
+      "common_mistakes": "Using backticks `command` instead of $() — both work but $() is preferred and easier to read.",
+      "tips": "Append to a log file: echo \"[$TIMESTAMP] Deployment\" >> /var/log/deployments.log"
     }
   ],
   "lessons": [
     {
       "id": 1,
-      "title": "1. Shebang & Setup",
-      "definition": "The shebang (#!/bin/bash) on the first line specifies the shell interpreter.",
-      "explanation": "Tells the kernel to execute the script using the bash shell runtime environment.",
-      "instruction": "Create hello.sh and write shebang '#!/bin/bash' on the first line.",
-      "example": "echo '#!/bin/bash' > test_script.sh",
-      "expected": "",
-      "hint": "Use echo '#!/bin/bash' > hello.sh",
+      "title": "1. Create a Bash Script",
+      "definition": "A bash script is a text file containing shell commands, starting with a shebang line.",
+      "explanation": "The shebang #!/bin/bash tells the OS which program to use to interpret the script.",
+      "instruction": "Create a file named hello.sh and add the shebang line as the first line.",
+      "example": "touch myapp.sh",
+      "expected": "hello.sh",
+      "hint": "Type: echo '#!/bin/bash' > hello.sh",
       "solution": "echo '#!/bin/bash' > hello.sh",
       "difficulty": "Beginner",
       "estimated_duration": "4m"
     },
     {
       "id": 2,
-      "title": "2. Script Execution",
-      "definition": "Scripts are executed either with the 'bash' command or using ./ path notation.",
-      "explanation": "Running 'bash script.sh' works even if the file lacks execute permissions.",
-      "instruction": "Write echo 'Hello World' inside hello.sh and run it using the bash command.",
-      "example": "bash run_build.sh",
-      "expected": "Hello World",
-      "hint": "Run: bash hello.sh",
-      "solution": "bash hello.sh",
-      "difficulty": "Beginner",
-      "estimated_duration": "4m"
-    },
-    {
-      "id": 3,
-      "title": "3. Shell Variables",
-      "definition": "Variables store strings, numbers, or command outputs.",
-      "explanation": "Declare with name=val (no spaces!). Access using the dollar sign ($) prefix.",
-      "instruction": "Export a custom environment variable named NAME set to student.",
-      "example": "export ENV=production",
-      "expected": "",
-      "hint": "Type: export NAME=student",
-      "solution": "export NAME=student",
+      "title": "2. Make Script Executable",
+      "definition": "Scripts must have execute permission before they can be run as programs.",
+      "explanation": "chmod +x adds the execute bit. Without it, running ./hello.sh gives 'Permission denied'.",
+      "instruction": "Make hello.sh executable.",
+      "example": "chmod +x myscript.sh",
+      "expected": "x",
+      "hint": "Type: chmod +x hello.sh",
+      "solution": "chmod +x hello.sh",
       "difficulty": "Beginner",
       "estimated_duration": "3m"
     },
     {
+      "id": 3,
+      "title": "3. Add an Echo Command",
+      "definition": "echo prints text to the terminal standard output stream.",
+      "explanation": "Add echo 'Hello World' to hello.sh so the script prints output when run.",
+      "instruction": "Append 'echo Hello DevLab' to hello.sh.",
+      "example": "echo 'echo Hi' >> test.sh",
+      "expected": "Hello DevLab",
+      "hint": "Type: echo \"echo 'Hello DevLab'\" >> hello.sh",
+      "solution": "echo \"echo 'Hello DevLab'\" >> hello.sh",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
       "id": 4,
-      "title": "4. Arithmetic Operations",
-      "definition": "Double parentheses (( )) evaluate arithmetic expressions in bash.",
-      "explanation": "Allows basic calculations like addition, subtraction, multiplication, and divisions.",
-      "instruction": "Compute the sum of 10 and 20 using double parentheses and print it.",
-      "example": "echo $((5 * 5))",
-      "expected": "30",
-      "hint": "Type: echo $((10 + 20))",
-      "solution": "echo $((10 + 20))",
+      "title": "4. Define a Variable",
+      "definition": "Variables store reusable values. Defined as NAME=value with no spaces around the =.",
+      "explanation": "Add NAME=DevLab to hello.sh as a variable and reference it with $NAME.",
+      "instruction": "Add a variable MY_NAME=DevOpsUser to hello.sh.",
+      "example": "APP_NAME=myapp",
+      "expected": "MY_NAME=DevOpsUser",
+      "hint": "Type: echo 'MY_NAME=DevOpsUser' >> hello.sh",
+      "solution": "echo 'MY_NAME=DevOpsUser' >> hello.sh",
       "difficulty": "Beginner",
       "estimated_duration": "4m"
     },
     {
       "id": 5,
-      "title": "5. Numeric Comparisons",
-      "definition": "Conditional flags inside [ ] compare numerical values.",
-      "explanation": "-gt (greater than), -lt (less than), -eq (equals), -ne (not equals).",
-      "instruction": "Test if 15 is greater than 10 using test syntax.",
-      "example": "[ 50 -gt 20 ] && echo 'yes'",
-      "expected": "yes",
-      "hint": "Type: [ 15 -gt 10 ] && echo 'yes'",
-      "solution": "[ 15 -gt 10 ] && echo 'yes'",
-      "difficulty": "Intermediate",
+      "title": "5. Use a Variable in echo",
+      "definition": "Variables are referenced with a $ prefix: $VARIABLE_NAME.",
+      "explanation": "Inside double quotes, $VARIABLE is replaced by its value. Use this to print dynamic messages.",
+      "instruction": "Add a line that echoes: Hello, $MY_NAME",
+      "example": "echo \"Welcome, $USER\"",
+      "expected": "Hello, DevOpsUser",
+      "hint": "Type: echo 'echo \"Hello, $MY_NAME\"' >> hello.sh",
+      "solution": "echo 'echo \"Hello, $MY_NAME\"' >> hello.sh",
+      "difficulty": "Beginner",
       "estimated_duration": "4m"
     },
     {
       "id": 6,
-      "title": "6. File Check Condition",
-      "definition": "The -f conditional checks if a path exists and is a regular file.",
-      "explanation": "Often used in scripts to verify configurations exist before reading.",
-      "instruction": "Check if welcome.txt exists using the -f test flag.",
-      "example": "[ -f config.json ] && echo 'ok'",
-      "expected": "found",
-      "hint": "Type: [ -f welcome.txt ] && echo 'found'",
-      "solution": "[ -f welcome.txt ] && echo 'found'",
+      "title": "6. Capture Command Output",
+      "definition": "Command substitution $() runs a command and stores its output in a variable.",
+      "explanation": "CURRENT_DATE=$(date) runs date and stores the output in CURRENT_DATE.",
+      "instruction": "Add a variable that captures the output of the date command.",
+      "example": "NOW=$(date)",
+      "expected": "TODAY=",
+      "hint": "Type: echo 'TODAY=$(date)' >> hello.sh",
+      "solution": "echo 'TODAY=$(date)' >> hello.sh",
       "difficulty": "Intermediate",
-      "estimated_duration": "4m"
+      "estimated_duration": "5m"
     },
     {
       "id": 7,
-      "title": "7. If Else Conditional",
-      "definition": "The if statement runs different code blocks depending on truth evaluation.",
-      "explanation": "Syntax: if [ test ]; then commands; else other_commands; fi",
-      "instruction": "Run a conditional that creates directory logs if not already existing.",
-      "example": "if [ ! -d backups ]; then mkdir backups; fi",
-      "expected": "",
-      "hint": "Type: if [ ! -d logs ]; then mkdir logs; fi",
-      "solution": "if [ ! -d logs ]; then mkdir logs; fi",
+      "title": "7. Write an if Statement",
+      "definition": "if statements execute commands only when a condition is true.",
+      "explanation": "Create a script that checks if a file exists using [ -f filename ] inside an if block.",
+      "instruction": "Write a script check.sh that echoes 'Found' if hello.sh exists, else 'Missing'.",
+      "example": "if [ -f config.txt ]; then echo 'exists'; fi",
+      "expected": "Found",
+      "hint": "Type: echo 'if [ -f hello.sh ]; then echo Found; else echo Missing; fi' > check.sh && chmod +x check.sh && ./check.sh",
+      "solution": "echo 'if [ -f hello.sh ]; then echo Found; else echo Missing; fi' > check.sh && chmod +x check.sh && ./check.sh",
       "difficulty": "Intermediate",
-      "estimated_duration": "5m"
+      "estimated_duration": "6m"
     },
     {
       "id": 8,
-      "title": "8. Number Loops (For Range)",
-      "definition": "For loops iterate a block of code over a list of items.",
-      "explanation": "Ranges are represented as {1..5} to repeat actions exactly five times.",
-      "instruction": "Iterate numbers 1 to 3, printing each on a new line.",
-      "example": "for val in {1..10}; do echo $val; done",
-      "expected": "1\n2\n3",
-      "hint": "Type: for i in {1..3}; do echo $i; done",
-      "solution": "for i in {1..3}; do echo $i; done",
-      "difficulty": "Beginner",
-      "estimated_duration": "4m"
-    },
-    {
-      "id": 9,
-      "title": "9. File Iterations (For Files)",
-      "definition": "For loops can glob wildcards to iterate file sets dynamically.",
-      "explanation": "Loops run once for each file matching the pattern (e.g., *.sh).",
-      "instruction": "List all .sh files in your directory using a for loop.",
-      "example": "for file in *.txt; do echo $file; done",
-      "expected": "hello.sh",
-      "hint": "Type: for f in *.sh; do echo $f; done",
-      "solution": "hello.sh",
-      "difficulty": "Intermediate",
-      "estimated_duration": "4m"
-    },
-    {
-      "id": 10,
-      "title": "10. While Loop Increment",
-      "definition": "While loops execute as long as their condition evaluates to true.",
-      "explanation": "Requires a condition that eventually becomes false to prevent infinite loops.",
-      "instruction": "Execute a loop printing counter increments while counter is less than 3.",
-      "example": "c=1; while [ $c -le 5 ]; do echo $c; c=$((c+1)); done",
-      "expected": "1\n2",
-      "hint": "Type: c=1; while [ $c -lt 3 ]; do echo $c; c=$((c+1)); done",
-      "solution": "c=1; while [ $c -lt 3 ]; do echo $c; c=$((c+1)); done",
+      "title": "8. Write a for Loop",
+      "definition": "for loops iterate over a list of values and run commands for each one.",
+      "explanation": "Use `for item in list; do commands; done` to process multiple items.",
+      "instruction": "Write a one-liner for loop that echoes 'Item: X' for X in a b c.",
+      "example": "for x in 1 2 3; do echo $x; done",
+      "expected": "Item: a\nItem: b\nItem: c",
+      "hint": "Type: for item in a b c; do echo \"Item: $item\"; done",
+      "solution": "for item in a b c; do echo \"Item: $item\"; done",
       "difficulty": "Intermediate",
       "estimated_duration": "5m"
-    },
-    {
-      "id": 11,
-      "title": "11. Positional Arguments",
-      "definition": "$1, $2, $3... store arguments passed to the script during launch.",
-      "explanation": "These allow script parameterizations. For example, ./run.sh argument1.",
-      "instruction": "Print the first argument inside a temporary script call.",
-      "example": "bash run.sh prod",
-      "expected": "verified",
-      "hint": "Create script writing 'echo $1' then run: bash arg.sh verified",
-      "solution": "bash arg.sh verified",
-      "difficulty": "Intermediate",
-      "estimated_duration": "4m"
-    },
-    {
-      "id": 12,
-      "title": "12. Interactive Read Input",
-      "definition": "The read command pauses script execution to capture keyboard inputs.",
-      "explanation": "Prompts user input, storing the response inside a named variable.",
-      "instruction": "Read user input into var and echo back. (Use simulation to check commands)",
-      "example": "echo 'syntax example'",
-      "expected": "verified",
-      "hint": "Type: echo 'verified'",
-      "solution": "echo 'verified'",
-      "difficulty": "Beginner",
-      "estimated_duration": "3m"
-    },
-    {
-      "id": 13,
-      "title": "13. Exit Status Code ($?)",
-      "definition": "Every Linux command returns an exit status code between 0 and 255.",
-      "explanation": "0 means success. Any non-zero code represents an error code.",
-      "instruction": "Check the exit status of the previous command using echo $?.",
-      "example": "ping -c 1 google.com; echo $?",
-      "expected": "0",
-      "hint": "Type: echo $?",
-      "solution": "echo $?",
-      "difficulty": "Beginner",
-      "estimated_duration": "3m"
-    },
-    {
-      "id": 14,
-      "title": "14. Custom Functions",
-      "definition": "Functions bundle reusable command steps in shell scripts.",
-      "explanation": "Declare using function_name() { ... } structure and call by name.",
-      "instruction": "Invoke a function named greet that prints hello.",
-      "example": "hello() { echo 'hi'; }; hello",
-      "expected": "hello",
-      "hint": "Type: greet() { echo 'hello'; }; greet",
-      "solution": "greet() { echo 'hello'; }; greet",
-      "difficulty": "Intermediate",
-      "estimated_duration": "4m"
-    },
-    {
-      "id": 15,
-      "title": "15. Local Variable Scope",
-      "definition": "The local keyword restricts a variable's visibility to its function.",
-      "explanation": "Prevents accidental side effects and name collisions in scripts.",
-      "instruction": "Run a function containing a local variable mapping to local_val.",
-      "example": "test() { local var='val'; echo $var; }; test",
-      "expected": "local_val",
-      "hint": "Type: func() { local val='local_val'; echo $val; }; func",
-      "solution": "func() { local val='local_val'; echo $val; }; func",
-      "difficulty": "Advanced",
-      "estimated_duration": "4m"
     }
   ],
   "exercises": [
     {
-      "title": "Automation directory backup",
-      "problem": "Create a script `backup_run.sh` that checks if directory `data` exists, and if so, copies all contents to a `backup` folder.",
-      "difficulty": "Intermediate",
-      "hint": "Use `if [ -d data ]; then cp -R data/ backup/; fi`.",
-      "expected_result": "Script correctly copies folder data files.",
-      "objective": "Practice implementing logical path checks."
+      "title": "Hello World Script",
+      "problem": "Create a script `greet.sh` that prints 'Welcome to DevLab!' when executed.",
+      "difficulty": "easy",
+      "hint": "Start with #!/bin/bash, add an echo, then chmod +x, then ./greet.sh.",
+      "expected_result": "./greet.sh prints: Welcome to DevLab!",
+      "objective": "Master the basic script creation workflow."
     },
     {
-      "title": "Math increment values",
-      "problem": "Write a script that reads numerical value inputs and increments them using a double parentheses construct.",
-      "difficulty": "Beginner",
-      "hint": "Declare `c=5` followed by `echo $((c + 1))`.",
-      "expected_result": "Outputs the calculation value result.",
-      "objective": "Practice arithmetic variables logic."
+      "title": "Info Script",
+      "problem": "Create `info.sh` that prints: your username (whoami), current directory (pwd), and current date — each on a separate line.",
+      "difficulty": "easy",
+      "hint": "Use three echo statements with command substitution: echo $(whoami), echo $(pwd), echo $(date).",
+      "expected_result": "Three lines showing username, directory, and date.",
+      "objective": "Practice using command substitution in scripts."
     },
     {
-      "title": "For loop directories listing",
-      "problem": "Create a loop iterating through files ending in `.sh` and print their filenames to terminal output.",
-      "difficulty": "Intermediate",
-      "hint": "Use `for f in *.sh; do echo $f; done`.",
-      "expected_result": "Prints all script names present.",
-      "objective": "Practice directory globbing loops."
+      "title": "Variable Config Script",
+      "problem": "Create a script with variables for APP_NAME, VERSION, and ENVIRONMENT, then print: 'Deploying APP_NAME v VERSION to ENVIRONMENT'.",
+      "difficulty": "easy",
+      "hint": "Define three variables, then echo with all three referenced: echo \"Deploying $APP_NAME v$VERSION to $ENVIRONMENT\"",
+      "expected_result": "Deploying myapp v1.0 to staging",
+      "objective": "Understand how variables make scripts configurable."
     },
     {
-      "title": "Positional inputs configurations",
-      "problem": "Construct a deployment script `setup.sh` that checks if the first parameter is 'production' and logs messages.",
-      "difficulty": "Intermediate",
-      "hint": "Evaluate `if [ \"$1\" = \"production\" ]; then echo 'Deploying...'; fi`.",
-      "expected_result": "Prints deployment messages if matching parameter is passed.",
-      "objective": "Learn using positional arguments inside conditions."
+      "title": "File Existence Validator",
+      "problem": "Write a script `validate.sh` that checks if `.env` exists. If it does, print 'Config OK'. If not, print 'ERROR: .env not found' and exit with code 1.",
+      "difficulty": "medium",
+      "hint": "Use `if [ -f .env ]; then echo 'Config OK'; else echo 'ERROR: .env not found'; exit 1; fi`",
+      "expected_result": "Prints appropriate message based on whether .env exists.",
+      "objective": "Practice defensive scripting with file existence checks."
     },
     {
-      "title": "Custom logs rotator function",
-      "problem": "Write a local function `clean_logs()` that empties a temporary file and returns an exit code.",
-      "difficulty": "Advanced",
-      "hint": "Declare `clean_logs() { echo '' > temp.log; return 0; }`.",
-      "expected_result": "Function runs successfully resetting log content.",
-      "objective": "Practice encapsulation using shell functions."
+      "title": "Multi-Environment Deployer",
+      "problem": "Write a script that loops over environments: dev, staging, prod — and prints 'Deploying to: ENV' for each.",
+      "difficulty": "medium",
+      "hint": "Use a for loop: for env in dev staging prod; do echo \"Deploying to: $env\"; done",
+      "expected_result": "Three lines: Deploying to: dev, Deploying to: staging, Deploying to: prod",
+      "objective": "Apply for loops to real-world multi-environment deployment scenarios."
     },
     {
-      "title": "While loop delay counter",
-      "problem": "Write a loop utility that prints countdown integers from 3 to 1.",
-      "difficulty": "Advanced",
-      "hint": "Use `c=3; while [ $c -gt 0 ]; do echo $c; c=$((c - 1)); done`.",
-      "expected_result": "Prints 3, 2, 1 sequentially.",
-      "objective": "Gain experience writing conditional loops."
+      "title": "Retry Logic with While",
+      "problem": "Write a script that simulates a connection retry — loop up to 3 times, printing 'Attempt N of 3', then print 'Giving up' after the loop.",
+      "difficulty": "medium",
+      "hint": "Use `ATTEMPT=1; while [ $ATTEMPT -le 3 ]; do echo \"Attempt $ATTEMPT of 3\"; ATTEMPT=$((ATTEMPT+1)); done; echo 'Giving up'`",
+      "expected_result": "Three attempt lines followed by 'Giving up'.",
+      "objective": "Implement retry logic — a fundamental pattern in DevOps automation."
+    },
+    {
+      "title": "Argument Validator",
+      "problem": "Create a script `deploy.sh` that requires exactly one argument (environment name). If none provided, print usage and exit 1. If provided, print 'Deploying to: ARG'.",
+      "difficulty": "hard",
+      "hint": "Use `if [ $# -eq 0 ]; then echo 'Usage: deploy.sh <environment>'; exit 1; fi` then `echo \"Deploying to: $1\"`",
+      "expected_result": "./deploy.sh production prints 'Deploying to: production'. ./deploy.sh alone prints usage and exits.",
+      "objective": "Learn to validate script arguments — essential for production scripts."
+    },
+    {
+      "title": "Log File Processor",
+      "problem": "Create a script that loops over all .log files in the current directory and prints 'Processing: FILENAME (SIZE bytes)' for each. Use stat or ls to get size.",
+      "difficulty": "hard",
+      "hint": "Use `for f in *.log; do SIZE=$(wc -c < $f); echo \"Processing: $f ($SIZE bytes)\"; done`",
+      "expected_result": "One line per log file with its name and size.",
+      "objective": "Practice glob patterns and command substitution inside loops."
+    },
+    {
+      "title": "Deployment Checklist Script",
+      "problem": "Write a script that checks: (1) .env exists, (2) deploy.sh exists and is executable, (3) a 'logs' directory exists. Print OK or FAIL for each check.",
+      "difficulty": "challenge",
+      "hint": "Use three separate if blocks. Check -f for files, -x for executable, -d for directory.",
+      "expected_result": "Three status lines showing OK or FAIL for each item.",
+      "objective": "Combine multiple conditional checks into a real-world pre-deployment validation script."
+    },
+    {
+      "title": "System Health Report",
+      "problem": "Write a script `health.sh` that captures: current user, hostname, disk usage (df -h), memory usage (free -h), and writes them to a report file `health_report.txt`.",
+      "difficulty": "challenge",
+      "hint": "Use echo with >> to append each section. Use $(hostname), $(whoami), $(df -h), $(free -h) with command substitution.",
+      "expected_result": "health_report.txt contains all system info in readable format.",
+      "objective": "Build a real-world system health monitoring script from scratch."
     }
   ],
   "quiz": [
     {
-      "question": "Which character combination is known as the shebang and directs the script to the proper shell interpreter?",
+      "question": "What is the purpose of the shebang line `#!/bin/bash`?",
+      "type": "MCQ",
       "options": [
-        "##",
-        "/*",
-        "#!",
-        "$!"
+        "It's a comment that documents the author",
+        "It specifies which interpreter runs the script",
+        "It makes the script executable",
+        "It defines the first variable in the script"
       ],
-      "answer": "#!",
-      "explanation": "#! points the kernel loader to the program executable parser path (e.g. /bin/bash).",
+      "answer": "It specifies which interpreter runs the script",
+      "explanation": "The shebang (#!) followed by the path tells the OS which program to use to execute the file. Without it, the OS guesses the interpreter.",
       "incorrect_explanations": {
-        "##": "Double hash represents string comments.",
-        "/*": "Forward slash star represents block comments in languages like C.",
-        "$!": "Special variable returning PID of last background process."
+        "It's a comment that documents the author": "The # makes it look like a comment but the #! combination has special OS meaning.",
+        "It makes the script executable": "chmod +x makes it executable. The shebang specifies the interpreter.",
+        "It defines the first variable in the script": "Variables are defined as NAME=value, not with #!."
       }
     },
     {
-      "question": "Which variable declaration is valid in a Bash shell environment?",
+      "question": "What is wrong with this variable assignment: `MY_VAR = hello`?",
+      "type": "MCQ",
       "options": [
-        "NAME = student",
-        "NAME=student",
-        "NAME:student",
-        "$NAME=student"
+        "MY_VAR should be lowercase",
+        "There should be no spaces around the = sign",
+        "hello should be in quotes",
+        "Nothing is wrong"
       ],
-      "answer": "NAME=student",
-      "explanation": "Bash requires name=value syntax with absolutely no spaces around the equal sign.",
+      "answer": "There should be no spaces around the = sign",
+      "explanation": "Bash is strict: `MY_VAR=hello` is correct. `MY_VAR = hello` fails because bash tries to run MY_VAR as a command with = and hello as arguments.",
       "incorrect_explanations": {
-        "NAME = student": "Fails because the parser interprets 'NAME' as a command and '=' as an argument.",
-        "NAME:student": "Colon is not the variables assignment operator in bash.",
-        "$NAME=student": "Dollar prefix reads values, it cannot define new variables assignments."
+        "MY_VAR should be lowercase": "Uppercase is convention for environment variables — it's not required.",
+        "hello should be in quotes": "Quotes are needed for values with spaces. 'hello' (no spaces) works without quotes.",
+        "Nothing is wrong": "The spaces around = will cause a bash syntax error."
       }
     },
     {
-      "question": "How do you evaluate arithmetic math calculations inside a script?",
+      "question": "How do you capture the output of `whoami` into a variable called USER_NAME?",
+      "type": "Command Prediction",
       "options": [
-        "$(( expr ))",
-        "$[ expr ]",
-        "[ expr ]",
-        "expr"
+        "USER_NAME=whoami",
+        "USER_NAME=$(whoami)",
+        "USER_NAME=`${whoami}`",
+        "$USER_NAME=whoami"
       ],
-      "answer": "$(( expr ))",
-      "explanation": "Double parentheses with dollar symbol prefix are the standard syntax for integer arithmetic expansions.",
+      "answer": "USER_NAME=$(whoami)",
+      "explanation": "$() is command substitution — it runs the command inside and captures its output.",
       "incorrect_explanations": {
-        "$[ expr ]": "Deprecated syntax for numeric evaluations, no longer recommended.",
-        "[ expr ]": "Brackets evaluate conditional string/logical tests, not mathematical operations.",
-        "expr": "Evaluates as a raw text string unless run through backticks."
+        "USER_NAME=whoami": "This assigns the literal string 'whoami' — not the output of running it.",
+        "USER_NAME=`${whoami}`": "Backticks work but ${whoami} is wrong — should be `whoami` or $(whoami).",
+        "$USER_NAME=whoami": "$USER_NAME on the left side tries to expand the variable, not assign to it."
       }
     },
     {
-      "question": "Which comparison flag is used to check if a numeric value is 'greater than' another?",
-      "options": [
-        "-eq",
-        "-ne",
-        "-gt",
-        "-lt"
-      ],
-      "answer": "-gt",
-      "explanation": "-gt stands for 'greater than' and is used inside logical tests [ ].",
+      "question": "Which test checks if a file exists and is a regular file?",
+      "type": "MCQ",
+      "options": ["[ -d filename ]", "[ -f filename ]", "[ -e filename ]", "[ -r filename ]"],
+      "answer": "[ -f filename ]",
+      "explanation": "-f tests for a regular file specifically. -d tests for a directory. -e tests for any path (file or directory).",
       "incorrect_explanations": {
-        "-eq": "Stands for 'equals'.",
-        "-ne": "Stands for 'not equal to'.",
-        "-lt": "Stands for 'less than'."
+        "[ -d filename ]": "-d tests for a DIRECTORY, not a regular file.",
+        "[ -e filename ]": "-e tests if the path exists at all — could be a file or directory.",
+        "[ -r filename ]": "-r tests if the file is readable — it would fail if the file doesn't exist."
       }
     },
     {
-      "question": "What is the role of the -f check flag inside bracket test evaluations?",
-      "options": [
-        "Checks if path is a directory",
-        "Checks if file is executable",
-        "Checks if path is a regular file",
-        "Forces file overrides"
-      ],
-      "answer": "Checks if path is a regular file",
-      "explanation": "-f returns true (exit 0) if the target path points to a valid regular file.",
+      "question": "What is the output of: `for x in 1 2 3; do echo $x; done`?",
+      "type": "Output Prediction",
+      "options": ["1 2 3 (on one line)", "1\n2\n3 (each on new line)", "x x x", "An error"],
+      "answer": "1\n2\n3 (each on new line)",
+      "explanation": "The loop runs echo three times, once for each value. echo prints a newline after each call.",
       "incorrect_explanations": {
-        "Checks if path is a directory": "Evaluated using the -d directory flag.",
-        "Checks if file is executable": "Evaluated using the -x permission flag.",
-        "Forces file overrides": "-f does not change file access permissions."
+        "1 2 3 (on one line)": "echo adds a newline after each print, so each number is on its own line.",
+        "x x x": "$x is expanded to the current value, not the literal letter x.",
+        "An error": "This is valid bash syntax and runs without errors."
       }
     },
     {
-      "question": "How do you correctly close an if conditional block in Bash?",
-      "options": [
-        "endif",
-        "fi",
-        "done",
-        "close"
-      ],
-      "answer": "fi",
-      "explanation": "fi is 'if' written backward, indicating the end of the conditional logic sequence.",
+      "question": "How do you run a bash script called deploy.sh from the current directory?",
+      "type": "MCQ",
+      "options": ["deploy.sh", "bash deploy.sh OR ./deploy.sh", "run deploy.sh", "execute deploy.sh"],
+      "answer": "bash deploy.sh OR ./deploy.sh",
+      "explanation": "./deploy.sh runs using the shebang. bash deploy.sh explicitly uses bash. Just deploy.sh fails because the current directory isn't in PATH.",
       "incorrect_explanations": {
-        "endif": "Used in other programming languages or C-Shell, not Bash.",
-        "done": "Used to terminate loop constructs (for/while).",
-        "close": "Not a keyword terminator in bash programming."
+        "deploy.sh": "Without ./, bash searches PATH directories only. Current directory is not in PATH by default.",
+        "run deploy.sh": "run is not a valid bash command.",
+        "execute deploy.sh": "execute is not a valid bash command."
       }
     },
     {
-      "question": "Which Special Variable holds the exit status code of the last executed command?",
+      "question": "What does `set -e` at the top of a bash script do?",
+      "type": "MCQ",
       "options": [
-        "$#",
-        "$@",
-        "$?",
-        "$!"
+        "Enables verbose debug output",
+        "Makes the script exit immediately if any command fails",
+        "Sets environment variables",
+        "Enables script tracing"
       ],
-      "answer": "$?",
-      "explanation": "$? holds status (0 for success, non-zero representing system error code).",
+      "answer": "Makes the script exit immediately if any command fails",
+      "explanation": "set -e (errexit) causes bash to exit immediately when any command returns a non-zero exit code. Without it, scripts continue even after failures.",
       "incorrect_explanations": {
-        "$#": "Holds the count of positional parameters passed to a script.",
-        "$@": "Represents the array list of all parameters.",
-        "$!": "Holds the PID of the last background job process."
+        "Enables verbose debug output": "set -v enables verbose mode. set -x enables tracing.",
+        "Sets environment variables": "set -e has nothing to do with environment variables.",
+        "Enables script tracing": "set -x enables tracing (prints each command before running it)."
       }
     },
     {
-      "question": "True or False: Spacing inside bracket logical tests (e.g. `[ $A -gt $B ]`) is completely optional.",
-      "options": [
-        "True",
-        "False"
-      ],
-      "answer": "False",
-      "explanation": "Brackets are aliases to the test command utility; they strictly require space margins to parse parameters.",
+      "question": "Scenario: Your script fails silently — it runs to completion but doesn't do what you expect. Which flag helps debug it?",
+      "type": "Scenario",
+      "options": ["bash -n script.sh", "bash -x script.sh", "bash -e script.sh", "bash -v script.sh"],
+      "answer": "bash -x script.sh",
+      "explanation": "bash -x (xtrace) prints each command and its expanded arguments as they execute, making it easy to see exactly what the script is doing step by step.",
       "incorrect_explanations": {
-        "True": "Omitting space (e.g. `[$A -gt $B]`) causes syntax errors."
+        "bash -n script.sh": "-n does syntax checking only — it doesn't run the script at all.",
+        "bash -e script.sh": "-e exits on error — doesn't show what's happening.",
+        "bash -v script.sh": "-v echoes script lines as read (before variable expansion) — less useful than -x."
       }
     },
     {
-      "question": "What does the local keyword do when declared before variables inside a function?",
+      "question": "What does `$?` represent in a bash script?",
+      "type": "MCQ",
       "options": [
-        "Makes them system-wide variables",
-        "Restricts variable scope strictly to the function",
-        "Speeds up mathematical evaluations",
-        "Locks files permission settings"
+        "The script name",
+        "The number of arguments passed",
+        "The exit code of the last executed command",
+        "A random number"
       ],
-      "answer": "Restricts variable scope strictly to the function",
-      "explanation": "local prevents the variable from leaking out or colliding with global variables in parent scopes.",
+      "answer": "The exit code of the last executed command",
+      "explanation": "$? holds the exit code of the most recently executed command. 0 = success, non-zero = failure.",
       "incorrect_explanations": {
-        "Makes them system-wide variables": "This is done using the export command.",
-        "Speeds up mathematical evaluations": "Has no effect on calculation runtime speeds.",
-        "Locks files permission settings": "Does not relate to directory security permissions."
+        "The script name": "$0 holds the script name.",
+        "The number of arguments passed": "$# holds the number of arguments.",
+        "A random number": "$RANDOM generates random numbers, not $?."
       }
     },
     {
-      "question": "Scenario: You need a script loop that runs exactly 5 times printing counter loops. Which construct is best?",
+      "question": "What is the difference between single quotes and double quotes in bash?",
+      "type": "MCQ",
       "options": [
-        "for i in {1..5}; do echo $i; done",
-        "while [ i -eq 5 ]; do echo $i; done",
-        "if [ $i -lt 5 ]; then echo $i; fi",
-        "for i in *.sh; do echo $i; done"
+        "No difference — both work the same way",
+        "Double quotes expand variables; single quotes treat everything as literal",
+        "Single quotes expand variables; double quotes don't",
+        "Double quotes are for numbers; single quotes are for strings"
       ],
-      "answer": "for i in {1..5}; do echo $i; done",
-      "explanation": "The range indicator {1..5} runs the block exactly five times, outputting the index each step.",
+      "answer": "Double quotes expand variables; single quotes treat everything as literal",
+      "explanation": "echo \"Hello $USER\" prints 'Hello student' (expands $USER). echo 'Hello $USER' prints literally 'Hello $USER'.",
       "incorrect_explanations": {
-        "while [ i -eq 5 ]; do echo $i; done": "Would trigger syntax errors since i is not initialized, or loop infinitely if i is 5.",
-        "if [ $i -lt 5 ]; then echo $i; fi": "This is a conditional statement that evaluates once, not a loop structure.",
-        "for i in *.sh; do echo $i; done": "Loops over files ending in .sh, which depends on folder contents, not a fixed range."
+        "No difference — both work the same way": "They behave differently for variable expansion and special characters.",
+        "Single quotes expand variables; double quotes don't": "This is the reverse of how bash actually works.",
+        "Double quotes are for numbers; single quotes are for strings": "Both handle strings. The difference is variable/escape expansion."
+      }
+    },
+    {
+      "question": "How do you access the first argument passed to a script?",
+      "type": "MCQ",
+      "options": ["$0", "$1", "$ARG", "$FIRST"],
+      "answer": "$1",
+      "explanation": "$1 is the first positional argument. $0 is the script name. $2 is the second argument, and so on.",
+      "incorrect_explanations": {
+        "$0": "$0 is the name of the script itself, not the first argument.",
+        "$ARG": "This is not a special variable — it would be undefined unless you set it.",
+        "$FIRST": "This is not a special variable — you would have to define it manually."
+      }
+    },
+    {
+      "question": "Scenario: You need to loop through all .txt files in a directory and echo their names. Which command is correct?",
+      "type": "Command Prediction",
+      "options": [
+        "for f in *.txt; do echo $f; done",
+        "loop *.txt echo",
+        "for f in .txt; do echo; done",
+        "while *.txt; do echo $f; done"
+      ],
+      "answer": "for f in *.txt; do echo $f; done",
+      "explanation": "*.txt is a glob pattern matching all .txt files. The for loop assigns each filename to f, and echo $f prints it.",
+      "incorrect_explanations": {
+        "loop *.txt echo": "loop is not a valid bash command.",
+        "for f in .txt; do echo; done": ".txt without * only matches a file literally named '.txt'. Also echo needs $f.",
+        "while *.txt; do echo $f; done": "while expects a command/condition, not a glob pattern."
       }
     }
   ],
   "resources": {
-    "summary": "This module covers shebang shell script headers, variables mapping, arithmetic operations, bracket comparisons, conditional blocks, loops, exit status checks, and function wrappers.",
-    "cheat_sheet": "#!/bin/bash - shebang line\nNAME=val - set variable\n$NAME - read variable\n$((A+B)) - sum math\n[ -f file ] - check file\nif [ cond ]; then ...; fi - conditional\nfor i in list; do ...; done - loop\n$? - exit code\nfunc() { ... } - custom function",
-    "commands_table": [
+    "summary": "Bash scripting automates multi-step tasks. Scripts start with #!/bin/bash, use variables to avoid hardcoding, if/else for decisions, for/while for repetition, and $() to capture command output. These fundamentals power every DevOps pipeline.",
+    "links": [
       {
-        "name": "read",
-        "syntax": "read [varname]",
-        "description": "Pause execution capturing keyboard standard input values."
+        "title": "Bash Guide for Beginners — TLDP",
+        "url": "https://tldp.org/LDP/Bash-Beginners-Guide/html/",
+        "description": "Comprehensive free guide covering all bash scripting fundamentals."
       },
       {
-        "name": "export",
-        "syntax": "export [name=val]",
-        "description": "Promotes local variables to environment scope variables."
+        "title": "ShellCheck — Bash Linter",
+        "url": "https://www.shellcheck.net/",
+        "description": "Paste your script to get instant feedback on syntax errors and best practices."
+      },
+      {
+        "title": "Bash Cheatsheet — DevHints",
+        "url": "https://devhints.io/bash",
+        "description": "Quick reference for bash syntax, variables, conditionals, and loops."
+      },
+      {
+        "title": "Explainshell — Command Breakdown",
+        "url": "https://explainshell.com/",
+        "description": "Paste any bash command to get a visual breakdown of what each part does."
+      },
+      {
+        "title": "Advanced Bash-Scripting Guide",
+        "url": "https://tldp.org/LDP/abs/html/",
+        "description": "Deep dive into advanced bash features for production scripting."
       }
     ],
-    "revision_notes": [
-      "Spacing inside brackets is strictly mandatory: `[ $x -eq 1 ]`.",
-      "Variables set with NAME=val, no spaces around the equal sign.",
-      "Use exit status $? directly to check errors after executing system utilities."
+    "cheat_sheet": "# Bash Scripting Cheat Sheet\n\n## Script Structure\n#!/bin/bash          # Shebang — must be line 1\nset -e               # Exit on any error\nset -x               # Debug: print each command\n\n## Variables\nNAME=\"value\"         # Assign (no spaces around =)\necho $NAME           # Read variable\necho ${NAME}         # Safer with braces\nDATE=$(date)         # Command substitution\n\n## Special Variables\n$0    Script name\n$1    First argument\n$#    Number of arguments\n$?    Last command exit code\n$$    Current process ID\n\n## Conditionals\nif [ -f file ]; then ... fi      # File exists\nif [ -d dir ]; then ... fi       # Directory exists\nif [ $x -eq 5 ]; then ... fi     # Numbers equal\nif [ \"$s\" = \"hi\" ]; then ... fi  # Strings equal\n\n## Loops\nfor x in a b c; do echo $x; done\nfor f in *.sh; do echo $f; done\nwhile [ $i -lt 5 ]; do ... done\n\n## Quotes\n\"double\"  — variables expand: $VAR → value\n'single'  — literal: $VAR stays as $VAR\n\n## Functions\nmy_func() { echo \"Hello $1\"; }\nmy_func World    # Call: Hello World",
+    "commands_table": [
+      { "name": "#!/bin/bash", "syntax": "#!/bin/bash (line 1)", "description": "Declare bash as the script interpreter." },
+      { "name": "chmod +x", "syntax": "chmod +x script.sh", "description": "Make script executable." },
+      { "name": "NAME=value", "syntax": "NAME=\"value\"", "description": "Define a variable (no spaces around =)." },
+      { "name": "echo $NAME", "syntax": "echo $NAME", "description": "Print variable value." },
+      { "name": "$(cmd)", "syntax": "VAR=$(command)", "description": "Capture command output into a variable." },
+      { "name": "if [ cond ]", "syntax": "if [ condition ]; then ... fi", "description": "Conditional branch." },
+      { "name": "for loop", "syntax": "for x in list; do ... done", "description": "Iterate over a list." },
+      { "name": "while loop", "syntax": "while [ cond ]; do ... done", "description": "Loop while condition is true." }
     ],
-    "beginner_mistakes": [
-      "Writing script logic without setting files executable permissions (+x), prompting permission denied errors on launch.",
-      "Adding spaces around equals during variable declaration: `var = val`."
+    "revision_notes": [
+      "#!/bin/bash must be the very first line — no blank lines before it.",
+      "No spaces around = in variable assignment: NAME=value not NAME = value.",
+      "Use double quotes for strings with variables. Use single quotes for literals.",
+      "[ condition ] requires spaces inside the brackets.",
+      "Every for/while loop needs do ... done. Every if needs fi."
     ],
     "best_practices": [
-      "Always declare variables scopes local inside helper shell functions.",
-      "Double quote variables representing file paths to prevent space splitting errors."
+      "Add set -e as the second line of every production script.",
+      "Validate all required arguments and files exist before proceeding.",
+      "Quote all variable expansions: \"$VAR\" not $VAR to handle spaces.",
+      "Use bash -x script.sh for debugging — it prints every command as it runs."
+    ],
+    "beginner_mistakes": [
+      "Forgetting chmod +x before running a script.",
+      "Adding spaces around = in variable assignment.",
+      "Missing do or done in loops — causes syntax error.",
+      "Using single quotes when you want variable expansion."
     ],
     "interview_questions": [
       {
-        "question": "How do you pass arguments to a script?",
-        "answer": "By passing parameters space-separated after the script command: `./script.sh arg1 arg2`."
+        "question": "What does set -e do in a bash script?",
+        "answer": "set -e (errexit) makes the script exit immediately if any command returns a non-zero exit code. Without it, scripts continue running even after failures, potentially causing worse downstream issues."
       },
       {
-        "question": "What is the difference between > and >>?",
-        "answer": "> overwrites target files contents; >> appends new data lines to the bottom of the files."
+        "question": "What is the difference between $() and backticks for command substitution?",
+        "answer": "Both capture command output. $() is preferred: it's more readable, nests easily ($(cmd $(inner))), and is standard in modern bash. Backticks are legacy syntax."
       }
-    ],
-    "additional_practice": [
-      "Write an automated deployment utility archiving log files into backups folders.",
-      "Construct a shell configuration script dynamically writing env variables into a config profile."
     ],
     "books": [
       {
-        "title": "Classic Shell Scripting by Arnold Robbins",
-        "description": "The definitive textbook for automated operations scripts."
-      }
-    ],
-    "documentation": [
+        "title": "Learning the bash Shell — Cameron Newham",
+        "description": "O'Reilly's comprehensive guide to bash scripting for beginners and intermediate users."
+      },
       {
-        "title": "GNU Bash Reference Manual",
-        "url": "https://www.gnu.org/software/bash/manual/"
-      }
-    ],
-    "external_resources": [
-      {
-        "title": "Bash Hackers Wiki",
-        "url": "https://wiki.bash-hackers.org/"
+        "title": "The Linux Command Line — William Shotts",
+        "description": "Part 4 covers shell scripting, functions, and automation in depth."
       }
     ]
   }
