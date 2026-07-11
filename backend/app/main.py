@@ -5,6 +5,8 @@ from fastapi.exceptions import RequestValidationError
 from app.api.router import api_router
 from app.core.config import settings
 from app.core.logging import logger
+import asyncio
+from datetime import datetime, timezone
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -81,3 +83,40 @@ def root():
         "project": settings.PROJECT_NAME,
         "docs_url": "/docs",
     }
+
+
+from app.db.session import SessionLocal
+from app.models.session import LabSession
+from app.services.runtime import runtime_service
+
+async def session_cleanup_worker():
+    """
+    Periodic background loop cleaning up starting/running sessions that have passed their expiry time.
+    """
+    logger.info("Session cleanup worker loop initialized.")
+    while True:
+        try:
+            await asyncio.sleep(30)
+            db = SessionLocal()
+            try:
+                now = datetime.now(timezone.utc)
+                expired = db.query(LabSession).filter(
+                    LabSession.status.in_(["starting", "running"]),
+                    LabSession.expires_at < now
+                ).all()
+                for s in expired:
+                    try:
+                        logger.info(f"Auto-expiring session {s.id} (expired at {s.expires_at})")
+                        runtime_service.stop_lab(str(s.id), s.container_id, s.lab_name)
+                        s.status = "expired"
+                        db.commit()
+                    except Exception as ex:
+                        logger.error(f"Error stopping expired session {s.id}: {ex}")
+            finally:
+                db.close()
+        except Exception as e:
+            logger.error(f"Error in session cleanup worker: {e}")
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(session_cleanup_worker())

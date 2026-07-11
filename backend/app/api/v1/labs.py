@@ -65,18 +65,19 @@ def get_academies_list(
     """
     academies = course_engine.get_academies()
     
+    # Batch query all progress records for user
+    progress_records = db.query(CourseProgress).filter(
+        CourseProgress.user_id == current_user.id
+    ).all()
+    progress_map = {p.course_slug: p for p in progress_records}
+    
     response = []
     for academy in academies:
         academy_courses = []
         percentages = []
         
         for course in academy["courses"]:
-            # Query user progress for this course slug
-            progress = db.query(CourseProgress).filter(
-                CourseProgress.user_id == current_user.id,
-                CourseProgress.course_slug == course["slug"]
-            ).first()
-            
+            progress = progress_map.get(course["slug"])
             percentage = progress.percentage if progress else 0
             completed_lessons = progress.completed_lessons if progress else []
             
@@ -119,15 +120,16 @@ def get_academy_detail(
     if not academy:
         raise HTTPException(status_code=404, detail="Academy not found.")
         
+    progress_records = db.query(CourseProgress).filter(
+        CourseProgress.user_id == current_user.id
+    ).all()
+    progress_map = {p.course_slug: p for p in progress_records}
+    
     academy_courses = []
     percentages = []
     
     for course in academy["courses"]:
-        progress = db.query(CourseProgress).filter(
-            CourseProgress.user_id == current_user.id,
-            CourseProgress.course_slug == course["slug"]
-        ).first()
-        
+        progress = progress_map.get(course["slug"])
         percentage = progress.percentage if progress else 0
         completed_lessons = progress.completed_lessons if progress else []
         
@@ -168,12 +170,14 @@ def generate_academy_certificate(
     if not academy:
         raise HTTPException(status_code=404, detail="Academy not found.")
         
+    progress_records = db.query(CourseProgress).filter(
+        CourseProgress.user_id == current_user.id
+    ).all()
+    progress_map = {p.course_slug: p for p in progress_records}
+    
     percentages = []
     for course in academy["courses"]:
-        progress = db.query(CourseProgress).filter(
-            CourseProgress.user_id == current_user.id,
-            CourseProgress.course_slug == course["slug"]
-        ).first()
+        progress = progress_map.get(course["slug"])
         percentages.append(progress.percentage if progress else 0)
         
     certificate_unlocked = all(p == 100 for p in percentages) if percentages else False
