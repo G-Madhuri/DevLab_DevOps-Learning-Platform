@@ -26,24 +26,24 @@
   },
   "theory": [
     {
-      "title": "Linux File Permissions Bitmask",
-      "definition": "A 9-bit binary representation indicating access rights for the Owner, Group, and Others.",
-      "explanation": "Every file contains metadata flags detailing access states. The first letter in detailed listings represents file type (e.g. `d` for directory, `-` for regular file). The next 9 characters are grouped in three segments of 3: User/Owner (u), Group (g), and Others/World (o). Each segment has flags `r` (Read), `w` (Write), and `x` (Execute). If a permission is missing, it is shown as `-`.",
-      "why_exists": "Enforces least-privilege permissions by defining exactly what operations are permitted for different user groups.",
-      "where_used": "System files audit, SSH keys setups, application directories security integrations.",
-      "real_world_example": "A private key showing `-rw-------` permissions allowing only the owner to read and write it.",
-      "best_practices": "Ensure sensitive deployment keys are restricted to owner-only access to prevent leaks.",
-      "common_mistakes": "Allowing global write permissions on configuration files, making them vulnerable to modifications."
+      "title": "Demystifying the rwx Code: Who Can Do What?",
+      "definition": "A 9-character code that tells Linux exactly who has the right to Read (r), Write (w), or Execute (x) a file.",
+      "explanation": "Imagine your computer is a massive shared apartment building. You don't want your roommates reading your private diary or deleting your files, right? Linux is a multi-user system, so it was designed from day one to keep files safe using three groups of access rights:\n\n1. 👤 User (Owner): The person who created the file.\n2. 👥 Group: A specific collection of users (e.g. the 'DevOps' team or the 'Admins').\n3. 🌍 Others: Anyone else who has access to the machine (the general public).\n\nWhen you run `ls -l`, you see a code like `-rwxr-xr--`. Let's break it down:\n- The first character tells you what it is: `-` means a file, and `d` means a directory (folder).\n- The next three `rwx` are for the User (can Read, Write, and Execute).\n- The next three `r-x` are for the Group (can Read and Execute, but not modify).\n- The last three `r--` are for Others (can only read the file, completely locked out from changing or running it!).",
+      "why_exists": "Enforces system security, preventing regular users or compromised web apps from reading confidential configuration files or deleting operating system files.",
+      "where_used": "Securing API keys, setting up user directories, configuring application access privileges, and managing server security.",
+      "real_world_example": "SSH keys (used to log into remote servers) are so sensitive that Linux will refuse to use them unless you lock down permissions to owner-only read (-r--------).",
+      "best_practices": "Always assign the least possible permissions. If a file only needs to be read, don't give it write (w) or execute (x) permissions.",
+      "common_mistakes": "Assuming files are safe by default. In a shared server environment, other users can read your files unless you explicitly change their permissions!"
     },
     {
-      "title": "Numeric chmod Permissions Mapping",
-      "definition": "Representing read, write, and execute permissions as octal numbers where r=4, w=2, and x=1.",
-      "explanation": "Numeric notation sums permission values for each segment. Read is 4, write is 2, execute is 1. For example, `chmod 755 filename` sums owner permissions to 4+2+1=7 (rwx), group to 4+0+1=5 (rx), and others to 4+0+1=5 (rx). Standard numeric settings include 600 (owner read/write only) and 700 (owner full access, group/others locked).",
-      "why_exists": "Provides an explicit, compact method to set exact file permission layouts in a single command line.",
-      "where_used": "Dockerfiles creation, Terraform configurations, automation scripts.",
-      "real_world_example": "Setting shell script files to `chmod 755 deploy.sh` so they can be executed by anyone but modified only by the owner.",
-      "best_practices": "Use 600 for configuration configs and 700 for scripts folders to restrict traversal.",
-      "common_mistakes": "Configuring public write access `chmod 777` on sensitive data paths just to quickly resolve permissions errors."
+      "title": "Speaking in Numbers: Numeric chmod Notation",
+      "definition": "A shorthand math system to set permissions instantly using three numbers (like 755 or 600).",
+      "explanation": "Typing symbolic flags (like `u+rwx,g+rx,o+rx`) is verbose. Instead, Linux developers use a clever mathematical shorthand where each permission is assigned a number value:\n\n- 📖 Read (r) = 4\n- ✍️ Write (w) = 2\n- 🏃 Execute (x) = 1\n- 🚫 No permission (-) = 0\n\nTo set permissions, you just add the numbers together for each of the three groups (User, Group, Others):\n\n- 755 (Super common for scripts):\n  - User gets 4 + 2 + 1 = 7 (Full control: read, write, execute)\n  - Group gets 4 + 0 + 1 = 5 (Read & execute only)\n  - Others get 4 + 0 + 1 = 5 (Read & execute only)\n- 600 (Perfect for secrets/keys):\n  - User gets 4 + 2 + 0 = 6 (Read & write)\n  - Group gets 0 (Blocked)\n  - Others get 0 (Blocked)\n- 777 (The nuclear option):\n  - Everyone gets 7 (Full read, write, execute for the whole world!). WARNING: Never use 777 in production, it's a huge security risk!",
+      "why_exists": "Provides a quick, standard, and automated way to configure file security inside deployment scripts and server setup tools.",
+      "where_used": "Dockerfile commands, CI/CD pipeline automation scripts, and server deployment playbooks.",
+      "real_world_example": "Writing `chmod 755 deploy.sh` to allow your continuous integration runner to execute the script while preventing unauthorized edits.",
+      "best_practices": "Default to 644 for files (owner reads/writes, others read) and 755 for folders/scripts. Use 600 for secret config keys.",
+      "common_mistakes": "Running `chmod 777` on a directory to fix a permission error because it's easy. It's like leaving your front door wide open with a sign saying 'free stuff inside' just because you lost your key!"
     }
   ],
   "interactive_examples": [
