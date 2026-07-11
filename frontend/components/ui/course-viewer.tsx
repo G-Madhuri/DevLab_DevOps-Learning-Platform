@@ -38,6 +38,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(0);
   const [showHint, setShowHint] = useState(false);
+  const [showExplanation, setShowExplanation] = useState(false);
   const [validationMsg, setValidationMsg] = useState<{ success: boolean; text: string } | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [activeTab, setActiveTab] = useState<"overview" | "theory" | "examples" | "lab" | "exercises" | "quiz" | "resources">("overview");
@@ -52,6 +53,44 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
   // Finish Module Toast
   const [showFinishToast, setShowFinishToast] = useState(false);
   const [toastTimer, setToastTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+
+  // Completed Tabs Tracking
+  const [completedTabs, setCompletedTabs] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    setCompletedTabs({});
+  }, [courseSlug]);
+
+  useEffect(() => {
+    const observerOptions = {
+      root: null, // viewport
+      rootMargin: "0px",
+      threshold: 0.1, // trigger as soon as bottom element enters even slightly
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const tabId = entry.target.getAttribute("data-tab-id");
+          if (tabId) {
+            setCompletedTabs((prev) => ({ ...prev, [tabId]: true }));
+          }
+        }
+      });
+    }, observerOptions);
+
+    const targets = ["overview", "theory", "examples", "exercises"];
+    targets.forEach((id) => {
+      const el = document.getElementById(`bottom-detector-${id}`);
+      if (el) {
+        observer.observe(el);
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [activeTab, courseSlug]);
 
   // Fetch active session query
   const { data: session, isLoading: isLoadingSession } = useQuery<LabSession | null>({
@@ -146,6 +185,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
     if (currentStep < lessons.length - 1) {
       setCurrentStep(currentStep + 1);
       setShowHint(false);
+      setShowExplanation(false);
       setValidationMsg(null);
     }
   };
@@ -154,6 +194,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
       setShowHint(false);
+      setShowExplanation(false);
       setValidationMsg(null);
     }
   };
@@ -253,13 +294,16 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
           <button
             key={t.id}
             onClick={() => setActiveTab(t.id)}
-            className={`px-4 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-4 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
               activeTab === t.id
                 ? "border-primary text-primary font-bold"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            {t.label}
+            <span>{t.label}</span>
+            {completedTabs[t.id] && (
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 fill-emerald-500/10 shrink-0" />
+            )}
           </button>
         ))}
       </div>
@@ -352,6 +396,8 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
+          {/* Bottom detector for tab completion */}
+          <div id="bottom-detector-overview" data-tab-id="overview" className="h-1 w-full" />
         </div>
       )}
 
@@ -424,6 +470,8 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
               </Button>
             </div>
           </div>
+          {/* Bottom detector for tab completion */}
+          <div id="bottom-detector-theory" data-tab-id="theory" className="h-1 w-full" />
         </div>
       )}
 
@@ -499,6 +547,8 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
               </Button>
             </div>
           </div>
+          {/* Bottom detector for tab completion */}
+          <div id="bottom-detector-examples" data-tab-id="examples" className="h-1 w-full" />
         </div>
       )}
 
@@ -506,7 +556,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
       {(activeTab === "lab" || activeTab === "exercises") && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fade-in">
           {/* Left Column: Lab instructions Stepper OR Exercises list */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="lg:col-span-7 space-y-6">
             {activeTab === "lab" ? (
               <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-5">
                 <div className="flex justify-between items-center border-b border-border/40 pb-3">
@@ -543,20 +593,62 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
 
                 {/* Task details */}
                 <div className="space-y-4 pt-2">
-                  <h3 className="text-xs font-extrabold text-foreground uppercase tracking-wide">
-                    {activeTask.title}
-                  </h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-extrabold text-foreground uppercase tracking-wide">
+                      {activeTask.title}
+                    </h3>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Command:</span>
+                      <code className="text-xs px-2.5 py-0.5 bg-primary/10 border border-primary/20 text-primary font-bold rounded font-mono">
+                        {(() => {
+                          const match = activeTask.title.match(/\(([^)]+)\)/);
+                          return match ? match[1] : (activeTask.solution || activeTask.title.replace(/^\d+\.\s*/, ""));
+                        })()}
+                      </code>
+                    </div>
+                  </div>
 
-                  {/* Syntax Example / Command */}
+                  {/* Definition */}
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                      <Lightbulb className="h-3 w-3 text-amber-500" />
-                      <span>Command Syntax</span>
-                    </span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Definition</span>
+                    <p className="text-xs text-foreground/80 leading-relaxed bg-muted/20 p-3 rounded-lg border border-border/30">
+                      {activeTask.definition}
+                    </p>
+                  </div>
+
+                  {/* Syntax Example / Command Syntax */}
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Example Command-Syntax</span>
                     <pre className="text-xs bg-[#1C1824] text-[#EFEBF4] p-3 rounded-lg border border-border/40 font-mono overflow-x-auto shadow-inner">
                       {activeTask.example}
                     </pre>
                   </div>
+
+                  {/* Explanation Collapsible */}
+                  {activeTask.explanation && (
+                    <div className="border border-border/30 rounded-lg bg-muted/10 overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => setShowExplanation(!showExplanation)}
+                        className="w-full flex items-center justify-between p-3 text-xs font-semibold text-primary hover:bg-muted/20 transition-colors cursor-pointer"
+                      >
+                        <span className="flex items-center space-x-1.5">
+                          <Code className="h-3.5 w-3.5" />
+                          <span>Detailed Explanation</span>
+                        </span>
+                        {showExplanation ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </button>
+                      {showExplanation && (
+                        <div className="p-3 pt-0 text-xs text-muted-foreground border-t border-border/25 leading-relaxed bg-card animate-fadeIn">
+                          {activeTask.explanation}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Task Goal Box */}
                   <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-2">
@@ -572,10 +664,10 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
                   {/* Expected Output */}
                   {activeTask.expected && (
                     <div className="space-y-1">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                        Expected Outcome
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                        Expected Output
                       </span>
-                      <pre className="text-[10px] bg-muted/80 p-2.5 rounded border border-border/40 font-mono text-muted-foreground overflow-x-auto">
+                      <pre className="text-[10px] bg-muted/80 p-2.5 rounded border border-border/40 font-mono text-muted-foreground overflow-x-auto leading-relaxed">
                         {activeTask.expected}
                       </pre>
                     </div>
@@ -584,6 +676,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
                   {/* Hint */}
                   <div className="pt-1">
                     <button
+                      type="button"
                       onClick={() => setShowHint(!showHint)}
                       className="text-xs font-semibold text-primary hover:underline flex items-center space-x-1 cursor-pointer"
                     >
@@ -693,12 +786,14 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
                   <span>Continue to Module Quiz</span>
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
+                {/* Bottom detector for tab completion */}
+                <div id="bottom-detector-exercises" data-tab-id="exercises" className="h-1 w-full" />
               </div>
             )}
           </div>
 
           {/* Right Column: Sandbox Terminal Console */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-5 space-y-6">
             {isLoadingSession ? (
               <div className="rounded-xl border border-border bg-card p-12 text-center animate-pulse">
                 <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />

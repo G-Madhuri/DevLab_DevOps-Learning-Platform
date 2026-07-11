@@ -26,34 +26,34 @@
   },
   "theory": [
     {
-      "title": "The Linux File System Hierarchy",
-      "definition": "A single tree-like structure representing all storage drives, files, directories, and hardware interfaces on the system.",
-      "explanation": "Unlike Windows, which uses drive letters like C: and D:, Linux organizes everything under a single root directory represented by a forward slash `/`. Subdirectories branch off this root. For example, `/home` holds user home profiles, `/etc` holds system configuration text files, and `/var` holds variables logs. The active folder you are in is called the 'working directory'.",
-      "why_exists": "Provides a clean, unified structure where every file can be referenced relative to a single starting point, regardless of where the physical hardware is mounted.",
-      "where_used": "System administration, configuration file edits, application deployment paths definition.",
-      "real_world_example": "Accessing application logs at `/var/log/nginx/error.log` or managing service settings inside `/etc/nginx/nginx.conf`.",
-      "best_practices": "Keep your system configurations inside `/etc` and user work files inside `/home/student` to maintain clean system boundary controls.",
-      "common_mistakes": "Trying to write work logs directly to root `/` which fails due to insufficient permissions and pollutes system core files."
+      "title": "Operating System Types & Architecture",
+      "definition": "The primary software layer managing all computer hardware resources and providing common execution platforms for applications.",
+      "explanation": "Computers run on hardware, but human users and programs cannot talk to hardware directly. An Operating System (OS) sits in the middle. The most common OS types are: \n1. Windows: Proprietary, GUI-focused, dominant in desktop settings. Uses the NT kernel. \n2. macOS: Proprietary, Unix-based, Unix-certified. Popular with software developers and designers. Uses the XNU/Darwin kernel. \n3. Linux: Open-source, Unix-like, highly portable and configurable. Dominates servers, cloud instances, and containers. Uses the monolithic Linux kernel. \n4. Unix: The grandfather of modern multitasking operating systems developed in the 1970s at Bell Labs. Modern macOS and BSD branch from Unix, while Linux is Unix-like (built from scratch to behave exactly like Unix).",
+      "why_exists": "To virtualize physical processors, memory spaces, and storage drives so multiple application processes can run concurrently without interfering with each other.",
+      "where_used": "Enterprise servers configurations, user personal workspaces, embedded devices, and container clusters.",
+      "real_world_example": "A single cloud computer hosting multiple web servers, database engines, and caching daemons concurrently, all managed and isolated by the Linux kernel scheduling queues.",
+      "best_practices": "Learn the underlying system architecture and standard POSIX conventions, as they apply across all Linux and Unix distributions.",
+      "common_mistakes": "Assuming all operating systems behave like Windows, e.g., expecting case-insensitive filesystems (in Linux, config.txt and Config.txt are completely different files)."
     },
     {
-      "title": "Command Syntax Architecture",
-      "definition": "The formal structure of a command execution line: command followed by optional flags and optional parameter arguments.",
-      "explanation": "A command tells the shell what utility to run. Flags (or options) start with a hyphen `-` (e.g. `-a` or `-l`) and modify how the command behaves. Arguments specify the target parameters the command should operate on (e.g. file names or directory paths). Example: `ls -la /var` runs `ls` with flags `l` (long listing) and `a` (all files), targeting `/var` directory.",
-      "why_exists": "Allows standard utilities to remain compact and reusable while offering high flexibility via combinations of flags and parameters.",
-      "where_used": "All interactive terminal commands and automation script lines.",
-      "real_world_example": "Copying files with verbose logging output using `cp -v source.txt destination.txt`.",
-      "best_practices": "Combine short flags together when possible (e.g. use `ls -la` instead of `ls -l -a`) to keep typing clean.",
-      "common_mistakes": "Forgetting the space between the command name and the flags, resulting in 'command not found' errors (e.g. typing `ls-l` instead of `ls -l`)."
+      "title": "Linux Distributions & Selecting the Right Flavor",
+      "definition": "A complete operating system package comprising the core Linux kernel, GNU terminal utilities, package managers, and pre-packaged applications.",
+      "explanation": "Because Linux is open-source, anyone can package the kernel with custom utilities to create their own flavor, called a 'distribution' (or 'distro'). The main distro families are:\n1. Debian Family (e.g. Ubuntu, Linux Mint): Uses the .deb package format and apt package manager. Highly user-friendly, has the largest online community, and is excellent for beginners and developers.\n2. Red Hat Family (e.g. RHEL, Rocky Linux, Fedora, CentOS): Uses the .rpm package format and dnf/yum package manager. RHEL (Red Hat Enterprise Linux) is the gold standard for enterprise environments because of commercial support and long-term security lifecycles.\n3. Alpine Linux: An ultra-lightweight (approx 5MB) distro focused on security and speed. It uses the apk manager and Musl C library. It is widely used as the default base image for Docker containers.\n4. Arch Linux: A minimalist, rolling-release distribution targeted at power users who want to configure everything manually.\n\nHow to Choose: For local learning, developer environments, and standard cloud workloads, Ubuntu is the most practical choice. For stable enterprise production environments, RHEL or Rocky Linux are preferred. For microservice containers, Alpine is the ideal candidate.",
+      "why_exists": "To cater to different operational requirements: enterprise security support, developer ease of use, desktop aesthetics, or micro-sized container layers.",
+      "where_used": "Selecting cloud base images, containerizing microservices, and provisioning production servers.",
+      "real_world_example": "A DevOps team utilizing Ubuntu instances for developer staging environments, deploying Rocky Linux for database clusters, and running code inside Alpine containers.",
+      "best_practices": "Use Ubuntu/Debian family for general purposes and Alpine for Docker images to minimize security vulnerabilities.",
+      "common_mistakes": "Choosing a niche or rolling-release distro (like Arch) for production servers, leading to system updates breaking configurations unexpectedly."
     },
     {
-      "title": "Standard Outputs and Redirections",
-      "definition": "The flow of data from a command execution to a target file stream instead of printing to the active terminal screen.",
-      "explanation": "By default, commands write their outputs to Standard Output (stdout), which prints to the screen. You can redirect stdout to a file using operators. The single bracket `>` writes output to a file, completely overwriting its content. The double bracket `>>` appends the output to the end of the file, keeping the old content intact.",
-      "why_exists": "Enables saving command outputs, logging script actions, and generating dynamic configuration parameters programmatically.",
-      "where_used": "Log generation, system reports storage, and deployment variables configurations scripts.",
-      "real_world_example": "Logging build events using `echo 'build success' >> build.log`.",
-      "best_practices": "Use append `>>` by default unless you explicitly intend to clear/overwrite the file to prevent accidental loss of important settings.",
-      "common_mistakes": "Using `>` instead of `>>`, which deletes your existing configurations database file content instantly."
+      "title": "Interactive Commands Catalog Overview",
+      "definition": "The exact set of fundamental terminal instructions you will use in this module's interactive labs to navigate and manage the filesystem.",
+      "explanation": "In the hands-on lab, you will write and execute the following commands:\n- whoami: Prints the active username context.\n- pwd: Print Working Directory, shows the absolute directory path you are currently in.\n- ls: List files and directories in your current folder.\n- ls -a: List all files, including hidden configuration files (files starting with a dot '.').\n- ls -l: List folder contents in long format showing permissions, sizes, and owners.\n- cd [dir]: Change directory folder location.\n- cd ~ (or cd): Change directory to user home directory (/home/student).\n- touch [file]: Create a new empty file.\n- mkdir [dir]: Create a new directory folder.\n- echo 'text' > [file]: Write or overwrite text to a file.\n- echo 'text' >> [file]: Append text to the end of a file.\n- cp [src] [dest]: Copy files or folders.\n- mv [src] [dest]: Move or rename files or folders.\n- cat [file]: Concatenate and print file content to screen.\n- rm [file]: Remove/delete files.",
+      "why_exists": "To provide a complete catalog cheatsheet reference directly inside the theory tab before you start running them in the interactive terminal.",
+      "where_used": "Command line navigation reference and automated scripting tasks.",
+      "real_world_example": "Quickly referencing syntax parameters (like absolute path directories or file overwrite operators) before typing them in the sandbox.",
+      "best_practices": "Keep this cheatsheet handy as a fast command lookup table when running the interactive lab steps.",
+      "common_mistakes": "Typing commands with wrong spaces or casing, which returns errors in execution."
     }
   ],
   "interactive_examples": [
