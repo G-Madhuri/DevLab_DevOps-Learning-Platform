@@ -72,4 +72,9 @@ export const labSessionService = {
     const response = await apiClient.get(`/labs/linux/sessions?skip=${skip}&limit=${limit}`);
     return response.data;
   },
+
+  async completeCourseTab(courseSlug: string, tabId: string): Promise<any> {
+    const response = await apiClient.post(`/labs/linux/progress/${courseSlug}/tabs/${tabId}`);
+    return response.data;
+  },
 };
