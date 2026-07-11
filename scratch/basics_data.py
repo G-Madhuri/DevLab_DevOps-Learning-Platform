@@ -1,4 +1,10 @@
-{
+import json
+import os
+
+os.makedirs("backend/app/courses/lessons", exist_ok=True)
+
+# 1. Linux Command Line Basics
+basics_data = {
   "slug": "linux-command-line-basics",
   "title": "Linux Command Line Basics",
   "overview": {
@@ -324,12 +330,7 @@
   "quiz": [
     {
       "question": "Which command is used to output the current directory path context?",
-      "options": [
-        "ls",
-        "cd",
-        "pwd",
-        "whoami"
-      ],
+      "options": ["ls", "cd", "pwd", "whoami"],
       "answer": "pwd",
       "explanation": "pwd stands for 'Print Working Directory' and displays the absolute path starting from /.",
       "incorrect_explanations": {
@@ -340,12 +341,7 @@
     },
     {
       "question": "How do you display hidden configuration files starting with a dot?",
-      "options": [
-        "ls -l",
-        "ls -a",
-        "ls -h",
-        "ls -r"
-      ],
+      "options": ["ls -l", "ls -a", "ls -h", "ls -r"],
       "answer": "ls -a",
       "explanation": "The -a (all) option tells the listing utility to output hidden files starting with a period.",
       "incorrect_explanations": {
@@ -356,12 +352,7 @@
     },
     {
       "question": "What happens if you run the cd command with no arguments or parameters?",
-      "options": [
-        "Returns root directory",
-        "Throws command execution error",
-        "Navigates to user home directory",
-        "Displays help manual"
-      ],
+      "options": ["Returns root directory", "Throws command execution error", "Navigates to user home directory", "Displays help manual"],
       "answer": "Navigates to user home directory",
       "explanation": "Defaulting parameters in cd automatically maps target to home (~).",
       "incorrect_explanations": {
@@ -372,12 +363,7 @@
     },
     {
       "question": "Which operator completely overwrites a file with command outputs?",
-      "options": [
-        ">",
-        ">>",
-        "<",
-        "|"
-      ],
+      "options": [">", ">>", "<", "|"],
       "answer": ">",
       "explanation": "The single redirect bracket > clears target file contents before writing.",
       "incorrect_explanations": {
@@ -388,12 +374,7 @@
     },
     {
       "question": "Which command is used to duplicate files?",
-      "options": [
-        "mv",
-        "cp",
-        "rm",
-        "touch"
-      ],
+      "options": ["mv", "cp", "rm", "touch"],
       "answer": "cp",
       "explanation": "cp duplicates a source file to a new destination path.",
       "incorrect_explanations": {
@@ -404,12 +385,7 @@
     },
     {
       "question": "What is the result of using the mv command?",
-      "options": [
-        "Files are deleted",
-        "Files are duplicated",
-        "Files are relocated or renamed",
-        "Files are formatted"
-      ],
+      "options": ["Files are deleted", "Files are duplicated", "Files are relocated or renamed", "Files are formatted"],
       "answer": "Files are relocated or renamed",
       "explanation": "mv changes the file's index locator path in the file system.",
       "incorrect_explanations": {
@@ -420,12 +396,7 @@
     },
     {
       "question": "Which command is used to create a new directory folder?",
-      "options": [
-        "touch",
-        "mkdir",
-        "rmdir",
-        "cd"
-      ],
+      "options": ["touch", "mkdir", "rmdir", "cd"],
       "answer": "mkdir",
       "explanation": "mkdir stands for 'make directory' and provisions folder sectors.",
       "incorrect_explanations": {
@@ -436,10 +407,7 @@
     },
     {
       "question": "True or False: Files deleted with the rm command can be retrieved from a recycle bin.",
-      "options": [
-        "True",
-        "False"
-      ],
+      "options": ["True", "False"],
       "answer": "False",
       "explanation": "Linux CLI lacks a recycle bin system; rm deletes blocks immediately.",
       "incorrect_explanations": {
@@ -448,12 +416,7 @@
     },
     {
       "question": "If you want to view a file's content directly in the terminal, which command should you use?",
-      "options": [
-        "echo",
-        "pwd",
-        "cat",
-        "cd"
-      ],
+      "options": ["echo", "pwd", "cat", "cd"],
       "answer": "cat",
       "explanation": "cat prints the file contents to the terminal's standard output stream.",
       "incorrect_explanations": {
@@ -483,31 +446,11 @@
     "summary": "This module introduces the basic UNIX files system layout, navigation commands cd, pwd, listing files ls, basic file creation touch, folders mkdir, copying cp, relocating mv, deleting rm, and redirects standards stdout streams > and >>.",
     "cheat_sheet": "pwd - print path\nls - list folder\nls -a - hidden files\nls -l - details table\ncd [folder] - change folder\ntouch [file] - create file\nmkdir [folder] - create folder\necho [text] > [file] - overwrite write\necho [text] >> [file] - append write\ncat [file] - view content\ncp [src] [dest] - copy file\nmv [src] [dest] - move/rename\nrm [file] - delete file",
     "commands_table": [
-      {
-        "name": "pwd",
-        "syntax": "pwd",
-        "description": "Expose current working folder absolute path."
-      },
-      {
-        "name": "ls",
-        "syntax": "ls [flags] [path]",
-        "description": "List files and directories contents."
-      },
-      {
-        "name": "cd",
-        "syntax": "cd [path]",
-        "description": "Traverse to target directory pathway."
-      },
-      {
-        "name": "touch",
-        "syntax": "touch [filename]",
-        "description": "Create new empty file block."
-      },
-      {
-        "name": "mkdir",
-        "syntax": "mkdir [foldername]",
-        "description": "Create new folder directory."
-      }
+      {"name": "pwd", "syntax": "pwd", "description": "Expose current working folder absolute path."},
+      {"name": "ls", "syntax": "ls [flags] [path]", "description": "List files and directories contents."},
+      {"name": "cd", "syntax": "cd [path]", "description": "Traverse to target directory pathway."},
+      {"name": "touch", "syntax": "touch [filename]", "description": "Create new empty file block."},
+      {"name": "mkdir", "syntax": "mkdir [foldername]", "description": "Create new folder directory."}
     ],
     "revision_notes": [
       "The root directory / is the parent of all files.",
@@ -523,36 +466,21 @@
       "Keep workspace clean using modular subfolders for different projects."
     ],
     "interview_questions": [
-      {
-        "question": "What is the difference between relative and absolute paths?",
-        "answer": "Absolute paths start from root /; relative paths start from your current location."
-      },
-      {
-        "question": "How do you append a line to a file without opening it?",
-        "answer": "Use echo 'text' >> filename."
-      }
+      {"question": "What is the difference between relative and absolute paths?", "answer": "Absolute paths start from root /; relative paths start from your current location."},
+      {"question": "How do you append a line to a file without opening it?", "answer": "Use echo 'text' >> filename."}
     ],
     "additional_practice": [
       "Construct a folder hierarchy of a mock web app: index.html, styles.css, app.js.",
       "Export directory listings of `/etc` and save it to `etc_listing.txt` inside your home."
     ],
     "books": [
-      {
-        "title": "The Linux Command Line by William Shotts",
-        "description": "A comprehensive guide to command line basics."
-      }
+      {"title": "The Linux Command Line by William Shotts", "description": "A comprehensive guide to command line basics."}
     ],
     "documentation": [
-      {
-        "title": "GNU Coreutils Manual",
-        "url": "https://www.gnu.org/software/coreutils/manual/"
-      }
+      {"title": "GNU Coreutils Manual", "url": "https://www.gnu.org/software/coreutils/manual/"}
     ],
     "external_resources": [
-      {
-        "title": "Linux Journey",
-        "url": "https://linuxjourney.com/"
-      }
+      {"title": "Linux Journey", "url": "https://linuxjourney.com/"}
     ]
   }
 }

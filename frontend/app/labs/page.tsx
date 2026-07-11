@@ -478,7 +478,7 @@ export default function LabsCatalogPage() {
                                         : "bg-primary text-primary-foreground hover:bg-primary/95"
                                     }`}
                                   >
-                                    {isCompleted ? "Restart Lab" : "Launch Lab"}
+                                    Start Course
                                   </Button>
                                 </Link>
                               </div>

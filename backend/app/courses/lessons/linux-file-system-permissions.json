@@ -1,59 +1,67 @@
 {
   "slug": "linux-file-system-permissions",
-  "title": "Linux File System Permissions",
-  "theory": "Linux protects files and directories using ownership and access permissions. Every file belongs to a User (owner) and a Group. Permissions are defined for User (u), Group (g), and Others (o). Access levels are: Read (r=4), Write (w=2), and Execute (x=1). These are represented numerically (e.g. 755 = owner rwx, group rx, others rx) or symbolically (e.g. `chmod +x`). `chown` reassigned file owners, while `chgrp` sets group ownership.",
+  "title": "Linux File System & Permissions",
+  "overview": {
+    "introduction": [
+      "In a multi-user operating system like Linux, security is built into the core design. Without a strict mechanism to control who can read, modify, or execute files, any user or running process could access sensitive configurations, read other users' private data, or corrupt the operating system itself. Linux solves this problem through its file permissions and ownership subsystem.",
+      "For DevOps Engineers, managing file system permissions is a fundamental safety barrier. When deploying applications, web server processes (like Nginx) should only have read access to source files, database folders must be restricted to the database user account, and private SSH keys must be locked down to owner-only read access. Understanding how to configure access control lists prevents unauthorized processes from reading or writing configuration secrets.",
+      "In this module, you will learn how to read permissions configurations outputs, modify read/write/execute bits using chmod symbolic and numeric notation, change file owners and group owners using chown/chgrp, and configure default creation masks utilizing umask."
+    ],
+    "what_you_will_learn": [
+      "The layout of user permissions flags (Read, Write, Execute).",
+      "Assigning symbolic and numeric permission modifications using chmod.",
+      "Managing file ownership and group memberships utilizing chown and chgrp.",
+      "Configuring security restrictions on directory access settings.",
+      "Checking default file creation masks via umask."
+    ],
+    "prerequisites": "Completion of Linux Command Line Basics course.",
+    "estimated_time": "90 mins",
+    "difficulty": "Intermediate",
+    "learning_outcomes": [
+      "Analyze detailed metadata listings of files and directories.",
+      "Apply least-privilege permission masks using symbolic and numeric chmod syntax.",
+      "Manage system user account permissions using chown and chgrp.",
+      "Expose umask default creations settings."
+    ]
+  },
+  "theory": [
+    {
+      "title": "Linux File Permissions Bitmask",
+      "definition": "A 9-bit binary representation indicating access rights for the Owner, Group, and Others.",
+      "explanation": "Every file contains metadata flags detailing access states. The first letter in detailed listings represents file type (e.g. `d` for directory, `-` for regular file). The next 9 characters are grouped in three segments of 3: User/Owner (u), Group (g), and Others/World (o). Each segment has flags `r` (Read), `w` (Write), and `x` (Execute). If a permission is missing, it is shown as `-`.",
+      "why_exists": "Enforces least-privilege permissions by defining exactly what operations are permitted for different user groups.",
+      "where_used": "System files audit, SSH keys setups, application directories security integrations.",
+      "real_world_example": "A private key showing `-rw-------` permissions allowing only the owner to read and write it.",
+      "best_practices": "Ensure sensitive deployment keys are restricted to owner-only access to prevent leaks.",
+      "common_mistakes": "Allowing global write permissions on configuration files, making them vulnerable to modifications."
+    },
+    {
+      "title": "Numeric chmod Permissions Mapping",
+      "definition": "Representing read, write, and execute permissions as octal numbers where r=4, w=2, and x=1.",
+      "explanation": "Numeric notation sums permission values for each segment. Read is 4, write is 2, execute is 1. For example, `chmod 755 filename` sums owner permissions to 4+2+1=7 (rwx), group to 4+0+1=5 (rx), and others to 4+0+1=5 (rx). Standard numeric settings include 600 (owner read/write only) and 700 (owner full access, group/others locked).",
+      "why_exists": "Provides an explicit, compact method to set exact file permission layouts in a single command line.",
+      "where_used": "Dockerfiles creation, Terraform configurations, automation scripts.",
+      "real_world_example": "Setting shell script files to `chmod 755 deploy.sh` so they can be executed by anyone but modified only by the owner.",
+      "best_practices": "Use 600 for configuration configs and 700 for scripts folders to restrict traversal.",
+      "common_mistakes": "Configuring public write access `chmod 777` on sensitive data paths just to quickly resolve permissions errors."
+    }
+  ],
   "interactive_examples": [
     {
-      "command": "ls -ld drafts",
-      "description": "Inspects directories metadata permissions and flags."
-    },
-    {
+      "objective": "Change file permissions to read and write for the owner only.",
       "command": "chmod 600 log.txt",
-      "description": "Restricts access to owner read/write only."
+      "explanation": "Calculates owner as 4+2=6, group as 0, others as 0, restricting access to the owner user account.",
+      "expected_output": "",
+      "common_mistakes": "Forgetting the filename parameter in the command arguments.",
+      "tips": "Verify the changed permissions using `ls -l log.txt` immediately after running the command."
     },
     {
-      "command": "chgrp sudo log.txt",
-      "description": "Changes the group ownership of log.txt to sudo."
-    }
-  ],
-  "exercises": [
-    {
-      "description": "Make a script write-only for the owner using `chmod 200 script.sh`."
-    },
-    {
-      "description": "Check details of all user groups using the command `groups` or `id`."
-    }
-  ],
-  "quiz": [
-    {
-      "question": "Which command changes read/write/execute permissions?",
-      "options": [
-        "chown",
-        "chgrp",
-        "chmod",
-        "umask"
-      ],
-      "answer": "chmod"
-    },
-    {
-      "question": "What access permissions does chmod 600 grant?",
-      "options": [
-        "Read-only for all",
-        "Read and write for owner only",
-        "Execute for group members",
-        "Full control for all users"
-      ],
-      "answer": "Read and write for owner only"
-    },
-    {
-      "question": "Which command sets group ownership?",
-      "options": [
-        "chown",
-        "chmod",
-        "chgrp",
-        "useradd"
-      ],
-      "answer": "chgrp"
+      "objective": "Change the owner user of a file to root.",
+      "command": "chown root log.txt",
+      "explanation": "Modifies file metadata settings, setting the root account as the absolute owner.",
+      "expected_output": "",
+      "common_mistakes": "Attempting chown without appropriate administrative permissions, resulting in permission errors.",
+      "tips": "Combine owner and group modifications in one command: `chown root:sudo log.txt`."
     }
   ],
   "lessons": [
@@ -248,9 +256,283 @@
       "example": "rm unwanted_file.txt",
       "expected": "",
       "hint": "Type: rm log.txt",
-      "solution": "rm log.txt",
+      "solution": "log.txt",
       "difficulty": "Beginner",
       "estimated_duration": "3m"
     }
-  ]
+  ],
+  "exercises": [
+    {
+      "title": "Directory traverse blocks",
+      "problem": "Create a directory named `private_workspace` and restrict it using chmod 700. Verify CD traversal fails if group changes.",
+      "difficulty": "Intermediate",
+      "hint": "Use `chmod 700 private_workspace`.",
+      "expected_result": "Traversal verified locked.",
+      "objective": "Understand how execute (x) flag blocks navigation."
+    },
+    {
+      "title": "Create write-only script",
+      "problem": "Modify an empty script `audit.sh` to allow owner-write only (200).",
+      "difficulty": "Advanced",
+      "hint": "Use `chmod 200 audit.sh`.",
+      "expected_result": "File permission shows as --w-------.",
+      "objective": "Master writing customized security mask configurations."
+    },
+    {
+      "title": "Symbolic chmod changes",
+      "problem": "Add user write and group execute permissions to a script using symbolic syntax.",
+      "difficulty": "Beginner",
+      "hint": "Use `chmod u+w,g+x script.sh`.",
+      "expected_result": "Permissions modified symbolically.",
+      "objective": "Learn symbol permissions formats."
+    },
+    {
+      "title": "Audit directory ownership",
+      "problem": "Identify the owner and group values of `/etc/passwd`.",
+      "difficulty": "Beginner",
+      "hint": "Use `ls -l /etc/passwd`.",
+      "expected_result": "root root displayed in metadata column.",
+      "objective": "Practice identifying active file ownership."
+    },
+    {
+      "title": "Default Creation settings",
+      "problem": "Change your active umask shell configuration to a restrictive 0077 and create a file.",
+      "difficulty": "Advanced",
+      "hint": "Use `umask 0077` followed by `touch new.txt`.",
+      "expected_result": "new.txt created with owner-only access 600.",
+      "objective": "Gain experience configuring active session creation masks."
+    },
+    {
+      "title": "Group assignments change",
+      "problem": "Reassign folder group ownership to system administration groups.",
+      "difficulty": "Intermediate",
+      "hint": "Use `chgrp sudo projects`.",
+      "expected_result": "Group ownership modified to sudo.",
+      "objective": "Practice group reassignments."
+    }
+  ],
+  "quiz": [
+    {
+      "question": "Which command alters read/write/execute permissions?",
+      "options": [
+        "chown",
+        "chgrp",
+        "chmod",
+        "umask"
+      ],
+      "answer": "chmod",
+      "explanation": "chmod (change mode) sets the permissions mask bits.",
+      "incorrect_explanations": {
+        "chown": "chown reassigns file user owner.",
+        "chgrp": "chgrp reassigns file group owner.",
+        "umask": "umask defines default masks for new creations."
+      }
+    },
+    {
+      "question": "What permissions does chmod 600 grant?",
+      "options": [
+        "Read-only for all",
+        "Read and write for owner only",
+        "Execute for owner only",
+        "Full access for group members"
+      ],
+      "answer": "Read and write for owner only",
+      "explanation": "6 maps to 4 (read) + 2 (write) for the owner. 0 removes all access for group and others.",
+      "incorrect_explanations": {
+        "Read-only for all": "Represented by chmod 444.",
+        "Execute for owner only": "Represented by chmod 100.",
+        "Full access for group members": "Represented by chmod 070."
+      }
+    },
+    {
+      "question": "Which command is used to modify the group ownership of a file?",
+      "options": [
+        "chown",
+        "chgrp",
+        "chmod",
+        "groups"
+      ],
+      "answer": "chgrp",
+      "explanation": "chgrp (change group) reassigns file group owners.",
+      "incorrect_explanations": {
+        "chown": "chown changes user ownership.",
+        "chmod": "chmod alters file permission modes.",
+        "groups": "groups lists active user group memberships."
+      }
+    },
+    {
+      "question": "In long format listings, what does the first character represent?",
+      "options": [
+        "Owner permissions",
+        "File type",
+        "Hard link count",
+        "File size"
+      ],
+      "answer": "File type",
+      "explanation": "The first character indicates whether it is a directory (d), regular file (-), or link (l).",
+      "incorrect_explanations": {
+        "Owner permissions": "Owner permissions follow in positions 2-4.",
+        "Hard link count": "Link count is shown as a number after permission characters.",
+        "File size": "File size is shown after the group name."
+      }
+    },
+    {
+      "question": "How would you symbolically grant execution permission to the group?",
+      "options": [
+        "chmod g+x",
+        "chmod o+x",
+        "chmod u+x",
+        "chmod a+x"
+      ],
+      "answer": "chmod g+x",
+      "explanation": "g refers to group, and +x adds execution rights.",
+      "incorrect_explanations": {
+        "chmod o+x": "Adds execution to others/world, not group.",
+        "chmod u+x": "Adds execution to user/owner, not group.",
+        "chmod a+x": "Adds execution to all segments."
+      }
+    },
+    {
+      "question": "What value maps to read, write, and execute permissions numerically?",
+      "options": [
+        "5",
+        "6",
+        "7",
+        "4"
+      ],
+      "answer": "7",
+      "explanation": "Read (4) + Write (2) + Execute (1) sum up to 7.",
+      "incorrect_explanations": {
+        "5": "5 is read (4) + execute (1) only.",
+        "6": "6 is read (4) + write (2) only.",
+        "4": "4 is read only."
+      }
+    },
+    {
+      "question": "True or False: A user can enter a directory folder if they have read permissions but not execute permissions.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "answer": "False",
+      "explanation": "Execute permission (x) is strictly required on folders to traverse inside using cd.",
+      "incorrect_explanations": {
+        "True": "Without the execute flag, entering the directory fails with permission denied."
+      }
+    },
+    {
+      "question": "Which flag allows recursive permissions modifications inside a directory tree?",
+      "options": [
+        "-r",
+        "-R",
+        "-f",
+        "-v"
+      ],
+      "answer": "-R",
+      "explanation": "The uppercase -R flag tells chmod and chown to recursively modify child files.",
+      "incorrect_explanations": {
+        "-r": "Lowercase -r is not the standard recursion flag for chmod.",
+        "-f": "Force option to ignore error messages.",
+        "-v": "Verbose logs details of changed file states."
+      }
+    },
+    {
+      "question": "What is the standard permission setting for public directories (like website folders)?",
+      "options": [
+        "777",
+        "755",
+        "600",
+        "700"
+      ],
+      "answer": "755",
+      "explanation": "755 allows full owner access, and lets group/others read and navigate inside.",
+      "incorrect_explanations": {
+        "777": "Permits public writes, which is a major security risk.",
+        "600": "Blocks directory navigation completely.",
+        "700": "Blocks all group and public navigation."
+      }
+    },
+    {
+      "question": "Scenario: A web app script `app.py` is throwing a 'Permission Denied' execution error in your pipeline. It has `-rw-r--r--` permissions. What command fixes this?",
+      "options": [
+        "chmod 600 app.py",
+        "chmod +x app.py",
+        "chown root app.py",
+        "umask 022 app.py"
+      ],
+      "answer": "chmod +x app.py",
+      "explanation": "Adding execution (+x) permission symbolically grants the system execution rights.",
+      "incorrect_explanations": {
+        "chmod 600 app.py": "This removes read/exec rights for group/others and blocks execution.",
+        "chown root app.py": "Changing owner does not grant execution permission bits.",
+        "umask 022 app.py": "umask is a shell mask setting and cannot be run directly on a file."
+      }
+    }
+  ],
+  "resources": {
+    "summary": "This module covers file structures permissions (rwx), octal representation (755, 600), changing permission states with chmod recursively, ownership modification with chown/chgrp, and umask configurations.",
+    "cheat_sheet": "chmod [mode] [file] - change permissions\nchmod -R [mode] [dir] - recursive permissions\nchown [owner] [file] - change owner\nchgrp [group] [file] - change group owner\numask [mask] - change defaults creation mask",
+    "commands_table": [
+      {
+        "name": "chmod",
+        "syntax": "chmod [mode] [file]",
+        "description": "Alters access permission bits of a file."
+      },
+      {
+        "name": "chown",
+        "syntax": "chown [owner] [file]",
+        "description": "Alters user owner assignments."
+      },
+      {
+        "name": "chgrp",
+        "syntax": "chgrp [group] [file]",
+        "description": "Alters group owner assignments."
+      }
+    ],
+    "revision_notes": [
+      "User (u) refers to owner, Group (g) to group list, Others (o) to world, All (a) to all.",
+      "Octal mappings: r=4, w=2, x=1. Sum them to configure settings.",
+      "Folders require execute permissions to be entered."
+    ],
+    "beginner_mistakes": [
+      "Using chmod 777 as a generic fix for permission issues, exposing directories to public write access.",
+      "Forgetting recursion flag -R when changing website subdirectories."
+    ],
+    "best_practices": [
+      "Follow least-privilege principles by restricting configuration secrets to chmod 600.",
+      "Ensure web server folders use chmod 755 or 750 for secure directory traversals."
+    ],
+    "interview_questions": [
+      {
+        "question": "How does Linux determine if a file is executable?",
+        "answer": "By validating if the execution (x) bit is set on the file permissions layout."
+      },
+      {
+        "question": "What is the difference between chmod 755 and 700?",
+        "answer": "755 permits public reads and navigations, 700 restricts access exclusively to the owner."
+      }
+    ],
+    "additional_practice": [
+      "Configure a private assets directory setting chmod 700 on `/home/student/projects`.",
+      "Create a read-only configurations file and test writing changes fails."
+    ],
+    "books": [
+      {
+        "title": "Linux Administration Handbook by Evi Nemeth",
+        "description": "Core guide for system administrators."
+      }
+    ],
+    "documentation": [
+      {
+        "title": "GNU Coreutils chmod Reference",
+        "url": "https://www.gnu.org/software/coreutils/manual/html_node/chmod-invocation.html"
+      }
+    ],
+    "external_resources": [
+      {
+        "title": "Linux Permissions Sandbox Guide",
+        "url": "https://www.tldp.org/LDP/intro-linux/html/sect_03_04.html"
+      }
+    ]
+  }
 }

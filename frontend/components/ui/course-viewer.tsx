@@ -41,7 +41,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
   const [showExplanation, setShowExplanation] = useState(false);
   const [validationMsg, setValidationMsg] = useState<{ success: boolean; text: string } | null>(null);
   const [isValidating, setIsValidating] = useState(false);
-  const [activeTab, setActiveTab] = useState<"theory" | "examples" | "lab" | "exercises" | "quiz">("theory");
+  const [activeTab, setActiveTab] = useState<"overview" | "theory" | "examples" | "lab" | "exercises" | "quiz" | "resources">("overview");
 
   // Quiz States
   const [quizAnswers, setQuizAnswers] = useState<Record<number, string>>({});
@@ -203,17 +203,19 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
   }
 
   const tabs = [
-    { id: "theory", label: "1. Theory & Overview" },
-    { id: "examples", label: "2. Interactive Examples" },
-    { id: "lab", label: "3. Hands-on Lab" },
-    { id: "exercises", label: "4. Exercises" },
-    { id: "quiz", label: "5. Module Quiz" }
+    { id: "overview", label: "1. Overview" },
+    { id: "theory", label: "2. Theory" },
+    { id: "examples", label: "3. Interactive Examples" },
+    { id: "lab", label: "4. Hands-on Lab" },
+    { id: "exercises", label: "5. Practice Exercises" },
+    { id: "quiz", label: "6. Module Quiz" },
+    { id: "resources", label: "7. Resources" }
   ] as const;
 
   return (
     <DashboardShell>
       {/* Breadcrumbs Navigation */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
           <Link href="/labs" className="hover:text-foreground transition-colors flex items-center gap-1">
             <ArrowLeft className="h-3 w-3" />
@@ -222,8 +224,6 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
           <span className="text-muted-foreground/50">/</span>
           <span className="text-foreground font-semibold">{courseTitle}</span>
         </div>
-
-        {/* Progress Pill */}
         <div className="flex items-center space-x-2 text-xs bg-primary/10 border border-primary/20 px-3 py-1 rounded-full text-primary font-bold">
           <Award className="h-3.5 w-3.5" />
           <span>{progress?.percentage || 0}% Complete</span>
@@ -231,7 +231,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
       </div>
 
       {/* Tabs Layout Row */}
-      <div className="flex border-b border-border/60 pb-px gap-1 overflow-x-auto scrollbar-none">
+      <div className="flex border-b border-border/60 pb-px gap-1 overflow-x-auto scrollbar-none mb-8">
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -248,345 +248,523 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
       </div>
 
       {/* Tab Contents */}
-      {activeTab === "theory" && (
-        <div className="max-w-3xl rounded-xl border border-border bg-card p-8 shadow-sm space-y-6 animate-fade-in">
-          <div className="space-y-2">
-            <h2 className="text-lg font-bold text-foreground">Overview & Theoretical Concepts</h2>
-            <p className="text-xs text-muted-foreground">Learn the fundamental structure before executing commands in the sandbox environment.</p>
+      {activeTab === "overview" && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fade-in">
+          {/* Main Overview Content */}
+          <div className="lg:col-span-8 space-y-6">
+            <div className="rounded-xl border border-border bg-card p-8 shadow-sm space-y-6">
+              <div className="space-y-2">
+                <h2 className="text-lg font-bold text-foreground">Course Module Overview</h2>
+                <p className="text-xs text-muted-foreground">Get oriented with what this module will teach you and why it matters in production.</p>
+              </div>
+
+              {/* Introduction Paragraphs */}
+              <div className="space-y-4 text-xs text-foreground/80 leading-relaxed">
+                {(details.overview?.introduction || [
+                  "Welcome to this course module. Here we will introduce you to fundamental administration concepts and command layouts.",
+                  "This topic is widely used in DevOps configurations, container orchestration, and server lifecycle automation."
+                ]).map((p: string, idx: number) => (
+                  <p key={idx}>{p}</p>
+                ))}
+              </div>
+
+              {/* What You Will Learn */}
+              <div className="space-y-3 pt-6 border-t border-border/40">
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">What You Will Learn</h3>
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-muted-foreground">
+                  {(details.overview?.what_you_will_learn || [
+                    "Understand core operations layout",
+                    "Configure access nodes",
+                    "Manage execution cycles"
+                  ]).map((item: string, idx: number) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className="text-primary shrink-0 mt-0.5">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
-          <div className="prose prose-sm dark:prose-invert text-xs text-foreground/80 leading-relaxed space-y-4">
-            {theory.split("\n\n").map((para: string, i: number) => (
-              <p key={i}>{para}</p>
-            ))}
-          </div>
-          <div className="pt-4 border-t border-border/40 flex justify-end">
+
+          {/* Right Side Sidebar Metadata */}
+          <div className="lg:col-span-4 space-y-6">
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-5 text-xs">
+              <h3 className="font-bold text-foreground uppercase tracking-wider text-[10px] text-muted-foreground">Module Parameters</h3>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Difficulty:</span>
+                  <span className="font-bold text-primary capitalize">{details.overview?.difficulty || "Beginner"}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Estimated Time:</span>
+                  <span className="font-bold text-foreground flex items-center">
+                    <Clock className="h-3.5 w-3.5 mr-1" />
+                    {details.overview?.estimated_time || "45m"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Prerequisites:</span>
+                  <span className="font-bold text-foreground/80">{details.overview?.prerequisites || "None"}</span>
+                </div>
+              </div>
+
+              {/* Learning Outcomes */}
+              <div className="pt-4 border-t border-border/40 space-y-2">
+                <span className="font-bold text-[10px] text-muted-foreground uppercase tracking-wider">Learning Outcomes</span>
+                <ul className="space-y-1.5 text-muted-foreground">
+                  {(details.overview?.learning_outcomes || [
+                    "Confidently manage file resources",
+                    "Understand shell environment variables"
+                  ]).map((out: string, idx: number) => (
+                    <li key={idx} className="flex items-start gap-1.5">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                      <span>{out}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
             <Button
-              className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-md flex items-center space-x-1.5"
-              onClick={() => setActiveTab("examples")}
+              className="w-full bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-xl flex items-center justify-center space-x-2 py-2.5 shadow-sm"
+              onClick={() => setActiveTab("theory")}
             >
-              <span>Continue to Examples</span>
-              <ArrowRight className="h-3.5 w-3.5" />
+              <span>Start Learning Theory</span>
+              <ArrowRight className="h-4 w-4" />
             </Button>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "theory" && (
+        <div className="max-w-3xl space-y-6 animate-fade-in">
+          <div className="rounded-xl border border-border bg-card p-8 shadow-sm space-y-6">
+            <div className="space-y-2">
+              <h2 className="text-lg font-bold text-foreground">Theoretical Deep-Dive</h2>
+              <p className="text-xs text-muted-foreground">Understand the WHY behind these tools before running the hands-on environment.</p>
+            </div>
+
+            {/* Subtopics Cards rendering */}
+            <div className="space-y-6">
+              {((details.theory as any[]) || [
+                {
+                  title: "Theoretical Overview",
+                  definition: "General definition of concepts.",
+                  explanation: "Detailed guide on processes layouts.",
+                  why_exists: "To automate deployments safely.",
+                  where_used: "Configuring container runtimes.",
+                  real_world_example: "Nginx web servers running in ports setups.",
+                  best_practices: "Follow least privilege configurations.",
+                  common_mistakes: "Using root privileges unnecessarily."
+                }
+              ]).map((sub, idx) => (
+                <div key={idx} className="p-6 border border-border bg-card/65 rounded-xl space-y-4">
+                  <div className="space-y-1">
+                    <h3 className="text-base font-bold text-foreground tracking-tight">{sub.title}</h3>
+                    <p className="text-xs text-primary font-semibold">{sub.definition}</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{sub.explanation}</p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border/40 text-xs">
+                    <div>
+                      <span className="font-bold text-foreground block mb-0.5">Why It Exists:</span>
+                      <p className="text-muted-foreground">{sub.why_exists}</p>
+                    </div>
+                    <div>
+                      <span className="font-bold text-foreground block mb-0.5">Where It Is Used:</span>
+                      <p className="text-muted-foreground">{sub.where_used}</p>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-muted/40 rounded-lg text-xs space-y-1 border border-border/30">
+                    <span className="font-bold text-primary block">Real-World Case:</span>
+                    <p className="text-foreground/90">{sub.real_world_example}</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div className="bg-emerald-500/[0.02] border border-emerald-500/20 p-3 rounded-lg text-emerald-600">
+                      <span className="font-bold block mb-1">✓ Best Practices</span>
+                      <p className="text-muted-foreground text-[11px]">{sub.best_practices}</p>
+                    </div>
+                    <div className="bg-red-500/[0.02] border border-red-500/20 p-3 rounded-lg text-red-500">
+                      <span className="font-bold block mb-1">✗ Common Beginner Mistakes</span>
+                      <p className="text-muted-foreground text-[11px]">{sub.common_mistakes}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-4 border-t border-border/40 flex justify-end">
+              <Button
+                className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-md flex items-center space-x-1.5"
+                onClick={() => setActiveTab("examples")}
+              >
+                <span>Continue to Examples</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
         </div>
       )}
 
       {activeTab === "examples" && (
-        <div className="max-w-3xl rounded-xl border border-border bg-card p-8 shadow-sm space-y-6 animate-fade-in">
-          <div className="space-y-2">
-            <h2 className="text-lg font-bold text-foreground">Interactive Syntaxes & Examples</h2>
-            <p className="text-xs text-muted-foreground">Review command structures and click to copy them for usage inside the hands-on lab sandbox later.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {examples.map((ex: any, idx: number) => (
-              <div key={idx} className="p-4 bg-muted/40 border border-border/50 rounded-xl space-y-2 text-left relative hover:bg-muted/60 transition-colors">
-                <div className="flex justify-between items-center">
-                  <code className="text-xs font-bold text-primary font-mono">{ex.command}</code>
-                  <button
-                    onClick={() => handleCopyToClipboard(ex.command, idx)}
-                    className="p-1 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
-                    title="Copy command"
-                  >
-                    {copiedIndex === idx ? (
-                      <Check className="h-3.5 w-3.5 text-emerald-500" />
-                    ) : (
-                      <Clipboard className="h-3.5 w-3.5" />
-                    )}
-                  </button>
+        <div className="max-w-3xl space-y-6 animate-fade-in">
+          <div className="rounded-xl border border-border bg-card p-8 shadow-sm space-y-6">
+            <div className="space-y-2">
+              <h2 className="text-lg font-bold text-foreground">Interactive Command Examples</h2>
+              <p className="text-xs text-muted-foreground">Review functional syntaxes and expected outputs. Click command boxes to copy them.</p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6">
+              {examples.map((ex: any, idx: number) => (
+                <div key={idx} className="p-5 border border-border bg-card/65 rounded-xl space-y-4">
+                  <div className="flex justify-between items-start">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Example {idx + 1}</span>
+                    <span className="text-xs font-bold text-foreground">{ex.objective}</span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {/* Click-to-copy terminal input box */}
+                    <div
+                      onClick={() => {
+                        navigator.clipboard.writeText(ex.command);
+                        setCopiedIndex(idx);
+                        setTimeout(() => setCopiedIndex(null), 2000);
+                      }}
+                      className="group relative cursor-pointer font-mono text-xs bg-[#1C1824] text-[#EFEBF4] p-3 rounded-lg border border-border/40 flex justify-between items-center hover:border-primary/40 transition-colors shadow-inner"
+                      title="Click to copy command"
+                    >
+                      <span>$ {ex.command}</span>
+                      <span className="text-[9px] font-bold text-primary uppercase bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                        {copiedIndex === idx ? "Copied!" : "Copy"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Step-by-Step Explanation</span>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{ex.explanation}</p>
+                  </div>
+
+                  {ex.expected_output && (
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Expected Terminal Output</span>
+                      <pre className="text-[10px] bg-muted/80 p-3 rounded border border-border/40 font-mono text-muted-foreground overflow-x-auto leading-relaxed">
+                        {ex.expected_output}
+                      </pre>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-2 border-t border-border/40">
+                    <div className="text-red-500">
+                      <span className="font-bold">Common Mistakes:</span>
+                      <p className="text-muted-foreground text-[11px]">{ex.common_mistakes || "Failing to type arguments."}</p>
+                    </div>
+                    <div className="text-amber-500">
+                      <span className="font-bold">Pro Tip:</span>
+                      <p className="text-muted-foreground text-[11px]">{ex.tips || "Combine flags where appropriate."}</p>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-[11px] text-muted-foreground leading-normal">{ex.description}</p>
-              </div>
-            ))}
-          </div>
-          <div className="pt-4 border-t border-border/40 flex justify-end">
-            <Button
-              className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-md flex items-center space-x-1.5"
-              onClick={() => setActiveTab("lab")}
-            >
-              <span>Start Hands-on Lab</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
+              ))}
+            </div>
+
+            <div className="pt-4 border-t border-border/40 flex justify-end">
+              <Button
+                className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-md flex items-center space-x-1.5"
+                onClick={() => setActiveTab("lab")}
+              >
+                <span>Launch Interactive Lab</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
         </div>
       )}
 
-      {activeTab === "lab" && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-fade-in">
-          {/* Left Side: Syllabus Stepper */}
+      {/* Side-by-side terminal for Lab or Exercises */}
+      {(activeTab === "lab" || activeTab === "exercises") && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fade-in">
+          {/* Left Column: Lab instructions Stepper OR Exercises list */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
-              <div className="flex justify-between items-center pb-2 border-b border-border/40">
-                <h2 className="text-sm font-bold text-foreground">Guided Instructions</h2>
-                <span className="text-xs font-semibold text-primary">
-                  Step {currentStep + 1} of {lessons.length}
-                </span>
-              </div>
-
-              {/* Stepper dots */}
-              <div className="flex flex-wrap gap-1">
-                {lessons.map((task: any, i: number) => (
-                  <button
-                    key={task.id}
-                    onClick={() => {
-                      setCurrentStep(i);
-                      setShowHint(false);
-                      setShowExplanation(false);
-                      setValidationMsg(null);
-                    }}
-                    className={`h-2.5 w-2.5 rounded-full border transition-all cursor-pointer ${
-                      currentStep === i
-                        ? "bg-primary border-primary scale-125"
-                        : isCompleted(task.id)
-                        ? "bg-emerald-500 border-emerald-500"
-                        : "bg-muted border-border hover:bg-muted/80"
-                    }`}
-                    title={task.title}
-                  />
-                ))}
-              </div>
-
-              {/* Tasks details */}
-              <div className="space-y-4 pt-2">
-                <h3 className="text-base font-bold text-foreground leading-tight">
-                  {activeTask.title}
-                </h3>
-                
-                {activeTask.definition && (
-                  <p className="text-xs text-foreground/90 font-medium leading-relaxed">
-                    {activeTask.definition}
-                  </p>
-                )}
-
-                {activeTask.explanation && (
-                  <div className="border border-border/30 rounded-lg bg-muted/10 overflow-hidden">
-                    <button
-                      onClick={() => setShowExplanation(!showExplanation)}
-                      className="w-full flex items-center justify-between p-3 text-xs font-semibold text-primary hover:bg-muted/20 transition-colors cursor-pointer"
-                    >
-                      <span className="flex items-center space-x-1.5">
-                        <Code className="h-3.5 w-3.5" />
-                        <span>How it works (Command explanation)</span>
-                      </span>
-                      {showExplanation ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </button>
-                    {showExplanation && (
-                      <div className="p-3 pt-0 text-xs text-muted-foreground border-t border-border/25 leading-relaxed bg-card animate-fadeIn">
-                        {activeTask.explanation}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Example Command Box */}
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                    <Lightbulb className="h-3 w-3 text-amber-500" />
-                    <span>Syntax Example (Generic)</span>
+            {activeTab === "lab" ? (
+              <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-5">
+                <div className="flex justify-between items-center border-b border-border/40 pb-3">
+                  <h2 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <Award className="h-4 w-4 text-primary" />
+                    <span>Lab Environment Tasks</span>
+                  </h2>
+                  <span className="text-xs font-semibold text-primary">
+                    Step {currentStep + 1} of {lessons.length}
                   </span>
-                  <pre className="text-xs bg-[#1C1824] text-[#EFEBF4] p-3 rounded-lg border border-border/40 font-mono overflow-x-auto shadow-inner">
-                    {activeTask.example}
-                  </pre>
                 </div>
 
-                {/* Task Goal Box */}
-                <div className="p-4 bg-muted/40 border border-border/50 rounded-lg space-y-2">
-                  <div className="flex items-center text-xs font-bold text-primary">
-                    <Code className="h-3.5 w-3.5 mr-1.5" />
-                    <span>Exercise Task</span>
-                  </div>
-                  <p className="text-xs font-semibold text-foreground leading-relaxed">
-                    {activeTask.instruction}
-                  </p>
+                {/* Stepper dots */}
+                <div className="flex flex-wrap gap-1">
+                  {lessons.map((task: any, i: number) => (
+                    <button
+                      key={task.id}
+                      onClick={() => {
+                        setCurrentStep(i);
+                        setShowHint(false);
+                        setShowExplanation(false);
+                        setValidationMsg(null);
+                      }}
+                      className={`h-2.5 w-2.5 rounded-full border transition-all cursor-pointer ${
+                        currentStep === i
+                          ? "bg-primary border-primary scale-125"
+                          : isCompleted(task.id)
+                          ? "bg-emerald-500 border-emerald-500"
+                          : "bg-muted border-border hover:bg-muted/80"
+                      }`}
+                      title={task.title}
+                    />
+                  ))}
                 </div>
 
-                {/* Expected Output */}
-                {activeTask.expected && (
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                      Expected Outcome
-                    </span>
-                    <pre className="text-[10px] bg-muted/80 p-2.5 rounded border border-border/40 font-mono text-muted-foreground overflow-x-auto">
-                      {activeTask.expected}
-                    </pre>
-                  </div>
-                )}
+                {/* Task details */}
+                <div className="space-y-4 pt-2">
+                  <h3 className="text-xs font-extrabold text-foreground uppercase tracking-wide">
+                    {activeTask.title}
+                  </h3>
 
-                {/* Hint */}
-                <div className="pt-2">
-                  <button
-                    onClick={() => setShowHint(!showHint)}
-                    className="text-xs font-semibold text-primary hover:underline flex items-center space-x-1 cursor-pointer"
-                  >
-                    <HelpCircle className="h-3.5 w-3.5" />
-                    <span>{showHint ? "Hide Hint" : "Need a Hint?"}</span>
-                  </button>
-                  {showHint && (
-                    <p className="text-xs font-mono bg-primary/5 text-primary border border-primary/20 p-2.5 rounded mt-2 leading-relaxed">
-                      {activeTask.hint}
+                  {activeTask.definition && (
+                    <p className="text-xs text-foreground/80 leading-relaxed">
+                      {activeTask.definition}
                     </p>
                   )}
+
+                  {activeTask.explanation && (
+                    <div className="border border-border/30 rounded-lg bg-muted/10 overflow-hidden">
+                      <button
+                        onClick={() => setShowExplanation(!showExplanation)}
+                        className="w-full flex items-center justify-between p-3 text-xs font-semibold text-primary hover:bg-muted/20 transition-colors cursor-pointer"
+                      >
+                        <span className="flex items-center space-x-1.5">
+                          <Code className="h-3.5 w-3.5" />
+                          <span>Command Anatomy Details</span>
+                        </span>
+                        {showExplanation ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </button>
+                      {showExplanation && (
+                        <div className="p-3 pt-0 text-xs text-muted-foreground border-t border-border/25 leading-relaxed bg-card animate-fadeIn">
+                          {activeTask.explanation}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Example Command Box */}
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                      <Lightbulb className="h-3 w-3 text-amber-500" />
+                      <span>Syntax Example</span>
+                    </span>
+                    <pre className="text-xs bg-[#1C1824] text-[#EFEBF4] p-3 rounded-lg border border-border/40 font-mono overflow-x-auto shadow-inner">
+                      {activeTask.example}
+                    </pre>
+                  </div>
+
+                  {/* Task Goal Box */}
+                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-2">
+                    <div className="flex items-center text-xs font-bold text-primary">
+                      <Code className="h-3.5 w-3.5 mr-1.5" />
+                      <span>Target Objective</span>
+                    </div>
+                    <p className="text-xs font-bold text-foreground leading-relaxed">
+                      {activeTask.instruction}
+                    </p>
+                  </div>
+
+                  {/* Expected Output */}
+                  {activeTask.expected && (
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                        Expected Outcome
+                      </span>
+                      <pre className="text-[10px] bg-muted/80 p-2.5 rounded border border-border/40 font-mono text-muted-foreground overflow-x-auto">
+                        {activeTask.expected}
+                      </pre>
+                    </div>
+                  )}
+
+                  {/* Hint */}
+                  <div className="pt-1">
+                    <button
+                      onClick={() => setShowHint(!showHint)}
+                      className="text-xs font-semibold text-primary hover:underline flex items-center space-x-1 cursor-pointer"
+                    >
+                      <HelpCircle className="h-3.5 w-3.5" />
+                      <span>{showHint ? "Hide Hint" : "Need a Hint?"}</span>
+                    </button>
+                    {showHint && (
+                      <p className="text-xs font-mono bg-amber-500/5 text-amber-600 border border-amber-500/20 p-2.5 rounded mt-2 leading-relaxed">
+                        {activeTask.hint}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Validation Alert */}
+                {validationMsg && (
+                  <div
+                    className={`p-3 border rounded-lg text-xs flex items-start space-x-2 ${
+                      validationMsg.success
+                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600"
+                        : "bg-red-500/10 border-red-500/20 text-red-500"
+                    }`}
+                  >
+                    {validationMsg.success ? (
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
+                    )}
+                    <span className="leading-relaxed font-semibold">{validationMsg.text}</span>
+                  </div>
+                )}
+
+                {/* Verify Controls */}
+                <div className="flex items-center justify-between pt-4 border-t border-border/40 gap-4">
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handlePrev}
+                      disabled={currentStep === 0}
+                      className="rounded-md"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleNext}
+                      disabled={currentStep === lessons.length - 1}
+                      className="rounded-md"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <Button
+                    disabled={!session || isValidating}
+                    onClick={handleVerify}
+                    className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-md px-4"
+                  >
+                    {isValidating ? (
+                      <>
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        Checking...
+                      </>
+                    ) : isCompleted(activeTask.id) ? (
+                      <>
+                        <Check className="mr-1.5 h-3.5 w-3.5" />
+                        Completed
+                      </>
+                    ) : (
+                      "Verify Task"
+                    )}
+                  </Button>
                 </div>
               </div>
-
-              {/* Validation Alert */}
-              {validationMsg && (
-                <div
-                  className={`p-3 border rounded-lg text-xs flex items-start space-x-2 ${
-                    validationMsg.success
-                      ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600"
-                      : "bg-red-500/10 border-red-500/20 text-red-500"
-                  }`}
-                >
-                  {validationMsg.success ? (
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-                  ) : (
-                    <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
-                  )}
-                  <span className="leading-relaxed font-semibold">{validationMsg.text}</span>
+            ) : (
+              /* Exercises listing */
+              <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-5">
+                <div className="space-y-1">
+                  <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">Practice Exercises</h2>
+                  <p className="text-xs text-muted-foreground">Optional, non-validated challenges to practice in the running terminal shell.</p>
                 </div>
-              )}
 
-              {/* Verify Controls */}
-              <div className="flex items-center justify-between pt-4 border-t border-border/40 gap-4">
-                <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePrev}
-                    disabled={currentStep === 0}
-                    className="rounded-md"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleNext}
-                    disabled={currentStep === lessons.length - 1}
-                    className="rounded-md"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
+                <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+                  {exercises.map((ex: any, idx: number) => (
+                    <div key={idx} className="p-4 border border-border/60 bg-muted/20 rounded-xl space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-bold text-primary uppercase">Exercise {idx + 1}: {ex.title}</span>
+                        <span className="px-2 py-0.5 bg-muted border border-border/50 text-[9px] font-bold rounded text-muted-foreground capitalize">{ex.difficulty}</span>
+                      </div>
+                      <p className="text-xs font-semibold text-foreground/90 leading-relaxed">{ex.problem}</p>
+
+                      <div className="pt-2 text-[11px] text-muted-foreground space-y-1 border-t border-border/40">
+                        <p><span className="font-semibold text-foreground/80">Objective:</span> {ex.objective}</p>
+                        <p><span className="font-semibold text-foreground/80">Expected:</span> {ex.expected_result}</p>
+                        <p className="text-primary/90 font-mono"><span className="font-semibold text-foreground/80">Hint:</span> {ex.hint}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 <Button
-                  disabled={!session || isValidating}
-                  onClick={handleVerify}
-                  className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-md px-4"
+                  className="w-full bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-md py-2 flex items-center justify-center space-x-1.5"
+                  onClick={() => setActiveTab("quiz")}
                 >
-                  {isValidating ? (
-                    <>
-                      <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                      Checking...
-                    </>
-                  ) : isCompleted(activeTask.id) ? (
-                    <>
-                      <Check className="mr-1.5 h-3.5 w-3.5" />
-                      Completed
-                    </>
-                  ) : (
-                    "Verify Task"
-                  )}
-                </Button>
-              </div>
-            </div>
-
-            {/* Stepper Footer Trigger */}
-            {isCourseComplete && (
-              <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-between gap-4">
-                <div className="text-xs">
-                  <p className="font-bold text-indigo-700 dark:text-indigo-400">All Lab Steps Verified!</p>
-                  <p className="text-muted-foreground mt-0.5">Proceed to the supplementary exercises section.</p>
-                </div>
-                <Button
-                  size="sm"
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-bold shrink-0"
-                  onClick={() => setActiveTab("exercises")}
-                >
-                  <span>Continue</span>
-                  <ArrowRight className="h-3 w-3 ml-1" />
+                  <span>Continue to Module Quiz</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
               </div>
             )}
           </div>
 
-          {/* Right Side: Sandbox Terminal (stays active in background) */}
+          {/* Right Column: Sandbox Terminal Console */}
           <div className="lg:col-span-7 space-y-6">
             {isLoadingSession ? (
               <div className="rounded-xl border border-border bg-card p-12 text-center animate-pulse">
-                <div className="h-8 bg-muted w-1/3 rounded mx-auto mb-4" />
-                <div className="h-[450px] bg-muted rounded-xl w-full" />
+                <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">Checking active session configurations...</p>
               </div>
             ) : !session ? (
-              <div className="rounded-xl border border-border bg-card p-8 text-center space-y-6 shadow-sm">
+              <div className="rounded-xl border border-border bg-card p-8 text-center space-y-6">
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 border border-primary/20">
                   <TerminalIcon className="h-6 w-6 text-primary" />
                 </div>
                 <div className="space-y-2 max-w-sm mx-auto">
-                  <h2 className="text-lg font-bold text-foreground">{courseTitle} Sandbox</h2>
+                  <h2 className="text-base font-black text-foreground">{courseTitle} Sandbox</h2>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Start your isolated learning container environment. Any changes are automatically wiped when terminated.
+                    Start a temporary Linux containers shell process to execute task operations. Terminals sessions persist in the background.
                   </p>
                 </div>
-
                 <Button
                   disabled={launchMutation.isPending}
                   onClick={() => launchMutation.mutate()}
-                  className="bg-primary hover:bg-primary/95 text-primary-foreground font-bold text-xs py-2.5 px-6 rounded-md shadow flex items-center space-x-2 mx-auto"
+                  className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-xl px-6 py-2.5 shadow-sm transition-transform hover:scale-[1.01] cursor-pointer"
                 >
-                  {launchMutation.isPending ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Spinning up Sandbox...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Play className="h-4 w-4" />
-                      <span>Launch Environment</span>
-                    </>
-                  )}
+                  {launchMutation.isPending ? "Spawning Environment..." : "Launch Lab"}
                 </Button>
               </div>
             ) : (
-              <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-card border border-border p-4 rounded-xl shadow-sm gap-4">
-                  <div className="flex items-center space-x-3">
+              <div className="rounded-xl border border-border bg-card overflow-hidden shadow-md flex flex-col h-[65vh]">
+                <div className="bg-[#18141F] border-b border-[#2E2838] px-4 py-3 flex justify-between items-center shrink-0">
+                  <div className="flex items-center space-x-2">
                     <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <div>
-                      <h3 className="text-xs font-bold text-foreground">Active Sandbox Session</h3>
-                      <p className="text-[10px] text-muted-foreground">ID: {session.id.substring(0, 8)}...</p>
-                    </div>
+                    <span className="text-[10px] font-extrabold text-foreground uppercase tracking-widest">
+                      Linux Container Sandbox (Active)
+                    </span>
                   </div>
-
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center text-xs text-muted-foreground">
-                      <Clock className="h-4 w-4 mr-1 text-primary" />
-                      <span>Active Session</span>
-                    </div>
-
+                  <div className="flex items-center space-x-2">
                     <Button
-                      variant="destructive"
+                      variant="outline"
                       size="sm"
-                      disabled={stopMutation.isPending}
                       onClick={() => stopMutation.mutate(session.id)}
-                      className="bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-md flex items-center space-x-1"
+                      disabled={stopMutation.isPending}
+                      className="h-7 text-[10px] font-bold border-red-500/20 text-red-500 hover:bg-red-500/10 rounded"
                     >
                       {stopMutation.isPending ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        "Stopping..."
                       ) : (
                         <>
-                          <StopCircle className="h-3.5 w-3.5" />
+                          <StopCircle className="h-3.5 w-3.5 mr-1" />
                           <span>Terminate</span>
                         </>
                       )}
                     </Button>
                   </div>
                 </div>
-
                 <Terminal
                   sessionId={session.id}
                   onClose={() => queryClient.invalidateQueries({ queryKey: ["active_linux_session", courseSlug] })}
@@ -597,123 +775,284 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
         </div>
       )}
 
-      {activeTab === "exercises" && (
-        <div className="max-w-3xl rounded-xl border border-border bg-card p-8 shadow-sm space-y-6 animate-fade-in">
-          <div className="space-y-2">
-            <h2 className="text-lg font-bold text-foreground">Supplementary Practical Exercises</h2>
-            <p className="text-xs text-muted-foreground">Test your knowledge with these offline exercise suggestions in the command line window.</p>
-          </div>
-          <div className="space-y-3">
-            {exercises.map((ex: any, idx: number) => (
-              <div key={idx} className="flex items-start space-x-3 p-4 bg-card border border-border rounded-xl">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-[10px] shrink-0 mt-0.5">
-                  {idx + 1}
-                </span>
-                <p className="text-xs text-foreground/80 leading-relaxed">{ex.description}</p>
-              </div>
-            ))}
-          </div>
-          <div className="pt-4 border-t border-border/40 flex justify-end">
-            <Button
-              className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-md flex items-center space-x-1.5"
-              onClick={() => setActiveTab("quiz")}
-            >
-              <span>Take Module Quiz</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
+      {activeTab === "quiz" && (
+        <div className="max-w-3xl space-y-6 animate-fade-in">
+          <div className="rounded-xl border border-border bg-card p-8 shadow-sm space-y-6">
+            <div className="space-y-2">
+              <h2 className="text-lg font-bold text-foreground">Interactive Module Quiz</h2>
+              <p className="text-xs text-muted-foreground">Complete this 10-question evaluation to test command line syntax and diagnostic scenarios comprehension.</p>
+            </div>
+
+            <form onSubmit={handleQuizSubmit} className="space-y-6">
+              {quiz.map((q: any, idx: number) => {
+                const isSelected = (opt: string) => quizAnswers[idx] === opt;
+                return (
+                  <div key={idx} className="p-6 border border-border bg-card/65 rounded-xl space-y-4">
+                    <div className="flex items-start gap-2">
+                      <span className="text-xs font-black text-primary bg-primary/10 border border-primary/20 h-5 w-5 rounded-full flex items-center justify-center shrink-0">
+                        {idx + 1}
+                      </span>
+                      <p className="text-xs font-bold text-foreground leading-relaxed pt-0.5">
+                        {q.question}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2 pt-1">
+                      {q.options.map((opt: string) => {
+                        const selected = isSelected(opt);
+                        return (
+                          <label
+                            key={opt}
+                            className={`flex items-center space-x-3 p-3 rounded-xl border text-xs cursor-pointer transition-all ${
+                              selected
+                                ? "bg-primary/5 border-primary text-primary font-bold shadow-sm"
+                                : "bg-muted/10 border-border/80 text-muted-foreground hover:bg-muted/20"
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name={`quiz-${idx}`}
+                              value={opt}
+                              checked={selected}
+                              onChange={() => {
+                                if (!quizSubmitted) {
+                                  setQuizAnswers((prev) => ({ ...prev, [idx]: opt }));
+                                }
+                              }}
+                              className="accent-primary h-3.5 w-3.5 cursor-pointer shrink-0"
+                              disabled={quizSubmitted}
+                            />
+                            <span>{opt}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+
+                    {quizSubmitted && (
+                      <div className="p-4 bg-muted/40 rounded-lg text-xs space-y-2 border border-border/30">
+                        <div className="font-bold flex items-center gap-1">
+                          {quizAnswers[idx] === q.answer ? (
+                            <span className="text-emerald-600 flex items-center gap-1">
+                              <CheckCircle2 className="h-4 w-4" /> Correct Answer
+                            </span>
+                          ) : (
+                            <span className="text-red-500 flex items-center gap-1">
+                              <AlertCircle className="h-4 w-4" /> Incorrect Choice
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-foreground/90 font-medium leading-relaxed">
+                          <span className="font-bold text-foreground">Explanation: </span>
+                          {q.explanation}
+                        </p>
+
+                        {/* Explain incorrect selections */}
+                        {q.incorrect_explanations && (
+                          <div className="text-[11px] text-muted-foreground pt-1 border-t border-border/20 space-y-1">
+                            <span className="font-bold block text-foreground/80 mb-0.5">Why other options are wrong:</span>
+                            {Object.entries(q.incorrect_explanations).map(([opt, desc]: any) => (
+                              <p key={opt}>
+                                <span className="font-semibold text-foreground/75 font-mono bg-muted px-1 rounded">{opt}:</span> {desc}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {!quizSubmitted ? (
+                <div className="pt-4 border-t border-border/40 flex justify-end">
+                  <Button
+                    type="submit"
+                    disabled={Object.keys(quizAnswers).length < quiz.length}
+                    className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-xl px-8 py-2.5 shadow-sm cursor-pointer"
+                  >
+                    Submit Quiz Answers
+                  </Button>
+                </div>
+              ) : (
+                <div className="pt-6 border-t border-border/40 space-y-4 animate-fade-in text-center">
+                  <div className="p-5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl inline-block max-w-sm mx-auto">
+                    <h4 className="text-sm font-bold text-emerald-600">Evaluation Completed!</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      You correctly answered <span className="font-bold text-foreground">{quizScore}</span> out of <span className="font-bold text-foreground">{quiz.length}</span> questions.
+                    </p>
+                  </div>
+                  <div>
+                    <Button
+                      className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-md px-6"
+                      onClick={() => setActiveTab("resources")}
+                    >
+                      Continue to Resources Reference
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </form>
           </div>
         </div>
       )}
 
-      {activeTab === "quiz" && (
-        <div className="max-w-3xl rounded-xl border border-border bg-card p-8 shadow-sm space-y-6 animate-fade-in">
-          <div className="space-y-2">
-            <h2 className="text-lg font-bold text-foreground">Interactive Module Quiz</h2>
-            <p className="text-xs text-muted-foreground">Select choices to validate your command structure understanding.</p>
-          </div>
+      {activeTab === "resources" && (
+        <div className="max-w-3xl space-y-6 animate-fade-in">
+          <div className="rounded-xl border border-border bg-card p-8 shadow-sm space-y-6">
+            <div className="space-y-2">
+              <h2 className="text-lg font-bold text-foreground">Module Resources & Cheat Sheets</h2>
+              <p className="text-xs text-muted-foreground">Review key summaries, study command references, and search external documentations.</p>
+            </div>
 
-          <form onSubmit={handleQuizSubmit} className="space-y-6">
-            {quiz.map((q: any, idx: number) => (
-              <div key={idx} className="p-5 border border-border bg-card rounded-xl space-y-3">
-                <p className="text-xs font-bold text-foreground leading-normal flex items-start gap-2">
-                  <span className="text-primary shrink-0">Q{idx + 1}.</span>
-                  <span>{q.question}</span>
-                </p>
-                <div className="grid grid-cols-1 gap-2 pt-1">
-                  {q.options.map((opt: string) => {
-                    const isSelected = quizAnswers[idx] === opt;
-                    return (
-                      <label
-                        key={opt}
-                        className={`flex items-center space-x-3 p-3 rounded-lg border text-xs cursor-pointer transition-colors ${
-                          isSelected
-                            ? "bg-primary/5 border-primary text-primary font-semibold"
-                            : "bg-muted/10 border-border/80 text-muted-foreground hover:bg-muted/30"
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name={`quiz-${idx}`}
-                          value={opt}
-                          checked={isSelected}
-                          onChange={() => {
-                            if (!quizSubmitted) {
-                              setQuizAnswers((prev) => ({ ...prev, [idx]: opt }));
-                            }
-                          }}
-                          className="accent-primary h-3.5 w-3.5 cursor-pointer shrink-0"
-                          disabled={quizSubmitted}
-                        />
-                        <span>{opt}</span>
-                      </label>
-                    );
-                  })}
+            {/* Resources Sections */}
+            <div className="space-y-6 text-xs">
+              {/* Summary */}
+              <div className="p-4 bg-muted/40 border border-border/50 rounded-xl space-y-2">
+                <span className="font-bold text-primary block uppercase tracking-wider text-[10px]">Module Summary</span>
+                <p className="text-foreground/80 leading-relaxed">{details.resources?.summary || "Summary details loaded."}</p>
+              </div>
+
+              {/* Cheat Sheet */}
+              {details.resources?.cheat_sheet && (
+                <div className="space-y-2">
+                  <span className="font-bold text-foreground block uppercase tracking-wider text-[10px]">Quick Commands Cheat Sheet</span>
+                  <pre className="p-4 bg-[#1C1824] text-[#EFEBF4] rounded-lg border border-border/40 font-mono overflow-x-auto leading-relaxed">
+                    {details.resources.cheat_sheet}
+                  </pre>
                 </div>
+              )}
 
-                {quizSubmitted && (
-                  <div className="pt-2 text-[11px] font-bold">
-                    {quizAnswers[idx] === q.answer ? (
-                      <span className="text-emerald-600 flex items-center gap-1">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Correct Answer
-                      </span>
-                    ) : (
-                      <span className="text-red-500 flex items-center gap-1">
-                        <AlertCircle className="h-3.5 w-3.5" /> Incorrect. Correct Answer: <code className="bg-red-500/10 px-1.5 py-0.5 rounded font-mono">{q.answer}</code>
-                      </span>
-                    )}
+              {/* Commands Table */}
+              {details.resources?.commands_table && (
+                <div className="space-y-2">
+                  <span className="font-bold text-foreground block uppercase tracking-wider text-[10px]">Command Reference Table</span>
+                  <div className="overflow-x-auto border border-border/60 rounded-xl">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-muted/80 text-foreground font-bold border-b border-border/50">
+                          <th className="p-3 text-[10px] uppercase">Command</th>
+                          <th className="p-3 text-[10px] uppercase">Syntax</th>
+                          <th className="p-3 text-[10px] uppercase">Description</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/40">
+                        {details.resources.commands_table.map((row: any, i: number) => (
+                          <tr key={i} className="hover:bg-muted/10">
+                            <td className="p-3 font-bold font-mono text-primary">{row.name}</td>
+                            <td className="p-3 font-mono text-foreground/80">{row.syntax}</td>
+                            <td className="p-3 text-muted-foreground">{row.description}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                )}
-              </div>
-            ))}
+                </div>
+              )}
 
-            {!quizSubmitted ? (
-              <div className="pt-4 border-t border-border/40 flex justify-end">
-                <Button
-                  type="submit"
-                  disabled={Object.keys(quizAnswers).length < quiz.length}
-                  className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-md px-6 cursor-pointer"
-                >
-                  Submit Answers
+              {/* Revision Notes & Best Practices */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                <div className="space-y-2">
+                  <span className="font-bold text-foreground block uppercase tracking-wider text-[10px]">Quick Revision Notes</span>
+                  <ul className="space-y-2">
+                    {(details.resources?.revision_notes || ["Review commands lists parameters"]).map((note: string, idx: number) => (
+                      <li key={idx} className="flex items-start gap-2 text-muted-foreground leading-normal">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                        <span>{note}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <span className="font-bold text-foreground block uppercase tracking-wider text-[10px]">Best Practices Checklist</span>
+                  <ul className="space-y-2">
+                    {(details.resources?.best_practices || ["Follow security boundaries rules"]).map((practice: string, idx: number) => (
+                      <li key={idx} className="flex items-start gap-2 text-muted-foreground leading-normal">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                        <span>{practice}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Common Beginner Mistakes */}
+              {details.resources?.beginner_mistakes && (
+                <div className="p-4 bg-red-500/[0.02] border border-red-500/20 rounded-xl space-y-2">
+                  <span className="font-bold text-red-500 block uppercase tracking-wider text-[10px]">Common Mistakes to Avoid</span>
+                  <ul className="space-y-2">
+                    {details.resources.beginner_mistakes.map((mistake: string, idx: number) => (
+                      <li key={idx} className="flex items-start gap-2 text-muted-foreground leading-normal">
+                        <span className="text-red-500 font-bold shrink-0">•</span>
+                        <span>{mistake}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Interview Questions */}
+              {details.resources?.interview_questions && (
+                <div className="space-y-2">
+                  <span className="font-bold text-foreground block uppercase tracking-wider text-[10px]">Sample Interview Questions</span>
+                  <div className="space-y-3">
+                    {details.resources.interview_questions.map((faq: any, i: number) => (
+                      <div key={i} className="p-4 bg-muted/20 border border-border/50 rounded-xl space-y-1">
+                        <p className="font-bold text-foreground">Q: {faq.question}</p>
+                        <p className="text-muted-foreground leading-relaxed">A: {faq.answer}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Recommended Books & External Resources */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 border-t border-border/40">
+                <div className="space-y-2">
+                  <span className="font-bold text-foreground block uppercase tracking-wider text-[10px]">Recommended Books</span>
+                  <div className="space-y-2">
+                    {(details.resources?.books || []).map((book: any, idx: number) => (
+                      <div key={idx} className="space-y-0.5">
+                        <span className="font-bold text-foreground/95 block">{book.title}</span>
+                        <p className="text-muted-foreground text-[11px]">{book.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <span className="font-bold text-foreground block uppercase tracking-wider text-[10px]">Documentation & Links</span>
+                  <div className="space-y-2 text-[11px]">
+                    {(details.resources?.documentation || []).map((link: any, idx: number) => (
+                      <div key={idx}>
+                        <a href={link.url} target="_blank" rel="noreferrer" className="text-primary hover:underline font-bold block">
+                          {link.title} →
+                        </a>
+                      </div>
+                    ))}
+                    {(details.resources?.external_resources || []).map((link: any, idx: number) => (
+                      <div key={idx}>
+                        <a href={link.url} target="_blank" rel="noreferrer" className="text-primary hover:underline font-bold block">
+                          {link.title} →
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Downloadable Notes Placeholder */}
+              <div className="p-4 bg-muted/10 border border-dashed border-border rounded-xl text-center text-muted-foreground text-[11px]">
+                <span>Downloadable PDF Cheat Sheets notes format placeholder (Coming Soon in later platform updates).</span>
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-border/40 text-center">
+              <Link href="/labs">
+                <Button className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-xl px-8 py-2.5">
+                  Finish Module Course
                 </Button>
-              </div>
-            ) : (
-              <div className="pt-6 border-t border-border/40 space-y-4 animate-fade-in text-center">
-                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl inline-block max-w-sm mx-auto">
-                  <h4 className="text-sm font-bold text-emerald-600">Quiz Completed!</h4>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    You scored <span className="font-bold text-foreground">{quizScore}</span> out of <span className="font-bold text-foreground">{quiz.length}</span> correct answers.
-                  </p>
-                </div>
-                <div>
-                  <Link href="/labs">
-                    <Button className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-md px-6">
-                      Finish Module & Return
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            )}
-          </form>
+              </Link>
+            </div>
+          </div>
         </div>
       )}
     </DashboardShell>
