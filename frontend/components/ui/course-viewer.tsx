@@ -34,6 +34,43 @@ interface CourseViewerProps {
   courseTitle: string;
 }
 
+const getParentTechnologyId = (slug: string) => {
+  if (slug.startsWith("linux-") || slug.startsWith("bash-") || slug.includes("linux")) {
+    return "linux";
+  }
+  if (slug.startsWith("docker-") || slug.includes("docker")) {
+    return "docker";
+  }
+  if (slug.startsWith("kubernetes-") || slug.includes("kubernetes")) {
+    return "kubernetes";
+  }
+  if (slug.startsWith("git-") || slug.includes("git")) {
+    return "git";
+  }
+  if (slug.startsWith("terraform-") || slug.includes("terraform")) {
+    return "terraform";
+  }
+  if (slug.startsWith("aws-") || slug.includes("aws")) {
+    return "aws";
+  }
+  if (slug.startsWith("azure-") || slug.includes("azure")) {
+    return "azure";
+  }
+  if (slug.startsWith("ansible-") || slug.includes("ansible")) {
+    return "ansible";
+  }
+  if (slug.startsWith("jenkins-") || slug.includes("jenkins")) {
+    return "jenkins";
+  }
+  if (slug.startsWith("monitoring-") || slug.includes("monitoring") || slug.includes("prometheus")) {
+    return "monitoring";
+  }
+  if (slug.startsWith("observability-") || slug.includes("observability") || slug.includes("elk")) {
+    return "observability";
+  }
+  return slug;
+};
+
 export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(0);
@@ -94,8 +131,8 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
 
   // Fetch active session query
   const { data: session, isLoading: isLoadingSession } = useQuery<LabSession | null>({
-    queryKey: ["active_linux_session", courseSlug],
-    queryFn: () => labSessionService.getActiveLinuxSession(courseSlug),
+    queryKey: ["active_linux_session", getParentTechnologyId(courseSlug)],
+    queryFn: () => labSessionService.getActiveLinuxSession(getParentTechnologyId(courseSlug)),
   });
 
   // Fetch course details query (reusable schema containing theory, examples, quiz, exercises & lessons list)
@@ -141,7 +178,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
       queryClient.invalidateQueries({ queryKey: ["academies_list"] });
       setValidationMsg(null);
     },
-    mutationFn: () => labSessionService.launchLinuxLab(courseSlug),
+    mutationFn: () => labSessionService.launchLinuxLab(getParentTechnologyId(courseSlug)),
   });
 
   // Stop mutation
@@ -163,7 +200,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
     setIsValidating(true);
     setValidationMsg(null);
     try {
-      const res = await labSessionService.validateLinuxTask(session.id, activeTask.id);
+      const res = await labSessionService.validateLinuxTask(session.id, activeTask.id, courseSlug);
       if (res.success) {
         setValidationMsg({ success: true, text: res.message });
         queryClient.invalidateQueries({ queryKey: ["course_progress", courseSlug] });
@@ -593,20 +630,10 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
 
                 {/* Task details */}
                 <div className="space-y-4 pt-2">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-extrabold text-foreground uppercase tracking-wide">
-                      {activeTask.title}
-                    </h3>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Command:</span>
-                      <code className="text-xs px-2.5 py-0.5 bg-primary/10 border border-primary/20 text-primary font-bold rounded font-mono">
-                        {(() => {
-                          const match = activeTask.title.match(/\(([^)]+)\)/);
-                          return match ? match[1] : (activeTask.solution || activeTask.title.replace(/^\d+\.\s*/, ""));
-                        })()}
-                      </code>
-                    </div>
-                  </div>
+                  {/* Heading */}
+                  <h3 className="text-xs font-extrabold text-foreground uppercase tracking-wide">
+                    {activeTask.title}
+                  </h3>
 
                   {/* Definition */}
                   <div className="space-y-1">
@@ -616,12 +643,17 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
                     </p>
                   </div>
 
-                  {/* Syntax Example / Command Syntax */}
+                  {/* Command */}
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Example Command-Syntax</span>
-                    <pre className="text-xs bg-[#1C1824] text-[#EFEBF4] p-3 rounded-lg border border-border/40 font-mono overflow-x-auto shadow-inner">
-                      {activeTask.example}
-                    </pre>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Command</span>
+                    <div className="pt-0.5">
+                      <code className="inline-block text-xs px-2.5 py-1 bg-primary/10 border border-primary/20 text-primary font-bold rounded font-mono">
+                        {(() => {
+                          const match = activeTask.title.match(/\(([^)]+)\)/);
+                          return match ? match[1] : (activeTask.solution || activeTask.title.replace(/^\d+\.\s*/, ""));
+                        })()}
+                      </code>
+                    </div>
                   </div>
 
                   {/* Explanation Collapsible */}
@@ -643,12 +675,20 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
                         )}
                       </button>
                       {showExplanation && (
-                        <div className="p-3 pt-0 text-xs text-muted-foreground border-t border-border/25 leading-relaxed bg-card animate-fadeIn">
+                        <div className="p-3 pt-0 text-xs text-muted-foreground border-t border-border/25 leading-relaxed bg-card animate-fadeIn whitespace-pre-line">
                           {activeTask.explanation}
                         </div>
                       )}
                     </div>
                   )}
+
+                  {/* Syntax Example / Command Syntax */}
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Example Command-Syntax</span>
+                    <pre className="text-xs bg-[#1C1824] text-[#EFEBF4] p-3 rounded-lg border border-border/40 font-mono overflow-x-auto shadow-inner">
+                      {activeTask.example}
+                    </pre>
+                  </div>
 
                   {/* Task Goal Box */}
                   <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-2">

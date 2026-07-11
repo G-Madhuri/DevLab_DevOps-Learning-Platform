@@ -199,17 +199,15 @@ def get_learning_paths_list(
     Retrieve list of career-focused roadmaps.
     """
     paths = course_engine.get_learning_paths()
-    progress_records = db.query(CourseProgress).filter(
-        CourseProgress.user_id == current_user.id
-    ).all()
-    progress_map = {p.course_slug: p for p in progress_records}
+    academies_data = get_academies_list(db, current_user)
+    academies_map = {a["id"]: a for a in academies_data}
 
     response = []
     for path in paths:
         course_percentages = []
         for slug in path["courses"]:
-            p = progress_map.get(slug)
-            course_percentages.append(p.percentage if p else 0)
+            academy = academies_map.get(slug)
+            course_percentages.append(academy["progress"] if academy else 0)
         overall_progress = sum(course_percentages) // len(course_percentages) if course_percentages else 0
 
         response.append({
@@ -231,39 +229,46 @@ def get_learning_path_detail(
     if not path:
         raise HTTPException(status_code=404, detail="Learning Path not found.")
 
-    progress_records = db.query(CourseProgress).filter(
-        CourseProgress.user_id == current_user.id
-    ).all()
-    progress_map = {p.course_slug: p for p in progress_records}
+    academies_data = get_academies_list(db, current_user)
+    academies_map = {a["id"]: a for a in academies_data}
 
     courses_details = []
     course_percentages = []
     for slug in path["courses"]:
-        p = progress_map.get(slug)
-        percentage = p.percentage if p else 0
+        academy = academies_map.get(slug)
+        percentage = academy["progress"] if academy else 0
         course_percentages.append(percentage)
         
-        # Look up course metadata inside academies courses list
-        academies = course_engine.get_academies()
-        found_course = None
-        for a in academies:
-            for c in a["courses"]:
-                if c["slug"] == slug:
-                    found_course = c
-                    break
-            if found_course:
-                break
-                
-        title = found_course["title"] if found_course else slug.replace("-", " ").title()
-        desc = found_course["description"] if found_course else "Learn modular skills and command operations."
-        duration = found_course["duration"] if found_course else "30m"
-        diff = found_course["difficulty"] if found_course else "beginner"
+        if academy:
+            title = academy["title"]
+            desc = academy["description"]
+            diff = academy["difficulty"]
+            
+            # Sum up durations of courses within this technology
+            total_mins = 0
+            for c in academy["courses"]:
+                dur_str = c.get("duration", "30m")
+                # Parse digits
+                digits = "".join([char for char in dur_str if char.isdigit()])
+                if digits:
+                    total_mins += int(digits)
+            if total_mins >= 60:
+                hrs = total_mins // 60
+                mins = total_mins % 60
+                dur = f"{hrs} hrs {mins} mins" if mins > 0 else f"{hrs} hrs"
+            else:
+                dur = f"{total_mins} mins"
+        else:
+            title = slug.replace("-", " ").title()
+            desc = "Learn modular skills and command operations."
+            dur = "30 mins"
+            diff = "beginner"
 
         courses_details.append({
             "slug": slug,
             "title": title,
             "description": desc,
-            "duration": duration,
+            "duration": dur,
             "difficulty": diff,
             "percentage": percentage,
             "status": "completed" if percentage == 100 else "in-progress" if percentage > 0 else "not-started"
