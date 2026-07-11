@@ -105,6 +105,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
       if (res.success) {
         setValidationMsg({ success: true, text: res.message });
         queryClient.invalidateQueries({ queryKey: ["course_progress", courseSlug] });
+        queryClient.invalidateQueries({ queryKey: ["academies_list"] });
       } else {
         setValidationMsg({ success: false, text: res.message });
       }
