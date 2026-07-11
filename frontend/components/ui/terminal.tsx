@@ -24,6 +24,12 @@ export function Terminal({ sessionId, onClose }: TerminalProps) {
   useEffect(() => {
     let term: any;
     let fitAddon: any;
+
+    const handleResize = () => {
+      if (fitAddon) {
+        fitAddon.fit();
+      }
+    };
     
     const initTerminal = async () => {
       if (!terminalRef.current) return;
@@ -90,11 +96,7 @@ export function Terminal({ sessionId, onClose }: TerminalProps) {
           if (onCloseRef.current) onCloseRef.current();
         };
 
-        const handleResize = () => {
-          if (fitAddon) {
-            fitAddon.fit();
-          }
-        };
+
 
       } catch (err: any) {
         console.error("Terminal initialization failed:", err);
@@ -108,12 +110,16 @@ export function Terminal({ sessionId, onClose }: TerminalProps) {
     // Cleanups on unmount
     return () => {
       if (wsRef.current) {
+        wsRef.current.onclose = null;
+        wsRef.current.onerror = null;
+        wsRef.current.onmessage = null;
+        wsRef.current.onopen = null;
         wsRef.current.close();
       }
       if (term) {
         term.dispose();
       }
-      window.removeEventListener("resize", () => {});
+      window.removeEventListener("resize", handleResize);
     };
   }, [sessionId]);
 

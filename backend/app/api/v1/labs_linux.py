@@ -113,6 +113,25 @@ def get_active_session(
     return session_repository.get_running_session_for_user(db, user_id=current_user.id)
 
 
+@router.get("/active/all", response_model=List[LabSessionResponse])
+def get_all_active_sessions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Retrieve all the user's currently active running labs.
+    """
+    from app.models.session import LabSession
+    return (
+        db.query(LabSession)
+        .filter(
+            LabSession.user_id == current_user.id,
+            LabSession.status.in_(["starting", "running"]),
+        )
+        .all()
+    )
+
+
 @router.get("/sessions", response_model=LabSessionListResponse)
 def get_sessions(
     skip: int = Query(0, ge=0),
