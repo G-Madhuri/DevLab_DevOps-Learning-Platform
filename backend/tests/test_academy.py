@@ -173,3 +173,20 @@ def test_bash_interpreter_simulation():
     assert "/home/student" in out
     
     runtime_service.stop_lab(session_id, f"simulated-{session_id}", "bash-scripting-fundamentals")
+
+
+def test_course_details(client, db):
+    """
+    Test that retrieving detailed course specifications returns structure keys.
+    """
+    headers = get_auth_headers(client, "details@example.com")
+    response = client.get("/api/v1/labs/linux/linux-command-line-basics/details", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["slug"] == "linux-command-line-basics"
+    assert "theory" in data
+    assert "interactive_examples" in data
+    assert "exercises" in data
+    assert "quiz" in data
+    assert len(data["lessons"]) == 15
+    assert len(data["quiz"]) == 3

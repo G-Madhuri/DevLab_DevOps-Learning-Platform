@@ -201,7 +201,7 @@ export default function LabsCatalogPage() {
     <DashboardShell>
       {/* Page Header */}
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">DevOps Academies</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">DevOps Courses</h1>
         <p className="text-sm text-muted-foreground">
           Choose a specialized pathway, complete interactive browser-based terminal sandboxes, and unlock completion certificates.
         </p>
@@ -512,7 +512,9 @@ export default function LabsCatalogPage() {
                               <p className="text-xs text-muted-foreground leading-relaxed max-w-md">
                                 {academy.certificate_unlocked
                                   ? "Congratulations! You have completed every module and the Capstone project in this Academy. You are ready to generate your certificate."
-                                  : `Complete every course module and the Capstone project in ${academy.title} to unlock your completion certificate.`}
+                                  : academy.id === "linux"
+                                  ? "Complete all Linux modules and the Linux Capstone to unlock this certificate."
+                                  : `Complete all ${academy.title.replace(" Academy", "")} modules and the Capstone to unlock this certificate.`}
                               </p>
                             </div>
                           </div>

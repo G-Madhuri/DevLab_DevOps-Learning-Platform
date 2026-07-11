@@ -1,197 +1,263 @@
-[
-  {
-    "id": 1,
-    "title": "1. Terminal Introduction",
-    "definition": "The terminal is a text-based interface used to control a computer.",
-    "explanation": "Instead of clicking icons, you type commands. The system executes them and displays results.",
-    "instruction": "Identify your logged-in username by executing the whoami command.",
-    "example": "id -un",
-    "expected": "student",
-    "hint": "Type: whoami",
-    "solution": "whoami",
-    "difficulty": "Beginner",
-    "estimated_duration": "3m"
-  },
-  {
-    "id": 2,
-    "title": "2. Locate Directory (pwd)",
-    "definition": "In Linux, your current location in the directory tree is the working directory.",
-    "explanation": "The pwd (print working directory) command prints your absolute path from the root directory.",
-    "instruction": "Check the current directory path in the terminal.",
-    "example": "pwd -P",
-    "expected": "/home/student",
-    "hint": "Run the command: pwd",
-    "solution": "pwd",
-    "difficulty": "Beginner",
-    "estimated_duration": "3m"
-  },
-  {
-    "id": 3,
-    "title": "3. List Files (ls)",
-    "definition": "The ls command lists the files and directories inside your current folder.",
-    "explanation": "By default, it shows visible files. You will see directories like drafts and welcome.txt.",
-    "instruction": "List directory contents using the ls command.",
-    "example": "ls /etc",
-    "expected": "welcome.txt",
-    "hint": "Run: ls",
-    "solution": "ls",
-    "difficulty": "Beginner",
-    "estimated_duration": "3m"
-  },
-  {
-    "id": 4,
-    "title": "4. List Hidden Files (ls -a)",
-    "definition": "Hidden files in Linux start with a dot (.) and contain configurations.",
-    "explanation": "Passing -a to ls tells it to list all files, including hidden ones like .bashrc.",
-    "instruction": "List all contents, including hidden configurations.",
-    "example": "ls --all /var/log",
-    "expected": ".bashrc",
-    "hint": "Type: ls -a",
-    "solution": "ls -a",
-    "difficulty": "Beginner",
-    "estimated_duration": "4m"
-  },
-  {
-    "id": 5,
-    "title": "5. List Details (ls -l)",
-    "definition": "Long listing format displays permissions, owner, size, and modification date.",
-    "explanation": "Using ls -l outputs detailed parameters of files in a table layout.",
-    "instruction": "Run ls with the -l flag to view detailed file info.",
-    "example": "ls -lh /var/www",
-    "expected": "student student",
-    "hint": "Type: ls -l",
-    "solution": "ls -l",
-    "difficulty": "Beginner",
-    "estimated_duration": "4m"
-  },
-  {
-    "id": 6,
-    "title": "6. Navigating Folders (cd)",
-    "definition": "The cd command changes your working directory location.",
-    "explanation": "Specify the directory name to move inside. For example, cd drafts enters the drafts folder.",
-    "instruction": "Change your active directory to drafts.",
-    "example": "cd /var/log",
-    "expected": "/home/student/drafts",
-    "hint": "Type: cd drafts",
-    "solution": "cd drafts",
-    "difficulty": "Beginner",
-    "estimated_duration": "3m"
-  },
-  {
-    "id": 7,
-    "title": "7. Go Home (cd ~)",
-    "definition": "The tilde symbol (~) represents your user's home directory path.",
-    "explanation": "Running cd with ~ or no arguments instantly returns you to /home/student.",
-    "instruction": "Navigate back to your home directory.",
-    "example": "cd /home/student/projects/..",
-    "expected": "/home/student",
-    "hint": "Type: cd ~",
-    "solution": "cd ~",
-    "difficulty": "Beginner",
-    "estimated_duration": "3m"
-  },
-  {
-    "id": 8,
-    "title": "8. Create Files (touch)",
-    "definition": "The touch command creates a new empty file.",
-    "explanation": "If the file already exists, touch updates its last-modified timestamp.",
-    "instruction": "Create a file named draft.txt in the current directory.",
-    "example": "touch new_empty_file.txt",
-    "expected": "draft.txt",
-    "hint": "Type: touch draft.txt",
-    "solution": "touch draft.txt",
-    "difficulty": "Beginner",
-    "estimated_duration": "3m"
-  },
-  {
-    "id": 9,
-    "title": "9. Create Folders (mkdir)",
-    "definition": "The mkdir command creates a new directory folder.",
-    "explanation": "This allows you to organize files in subfolders. Use mkdir projects to create a folder.",
-    "instruction": "Create a folder named projects.",
-    "example": "mkdir test_folder",
-    "expected": "projects",
-    "hint": "Type: mkdir projects",
-    "solution": "mkdir projects",
-    "difficulty": "Beginner",
-    "estimated_duration": "3m"
-  },
-  {
-    "id": 10,
-    "title": "10. Write File (echo & >)",
-    "definition": "The > operator redirects output to a file, overwriting its contents.",
-    "explanation": "echo 'text' > file writes 'text' into the file. If the file doesn't exist, it is created.",
-    "instruction": "Write the string 'Hello DevLab' into draft.txt.",
-    "example": "echo 'Some Content' > my_file.txt",
-    "expected": "",
-    "hint": "Type: echo 'Hello DevLab' > draft.txt",
-    "solution": "echo 'Hello DevLab' > draft.txt",
-    "difficulty": "Beginner",
-    "estimated_duration": "4m"
-  },
-  {
-    "id": 11,
-    "title": "11. Append File (echo & >>)",
-    "definition": "The >> operator appends content to the end of a file.",
-    "explanation": "Unlike >, >> keeps the existing content of the file and adds new text below it.",
-    "instruction": "Append 'DevOps is fun' to draft.txt.",
-    "example": "echo 'More Content' >> my_file.txt",
-    "expected": "",
-    "hint": "Type: echo 'DevOps is fun' >> draft.txt",
-    "solution": "echo 'DevOps is fun' >> draft.txt",
-    "difficulty": "Beginner",
-    "estimated_duration": "4m"
-  },
-  {
-    "id": 12,
-    "title": "12. View File (cat)",
-    "definition": "The cat command concatenates and displays the contents of a file.",
-    "explanation": "It prints the entire file content directly to your terminal standard output.",
-    "instruction": "View the contents of draft.txt.",
-    "example": "cat config.json",
-    "expected": "Hello DevLab\nDevOps is fun",
-    "hint": "Type: cat draft.txt",
-    "solution": "cat draft.txt",
-    "difficulty": "Beginner",
-    "estimated_duration": "3m"
-  },
-  {
-    "id": 13,
-    "title": "13. Copy File (cp)",
-    "definition": "The cp command duplicates files or directories.",
-    "explanation": "Specify the source file followed by the destination path.",
-    "instruction": "Copy draft.txt to projects/draft_backup.txt.",
-    "example": "cp my_file.txt backup_folder/",
-    "expected": "",
-    "hint": "Type: cp draft.txt projects/draft_backup.txt",
-    "solution": "cp draft.txt projects/draft_backup.txt",
-    "difficulty": "Beginner",
-    "estimated_duration": "4m"
-  },
-  {
-    "id": 14,
-    "title": "14. Move File (mv)",
-    "definition": "The mv command moves or renames a file.",
-    "explanation": "Moving relocates the file, removing it from the original path.",
-    "instruction": "Move draft.txt into the projects directory.",
-    "example": "mv my_file.txt source_code/",
-    "expected": "",
-    "hint": "Type: mv draft.txt projects/draft.txt",
-    "solution": "mv draft.txt projects/draft.txt",
-    "difficulty": "Beginner",
-    "estimated_duration": "4m"
-  },
-  {
-    "id": 15,
-    "title": "15. Delete File (rm)",
-    "definition": "The rm command removes (deletes) files.",
-    "explanation": "Warning: files deleted with rm cannot be recovered in Linux!",
-    "instruction": "Delete the file projects/draft_backup.txt.",
-    "example": "rm temp_file.log",
-    "expected": "",
-    "hint": "Type: rm projects/draft_backup.txt",
-    "solution": "rm projects/draft_backup.txt",
-    "difficulty": "Beginner",
-    "estimated_duration": "3m"
-  }
-]
+{
+  "slug": "linux-command-line-basics",
+  "title": "Linux Command Line",
+  "theory": "In Linux, everything is structured inside a single directory tree starting from the root directory `/`. The user interacts with the system using commands typed into the terminal shell (typically Bash). Commands follow the format `command -options arguments`. You navigate the tree using `cd`, locate files using `ls`, and perform file operations using `touch`, `mkdir`, `cp`, `mv`, and `rm`. Redirects like `>` and `>>` write command output to files.",
+  "interactive_examples": [
+    {
+      "command": "whoami",
+      "description": "Prints your active username in the shell."
+    },
+    {
+      "command": "pwd",
+      "description": "Displays the absolute path of your current folder."
+    },
+    {
+      "command": "ls -a",
+      "description": "Lists all directory files including hidden files starting with a dot."
+    },
+    {
+      "command": "cat welcome.txt",
+      "description": "Prints the complete content of welcome.txt directly to output."
+    }
+  ],
+  "exercises": [
+    {
+      "description": "Navigate to `/etc` and list all files using long formatting: `cd /etc && ls -l`."
+    },
+    {
+      "description": "Read the hidden shell configuration file `.bashrc` in your home directory: `cat ~/.bashrc`."
+    },
+    {
+      "description": "Create a nested folders structure under home: `mkdir -p workspace/testing`."
+    }
+  ],
+  "quiz": [
+    {
+      "question": "Which command outputs the current folder path?",
+      "options": [
+        "cd",
+        "pwd",
+        "ls",
+        "whoami"
+      ],
+      "answer": "pwd"
+    },
+    {
+      "question": "Which flag allows listing hidden files starting with a dot?",
+      "options": [
+        "-l",
+        "-h",
+        "-a",
+        "-r"
+      ],
+      "answer": "-a"
+    },
+    {
+      "question": "What is the tilde (~) symbol a shortcut for?",
+      "options": [
+        "Root folder",
+        "System logs directory",
+        "User's home directory",
+        "Parent directory"
+      ],
+      "answer": "User's home directory"
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Terminal Introduction",
+      "definition": "The terminal is a text-based interface used to control a computer.",
+      "explanation": "Instead of clicking icons, you type commands. The system executes them and displays results.",
+      "instruction": "Identify your logged-in username by executing the whoami command.",
+      "example": "id -un",
+      "expected": "student",
+      "hint": "Type: whoami",
+      "solution": "whoami",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 2,
+      "title": "2. Locate Directory (pwd)",
+      "definition": "In Linux, your current location in the directory tree is the working directory.",
+      "explanation": "The pwd (print working directory) command prints your absolute path from the root directory.",
+      "instruction": "Check the current directory path in the terminal.",
+      "example": "pwd -P",
+      "expected": "/home/student",
+      "hint": "Run the command: pwd",
+      "solution": "pwd",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 3,
+      "title": "3. List Files (ls)",
+      "definition": "The ls command lists the files and directories inside your current folder.",
+      "explanation": "By default, it shows visible files. You will see directories like drafts and welcome.txt.",
+      "instruction": "List directory contents using the ls command.",
+      "example": "ls /etc",
+      "expected": "welcome.txt",
+      "hint": "Run: ls",
+      "solution": "ls",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 4,
+      "title": "4. List Hidden Files (ls -a)",
+      "definition": "Hidden files in Linux start with a dot (.) and contain configurations.",
+      "explanation": "Passing -a to ls tells it to list all files, including hidden ones like .bashrc.",
+      "instruction": "List all contents, including hidden configurations.",
+      "example": "ls --all /var/log",
+      "expected": ".bashrc",
+      "hint": "Type: ls -a",
+      "solution": "ls -a",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 5,
+      "title": "5. List Details (ls -l)",
+      "definition": "Long listing format displays permissions, owner, size, and modification date.",
+      "explanation": "Using ls -l outputs detailed parameters of files in a table layout.",
+      "instruction": "Run ls with the -l flag to view detailed file info.",
+      "example": "ls -lh /var/www",
+      "expected": "student student",
+      "hint": "Type: ls -l",
+      "solution": "ls -l",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 6,
+      "title": "6. Navigating Folders (cd)",
+      "definition": "The cd command changes your working directory location.",
+      "explanation": "Specify the directory name to move inside. For example, cd drafts enters the drafts folder.",
+      "instruction": "Change your active directory to drafts.",
+      "example": "cd /var/log",
+      "expected": "/home/student/drafts",
+      "hint": "Type: cd drafts",
+      "solution": "cd drafts",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 7,
+      "title": "7. Go Home (cd ~)",
+      "definition": "The tilde symbol (~) represents your user's home directory path.",
+      "explanation": "Running cd with ~ or no arguments instantly returns you to /home/student.",
+      "instruction": "Navigate back to your home directory.",
+      "example": "cd /home/student/projects/..",
+      "expected": "/home/student",
+      "hint": "Type: cd ~",
+      "solution": "cd ~",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 8,
+      "title": "8. Create Files (touch)",
+      "definition": "The touch command creates a new empty file.",
+      "explanation": "If the file already exists, touch updates its last-modified timestamp.",
+      "instruction": "Create a file named draft.txt in the current directory.",
+      "example": "touch new_empty_file.txt",
+      "expected": "draft.txt",
+      "hint": "Type: touch draft.txt",
+      "solution": "touch draft.txt",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 9,
+      "title": "9. Create Folders (mkdir)",
+      "definition": "The mkdir command creates a new directory folder.",
+      "explanation": "This allows you to organize files in subfolders. Use mkdir projects to create a folder.",
+      "instruction": "Create a folder named projects.",
+      "example": "mkdir test_folder",
+      "expected": "projects",
+      "hint": "Type: mkdir projects",
+      "solution": "mkdir projects",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 10,
+      "title": "10. Write File (echo & >)",
+      "definition": "The > operator redirects output to a file, overwriting its contents.",
+      "explanation": "echo 'text' > file writes 'text' into the file. If the file doesn't exist, it is created.",
+      "instruction": "Write the string 'Hello DevLab' into draft.txt.",
+      "example": "echo 'Some Content' > my_file.txt",
+      "expected": "",
+      "hint": "Type: echo 'Hello DevLab' > draft.txt",
+      "solution": "echo 'Hello DevLab' > draft.txt",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 11,
+      "title": "11. Append File (echo & >>)",
+      "definition": "The >> operator appends content to the end of a file.",
+      "explanation": "Unlike >, >> keeps the existing content of the file and adds new text below it.",
+      "instruction": "Append 'DevOps is fun' to draft.txt.",
+      "example": "echo 'More Content' >> my_file.txt",
+      "expected": "",
+      "hint": "Type: echo 'DevOps is fun' >> draft.txt",
+      "solution": "echo 'DevOps is fun' >> draft.txt",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 12,
+      "title": "12. View File (cat)",
+      "definition": "The cat command concatenates and displays the contents of a file.",
+      "explanation": "It prints the entire file content directly to your terminal standard output.",
+      "instruction": "View the contents of draft.txt.",
+      "example": "cat config.json",
+      "expected": "Hello DevLab\nDevOps is fun",
+      "hint": "Type: cat draft.txt",
+      "solution": "cat draft.txt",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 13,
+      "title": "13. Copy File (cp)",
+      "definition": "The cp command duplicates files or directories.",
+      "explanation": "Specify the source file followed by the destination path.",
+      "instruction": "Copy draft.txt to projects/draft_backup.txt.",
+      "example": "cp my_file.txt backup_folder/",
+      "expected": "",
+      "hint": "Type: cp draft.txt projects/draft_backup.txt",
+      "solution": "cp draft.txt projects/draft_backup.txt",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 14,
+      "title": "14. Move File (mv)",
+      "definition": "The mv command moves or renames a file.",
+      "explanation": "Moving relocates the file, removing it from the original path.",
+      "instruction": "Move draft.txt into the projects directory.",
+      "example": "mv my_file.txt source_code/",
+      "expected": "",
+      "hint": "Type: mv draft.txt projects/draft.txt",
+      "solution": "mv draft.txt projects/draft.txt",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 15,
+      "title": "15. Delete File (rm)",
+      "definition": "The rm command removes (deletes) files.",
+      "explanation": "Warning: files deleted with rm cannot be recovered in Linux!",
+      "instruction": "Delete the file projects/draft_backup.txt.",
+      "example": "rm temp_file.log",
+      "expected": "",
+      "hint": "Type: rm projects/draft_backup.txt",
+      "solution": "rm projects/draft_backup.txt",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    }
+  ]
+}

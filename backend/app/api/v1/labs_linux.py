@@ -243,6 +243,20 @@ def get_course_lessons(
     return lessons
 
 
+@router.get("/{course_slug}/details")
+def get_course_details(
+    course_slug: str,
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Query complete course detail structure including lessons, theory, examples, exercises and quiz.
+    """
+    details = course_engine.get_course_details(course_slug)
+    if not details:
+        raise HTTPException(status_code=404, detail="Course details not found.")
+    return details
+
+
 @router.get("/{course_slug}/progress")
 def get_course_progress(
     course_slug: str,

@@ -57,6 +57,11 @@ export const labSessionService = {
     return response.data;
   },
 
+  async getCourseDetails(courseSlug: string): Promise<any> {
+    const response = await apiClient.get(`/labs/linux/${courseSlug}/details`);
+    return response.data;
+  },
+
   async getCourseProgress(courseSlug: string): Promise<CourseProgressInfo> {
     const response = await apiClient.get(`/labs/linux/${courseSlug}/progress`);
     return response.data;

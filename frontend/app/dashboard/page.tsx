@@ -139,25 +139,31 @@ export default function DashboardPage() {
 
           {/* Active Session Status Widgets */}
           {activeSessions.map((sess: LabSession) => (
-            <div key={sess.id} className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in">
-              <div className="space-y-1.5">
+            <div key={sess.id} className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.02] p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 animate-fade-in">
+              <div className="space-y-2 flex-1">
                 <div className="flex items-center space-x-2">
-                  <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
-                    Running Sandbox Session
+                  <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
+                    Active Sandbox: {sess.status}
                   </span>
                 </div>
                 <h3 className="text-base font-bold text-foreground capitalize">
                   {sess.lab_name.replace("-basics", " Basics").replace("-", " ")}
                 </h3>
-                <p className="text-xs text-muted-foreground flex items-center">
-                  <Clock className="h-3.5 w-3.5 mr-1" />
-                  Launched: {new Date(sess.started_at || "").toLocaleTimeString()}
-                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-muted-foreground pt-1">
+                  <p className="flex items-center">
+                    <span className="font-semibold text-foreground/80 mr-1.5">Started At:</span>
+                    {new Date(sess.started_at || "").toLocaleTimeString()}
+                  </p>
+                  <p className="flex items-center">
+                    <span className="font-semibold text-foreground/80 mr-1.5">Expires At:</span>
+                    {sess.expires_at ? new Date(sess.expires_at).toLocaleTimeString() : "N/A"}
+                  </p>
+                </div>
               </div>
-              <Link href={sess.lab_name === "docker-basics" ? "/labs/docker-basics" : "/labs/linux-basics"}>
-                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-bold px-5">
-                  Continue Workspace
+              <Link href={sess.lab_name === "docker-basics" ? "/labs/docker-basics" : `/labs/workspace/${sess.lab_name}`}>
+                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold px-6 py-2.5 shadow-sm transition-transform hover:scale-[1.02] cursor-pointer">
+                  Resume Lab
                 </Button>
               </Link>
             </div>
@@ -300,9 +306,10 @@ export default function DashboardPage() {
                   </p>
                 </div>
                 <div className="flex space-x-2 w-full sm:w-auto justify-end">
-                  <Link href={sess.lab_name === "docker-basics" ? "/labs/docker-basics" : "/labs/linux-basics"}>
-                    <Button size="sm" variant="outline" className="h-7 text-[10px] rounded">
-                      Open Console
+                  <Link href={sess.lab_name === "docker-basics" ? "/labs/docker-basics" : `/labs/workspace/${sess.lab_name}`}>
+                    <Button className="h-8 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/15 font-bold px-4 flex items-center space-x-1.5 transition-all duration-200 hover:scale-[1.02] cursor-pointer text-[10px] uppercase tracking-wider">
+                      <TerminalIcon className="h-3.5 w-3.5" />
+                      <span>Resume Lab</span>
                     </Button>
                   </Link>
                 </div>
