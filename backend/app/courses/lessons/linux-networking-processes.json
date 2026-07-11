@@ -27,24 +27,24 @@
   },
   "theory": [
     {
-      "title": "Process States and Lifecycle Controllers",
-      "definition": "Active program processes identified by a Process ID (PID) that traverse running, sleeping, or stopped states.",
-      "explanation": "Every program runs inside a process scope. The kernel assigns a unique PID. You list active terminal processes with `ps`, or the whole system via `ps aux`. To stop a process, send a signal using `kill [PID]`. SIGTERM (15) asks nicely to shut down; SIGKILL (9) forces immediate termination by the kernel.",
-      "why_exists": "Allows safe monitoring, allocation of CPU resources, and cleaning of orphan processes.",
-      "where_used": "Sysadmin checks, system automation monitoring scripts, containers health audits.",
-      "real_world_example": "Finding a stuck web server process using `ps aux | grep nginx` and terminating it using `kill -9 1245`.",
-      "best_practices": "Always try termination signal 15 (SIGTERM) first to allow processes to close connection pools safely before resorting to signal 9.",
-      "common_mistakes": "Forgetting that process PIDs are dynamic, and accidentally running kill on incorrect IDs."
+      "title": "Demystifying Processes: Your System's Worker Ants",
+      "definition": "A 'Process' is just a program in action. Every time you run a command or launch an app, Linux spins up a process and gives it a unique Process ID (PID).",
+      "explanation": "Think of your computer as a busy restaurant. The programs (like Python, Nginx, or Bash) are the recipes. But a recipe on a piece of paper doesn't feed anyone. When the chef actually starts cooking the recipe, it becomes a Process!\n\nTo keep track of everything, the restaurant manager assigns a ticket number to every order. In Linux, this ticket number is called a Process ID (PID).\n\nHere are the commands you use to manage them:\n- `ps aux`: Show a snapshot of every single worker ant (process) running on the system.\n- `top` (or `htop`): A live dashboard showing which processes are eating up the CPU and memory (like Task Manager on Windows).\n- `kill [PID]`: Stop a process. You can send a polite request to shut down (`kill -15 [PID]`) or, if it is completely frozen, force-terminate it instantly (`kill -9 [PID]`).",
+      "why_exists": "To let you monitor system health, locate resource hogs (like memory leaks), and shut down frozen applications safely.",
+      "where_used": "Debugging server performance issues, restarting crashed web services, and managing system resources.",
+      "real_world_example": "You deploy a Node.js app but it freezes. You run `ps aux | grep node` to find its PID (e.g. 2405), and run `kill -9 2405` to terminate it instantly.",
+      "best_practices": "Always try to shut down a process politely using SIGTERM (15) first. Only use SIGKILL (9) as a last resort, since it can corrupt database files if the process was halfway through writing data.",
+      "common_mistakes": "Blindly copy-pasting a PID from a Google tutorial. PIDs are completely random and change every time a program restarts!"
     },
     {
-      "title": "Active Ports and Socket Audits",
-      "definition": "Network sockets bound to port numbers, allowing communication between processes across network interfaces.",
-      "explanation": "Applications bind to sockets (IP + Port) to listen for connections. The `ss` utility scans sockets, replacing the older `netstat` tool. Running `ss -lnt` lists all TCP listening sockets. If a database binds to port 5432, you will see `*:5432` in the listing. You can map socket bounds to PIDs using the `-p` flag.",
-      "why_exists": "Diagnoses port conflicts (e.g. two web servers trying to bind to port 80) and detects open ports that pose security risks.",
-      "where_used": "Nginx config audits, firewalls configurations, microservices debugs.",
-      "real_world_example": "Confirming PostgreSQL server is running and listening on all network interfaces via port 5432.",
-      "best_practices": "Verify applications only listen on loopback interface `127.0.0.1` if they do not need to accept public external connections.",
-      "common_mistakes": "Trying to start a container service and getting 'address already in use' errors without auditing existing socket bounds."
+      "title": "Sockets & Ports: The Mailboxes of Your Server",
+      "definition": "A 'Port' is a virtual slot on your network interface (labeled 1 to 65535) that helps incoming internet traffic find the correct program.",
+      "explanation": "Imagine your server is a massive apartment building with the address `192.168.1.50`. If mail just gets sent to the building, how does the mailman know which resident it belongs to? They need an apartment number!\n\nIn networking, this apartment number is called a Port.\n- Web servers (like HTTP) live in apartment 80 or 443.\n- Databases (like PostgreSQL) live in apartment 5432.\n- Secure shell access (SSH) lives in apartment 22.\n\nTo see which programs are listening in their apartments right now, you run:\n`ss -lntp`\n- `-l`: Show only listening slots.\n- `-n`: Show numbers instead of names.\n- `-t`: Show TCP sockets.\n- `-p`: Show the actual PID/program name listening (like nginx or postgres).\n\nIf you try to launch a web server on port 80 but another program is already in that apartment, Linux will throw an 'Address already in use' error!",
+      "why_exists": "Enables a single server to handle multiple different internet services (web pages, databases, file transfers) at the exact same time.",
+      "where_used": "Configuring network firewalls, setting up Docker container mappings, and troubleshooting connection timeouts.",
+      "real_world_example": "Checking `ss -lntp` to confirm your backend API is successfully listening on port 8000 and ready to receive client requests.",
+      "best_practices": "For security, make sure database ports (like 5432) are configured to only listen locally (127.0.0.1) so they are not exposed to the public internet.",
+      "common_mistakes": "Forgetting that port numbers below 1024 are privileged. Regular users cannot start programs on port 80 or 443 without administrative permissions (using sudo)."
     }
   ],
   "interactive_examples": [
