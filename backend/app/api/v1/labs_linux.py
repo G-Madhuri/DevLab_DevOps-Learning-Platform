@@ -217,8 +217,11 @@ def validate_lab_task(
 
         # Calculate progress percentage dynamically
         total_lessons = len(course_engine.get_lessons(course_slug))
-        if total_lessons > 0:
-            progress.percentage = int(len(completed) / total_lessons * 100)
+        completed_lessons_count = len([x for x in completed if isinstance(x, int)])
+        completed_tabs_count = len([x for x in completed if isinstance(x, str)])
+        total_items = total_lessons + 4
+        if total_items > 0:
+            progress.percentage = int((completed_lessons_count + completed_tabs_count) / total_items * 100)
 
         # Set next pointer
         if req.task_id + 1 <= total_lessons:
@@ -279,6 +282,55 @@ def get_course_progress(
             "percentage": 0
         }
     return progress
+
+
+@router.post("/progress/{course_slug}/tabs/{tab_id}")
+def complete_course_tab(
+    course_slug: str,
+    tab_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Marks a module tab (overview, theory, examples, quiz) as completed.
+    """
+    if tab_id not in ["overview", "theory", "examples", "quiz", "resources"]:
+        raise HTTPException(status_code=400, detail="Invalid tab ID.")
+
+    progress = db.query(CourseProgress).filter(
+        CourseProgress.user_id == current_user.id,
+        CourseProgress.course_slug == course_slug
+    ).first()
+
+    if not progress:
+        progress = CourseProgress(
+            user_id=current_user.id,
+            course_slug=course_slug,
+            completed_lessons=[],
+            current_lesson_id=1,
+            percentage=0
+        )
+        db.add(progress)
+        db.flush()
+
+    completed = list(progress.completed_lessons)
+    if tab_id not in completed:
+        completed.append(tab_id)
+        progress.completed_lessons = completed
+
+        # Recalculate progress percentage
+        total_lessons = len(course_engine.get_lessons(course_slug))
+        completed_lessons_count = len([x for x in completed if isinstance(x, int)])
+        completed_tabs_count = len([x for x in completed if isinstance(x, str)])
+        
+        # 4 tabs trackable: overview, theory, examples, quiz
+        total_items = total_lessons + 4
+        if total_items > 0:
+            progress.percentage = int((completed_lessons_count + completed_tabs_count) / total_items * 100)
+
+        db.commit()
+
+    return {"success": True, "completed_lessons": progress.completed_lessons, "percentage": progress.percentage}
 
 
 

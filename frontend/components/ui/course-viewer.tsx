@@ -94,40 +94,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
   // Completed Tabs Tracking
   const [completedTabs, setCompletedTabs] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    setCompletedTabs({});
-  }, [courseSlug]);
 
-  useEffect(() => {
-    const observerOptions = {
-      root: null, // viewport
-      rootMargin: "0px",
-      threshold: 0.1, // trigger as soon as bottom element enters even slightly
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const tabId = entry.target.getAttribute("data-tab-id");
-          if (tabId) {
-            setCompletedTabs((prev) => ({ ...prev, [tabId]: true }));
-          }
-        }
-      });
-    }, observerOptions);
-
-    const targets = ["overview", "theory", "examples", "exercises"];
-    targets.forEach((id) => {
-      const el = document.getElementById(`bottom-detector-${id}`);
-      if (el) {
-        observer.observe(el);
-      }
-    });
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [activeTab, courseSlug]);
 
   // Fetch active session query
   const { data: session, isLoading: isLoadingSession } = useQuery<LabSession | null>({
@@ -153,11 +120,67 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
     queryFn: () => labSessionService.getCourseProgress(courseSlug),
   });
 
+  // Sync completed tabs from progress
+  useEffect(() => {
+    if (progress) {
+      const tabsMap: Record<string, boolean> = {};
+      progress.completed_lessons.forEach((item: any) => {
+        if (typeof item === "string") {
+          tabsMap[item] = true;
+        }
+      });
+      setCompletedTabs(tabsMap);
+    } else {
+      setCompletedTabs({});
+    }
+  }, [progress]);
+
+  // Complete tab mutation
+  const completeTabMutation = useMutation({
+    mutationFn: (tabId: string) => labSessionService.completeCourseTab(courseSlug, tabId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["course_progress", courseSlug] });
+      queryClient.invalidateQueries({ queryKey: ["academies_list"] });
+    },
+  });
+
+  useEffect(() => {
+    const observerOptions = {
+      root: null, // viewport
+      rootMargin: "0px",
+      threshold: 0.1, // trigger as soon as bottom element enters even slightly
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const tabId = entry.target.getAttribute("data-tab-id");
+          if (tabId && !completedTabs[tabId]) {
+            completeTabMutation.mutate(tabId);
+          }
+        }
+      });
+    }, observerOptions);
+
+    const targets = ["overview", "theory", "examples", "exercises"];
+    targets.forEach((id) => {
+      const el = document.getElementById(`bottom-detector-${id}`);
+      if (el) {
+        observer.observe(el);
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [activeTab, courseSlug, completedTabs]);
+
   // Sync current step with last uncompleted lesson index
   useEffect(() => {
     if (progress && lessons.length > 0) {
-      const lastCompletedId = progress.completed_lessons.length > 0 
-        ? Math.max(...progress.completed_lessons) 
+      const numericCompleted = progress.completed_lessons.filter((x: any) => typeof x === "number");
+      const lastCompletedId = numericCompleted.length > 0 
+        ? Math.max(...numericCompleted) 
         : 0;
       
       const nextIndex = lessons.findIndex((l: any) => l.id > lastCompletedId);
@@ -262,8 +285,12 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
       }
     });
     setQuizScore(correctCount);
-    setQuizPassed(correctCount >= 8);
+    const passed = correctCount >= 8;
+    setQuizPassed(passed);
     setQuizSubmitted(true);
+    if (passed) {
+      completeTabMutation.mutate("quiz");
+    }
   };
 
   const handleQuizRetry = () => {
