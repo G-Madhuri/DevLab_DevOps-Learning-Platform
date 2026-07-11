@@ -3,7 +3,7 @@ venv/
 __pycache__/
 *.pyc
 .pytest_cache/
-test.db
+test.db*
 *.egg-info/
 dist/
 .DS_Store
