@@ -18,6 +18,7 @@ import {
   HelpCircle,
   ArrowLeft,
   Clock,
+  Compass,
   Code,
   Check,
   Loader2,
@@ -475,51 +476,144 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
 
             {/* Subtopics Cards rendering */}
             <div className="space-y-6">
-              {((details.theory as any[]) || [
-                {
-                  title: "Theoretical Overview",
-                  definition: "General definition of concepts.",
-                  explanation: "Detailed guide on processes layouts.",
-                  why_exists: "To automate deployments safely.",
-                  where_used: "Configuring container runtimes.",
-                  real_world_example: "Nginx web servers running in ports setups.",
-                  best_practices: "Follow least privilege configurations.",
-                  common_mistakes: "Using root privileges unnecessarily."
-                }
-              ]).map((sub, idx) => (
-                <div key={idx} className="p-6 border border-border bg-card/65 rounded-xl space-y-4">
-                  <div className="space-y-1">
-                    <h3 className="text-base font-bold text-foreground tracking-tight">{sub.title}</h3>
-                    <p className="text-xs text-primary font-semibold">{sub.definition}</p>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">{sub.explanation}</p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border/40 text-xs">
-                    <div>
-                      <span className="font-bold text-foreground block mb-0.5">Why It Exists:</span>
-                      <p className="text-muted-foreground">{sub.why_exists}</p>
-                    </div>
-                    <div>
-                      <span className="font-bold text-foreground block mb-0.5">Where It Is Used:</span>
-                      <p className="text-muted-foreground">{sub.where_used}</p>
-                    </div>
+              {((details.theory as any[]) || []).map((sub, idx) => (
+                <div key={idx} className="p-6 border border-border bg-card/65 rounded-xl space-y-6 shadow-sm">
+                  {/* Title & Definition */}
+                  <div className="space-y-2 border-b border-border/40 pb-4">
+                    <h3 className="text-base font-black text-foreground tracking-tight flex items-center gap-2">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-bold">
+                        {idx + 1}
+                      </span>
+                      {sub.title}
+                    </h3>
+                    <p className="text-xs text-primary font-bold bg-primary/5 px-3 py-1.5 rounded-lg border border-primary/10">
+                      <strong>Definition:</strong> {sub.definition}
+                    </p>
                   </div>
 
-                  <div className="p-3 bg-muted/40 rounded-lg text-xs space-y-1 border border-border/30">
-                    <span className="font-bold text-primary block">Real-World Case:</span>
-                    <p className="text-foreground/90">{sub.real_world_example}</p>
+                  {/* General Explanation */}
+                  <div className="text-xs text-foreground/80 leading-relaxed whitespace-pre-line space-y-2">
+                    {sub.explanation}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                    <div className="bg-emerald-500/[0.02] border border-emerald-500/20 p-3 rounded-lg text-emerald-600">
-                      <span className="font-bold block mb-1">✓ Best Practices</span>
-                      <p className="text-muted-foreground text-[11px]">{sub.best_practices}</p>
+                  {/* Why Is This Important? */}
+                  {sub.why_exists && (
+                    <div className="p-4 bg-indigo-500/[0.02] border border-indigo-500/20 rounded-xl space-y-1">
+                      <span className="font-bold text-indigo-600 text-xs flex items-center gap-1.5">
+                        <HelpCircle className="h-4 w-4" /> Why is this important?
+                      </span>
+                      <p className="text-muted-foreground text-xs leading-relaxed">{sub.why_exists}</p>
                     </div>
-                    <div className="bg-red-500/[0.02] border border-red-500/20 p-3 rounded-lg text-red-500">
-                      <span className="font-bold block mb-1">✗ Common Beginner Mistakes</span>
-                      <p className="text-muted-foreground text-[11px]">{sub.common_mistakes}</p>
+                  )}
+
+                  {/* Real-World Example */}
+                  {sub.real_world_example && (
+                    <div className="p-4 bg-muted/30 border border-border/40 rounded-xl space-y-1">
+                      <span className="font-bold text-foreground/80 text-xs flex items-center gap-1.5">
+                        <Compass className="h-4 w-4" /> Real-world Example
+                      </span>
+                      <p className="text-muted-foreground text-xs leading-relaxed">{sub.real_world_example}</p>
                     </div>
+                  )}
+
+                  {/* Remember Box */}
+                  {sub.remember && (
+                    <div className="p-4 bg-blue-500/[0.02] border border-blue-500/20 rounded-xl space-y-1">
+                      <span className="font-bold text-blue-600 text-xs flex items-center gap-1.5">
+                        <AlertCircle className="h-4 w-4" /> Remember
+                      </span>
+                      <p className="text-muted-foreground text-xs leading-relaxed">{sub.remember}</p>
+                    </div>
+                  )}
+
+                  {/* Callouts row for Pro Tip, Mistakes, Best Practices */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-[11px]">
+                    {sub.pro_tip && (
+                      <div className="bg-amber-500/[0.02] border border-amber-500/20 p-4 rounded-xl space-y-1">
+                        <span className="font-bold text-amber-600 flex items-center gap-1">
+                          <Lightbulb className="h-3.5 w-3.5 shrink-0" /> Pro Tip
+                        </span>
+                        <p className="text-muted-foreground leading-relaxed">{sub.pro_tip}</p>
+                      </div>
+                    )}
+                    {sub.best_practices && (
+                      <div className="bg-emerald-500/[0.02] border border-emerald-500/20 p-4 rounded-xl space-y-1">
+                        <span className="font-bold text-emerald-600 flex items-center gap-1">
+                          <Check className="h-3.5 w-3.5 shrink-0" /> Best Practices
+                        </span>
+                        <p className="text-muted-foreground leading-relaxed">{sub.best_practices}</p>
+                      </div>
+                    )}
+                    {sub.common_mistakes && (
+                      <div className="bg-red-500/[0.02] border border-red-500/20 p-4 rounded-xl space-y-1">
+                        <span className="font-bold text-red-500 flex items-center gap-1">
+                          <AlertCircle className="h-3.5 w-3.5 shrink-0" /> Common Mistakes
+                        </span>
+                        <p className="text-muted-foreground leading-relaxed">{sub.common_mistakes}</p>
+                      </div>
+                    )}
                   </div>
+
+                  {/* Commands Breakdown */}
+                  {sub.commands && sub.commands.length > 0 && (
+                    <div className="space-y-4 pt-2 border-t border-border/40">
+                      <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">Command References</h4>
+                      <div className="space-y-4">
+                        {sub.commands.map((cmd: any, cIdx: number) => (
+                          <div key={cIdx} className="border border-border/50 rounded-xl overflow-hidden bg-card/40">
+                            {/* Command Header */}
+                            <div className="bg-muted/40 px-4 py-2 border-b border-border/40 flex justify-between items-center">
+                              <code className="text-xs font-bold text-primary font-mono">{cmd.name}</code>
+                              <span className="text-[10px] font-bold text-muted-foreground uppercase">{cmd.when_to_use}</span>
+                            </div>
+                            
+                            {/* Command Details */}
+                            <div className="p-4 space-y-3 text-[11px]">
+                              <p><strong className="text-foreground">Purpose:</strong> {cmd.purpose}</p>
+                              <p><strong className="text-foreground">Syntax:</strong> <code className="font-mono bg-muted px-1.5 py-0.5 rounded text-[10px]">{cmd.syntax}</code></p>
+                              
+                              {cmd.parameters && (
+                                <p><strong className="text-foreground">Parameters:</strong> {cmd.parameters}</p>
+                              )}
+
+                              {cmd.example && (
+                                <div className="space-y-1">
+                                  <span className="font-bold text-foreground">Example Usage:</span>
+                                  <pre className="text-[10px] bg-[#1C1824] text-[#EFEBF4] p-2.5 rounded border border-border/30 font-mono overflow-x-auto">
+                                    $ {cmd.example}
+                                  </pre>
+                                </div>
+                              )}
+
+                              {cmd.expected_output && (
+                                <div className="space-y-1">
+                                  <span className="font-bold text-foreground">Expected Output:</span>
+                                  <pre className="text-[10px] bg-muted/80 p-2.5 rounded border border-border/30 font-mono text-muted-foreground overflow-x-auto">
+                                    {cmd.expected_output}
+                                  </pre>
+                                </div>
+                              )}
+
+                              {cmd.output_explanation && (
+                                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                                  <strong className="text-foreground/80">Explanation:</strong> {cmd.output_explanation}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Summary */}
+                  {sub.summary && (
+                    <div className="pt-3 border-t border-border/30">
+                      <p className="text-[11px] text-muted-foreground leading-relaxed italic">
+                        <strong>Summary:</strong> {sub.summary}
+                      </p>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

@@ -29,22 +29,60 @@
     {
       "title": "Production Workspaces: Organizing Your Virtual Office",
       "definition": "Designing directory structures and service accounts so that your apps can run securely without exposing the entire server.",
-      "explanation": "Imagine running a business where you give every intern a key to the company vault, the main database, and the CEO's office. Sounds like a disaster waiting to happen, right? Instead, you give people access only to their own desk and filing cabinet.\n\nIn Linux server deployment, we do the exact same thing using Application Workspaces:\n- `src/`: Where your program's code lives (read-only for the running app).\n- `config/`: Configuration keys and DB connection settings (highly restricted permissions!).\n- `backups/`: Saved zip files of old database states.\n\nTo make sure things stay secure, we never run apps as the administrator (`root`). Instead, we create a dedicated, low-privilege system account (like a service user) who owns only this workspace folder. If a hacker somehow breaks into your app, they are trapped inside this folder and cannot damage the rest of the server!",
+      "explanation": "Imagine running a business where you give every intern a key to the company vault, the main database, and the CEO's office. Sounds like a disaster waiting to happen, right? Instead, you give people access only to their own desk and filing cabinet.\n\nIn Linux server deployment, we do the exact same thing using Application Workspaces:\n- src/: Where your program's code lives (read-only for the running app).\n- config/: Configuration keys and DB connection settings (highly restricted permissions!).\n- backups/: Saved zip files of old database states.\n\nTo make sure things stay secure, we never run apps as the administrator (root). Instead, we create a dedicated, low-privilege system account (like a service user) who owns only this workspace folder. If a hacker breaks into your app, they are trapped inside this folder and cannot damage the rest of the server!",
       "why_exists": "Minimizes the blast radius of any potential security breach, keeping your database and system files safe.",
-      "where_used": "Enterprise cloud configurations, Docker container filesystems, and automated deployment architectures.",
-      "real_world_example": "Setting up a folder `/var/www/my-app` that is owned by the user account `www-data`, locking out all other non-admin users.",
+      "real_world_example": "Setting up a folder /var/www/my-app that is owned by the user account www-data, locking out all other non-admin users.",
+      "remember": "System service accounts (like www-data or nginx) are designed to run background processes and do not have login shells for human use. This adds an extra layer of security.",
+      "pro_tip": "Use chown -R (recursive flag) to change the owner of a folder and all files and subfolders inside it at the exact same time.",
+      "common_mistakes": "Running your web applications as the root user. If the app gets compromised, the attacker has full access to delete the entire server!",
       "best_practices": "Always group your application folders cleanly under a single parent project folder, and restrict its write permissions to only the necessary user accounts.",
-      "common_mistakes": "Running your web applications as the root user. If the app gets compromised, the attacker has full access to delete the entire server!"
+      "commands": [
+        {
+          "name": "chown -R",
+          "purpose": "Recursively changes the owner user and group of a folder and all its contents.",
+          "syntax": "chown -R owner:group folder_name",
+          "parameters": "-R: Recursive execution. owner:group: The target user account and group account.",
+          "example": "chown -R student:student drafts",
+          "expected_output": "(Folder ownership updated recursively without terminal output)",
+          "output_explanation": "Updates ownership of drafts folder and all files inside it to the student user and group.",
+          "when_to_use": "Run this when initializing workspaces or importing files that need permission alignment."
+        }
+      ],
+      "summary": "Secure workspaces restrict access by isolating application folders and running services under dedicated low-privilege accounts instead of root."
     },
     {
-      "title": "Log Rotators: The Janitors of Your Disk Space",
-      "definition": "An automated script that archives or clears old log files so your server doesn't run out of disk space and crash.",
-      "explanation": "When a web server is running, it writes down every single visitor request in a log file. If you get millions of visitors, this text file grows larger and larger every second.\n\nHere is the catch: if a file grows too big and consumes 100% of your disk space, the database will refuse to write new data, the operating system will freeze, and your website will go down!\n\nThis is where Log Rotation comes in. A log rotator is like a janitor that comes in every night to clean up. It:\n1. Renames the active file (e.g. `app.log` becomes `app.log.old`).\n2. Compresses the old logs into a tiny `.zip` archive.\n3. Truncates the active log file to make it empty again, using a simple command like: `echo '' > app.log`.\n4. Deletes archives older than 30 days to keep the disk clean.",
+      "title": "Log Rotators & Disk Cleanup: The Server Janitors",
+      "definition": "An automated system that compresses or clears old logs to prevent disk space exhaustion and server failures.",
+      "explanation": "When a web server is running, it writes down every single visitor request in a log file. If you get millions of visitors, this text file grows larger and larger every second.\n\nHere is the catch: if a file grows too big and consumes 100% of your disk space, the database will refuse to write new data, the operating system will freeze, and your website will go down!\n\nThis is where Log Rotation and Compression come in. Old log files are compressed into tiny .gz archives to save space, and logs older than a threshold (like 30 days) are deleted.",
       "why_exists": "Guarantees that your server can run continuously for years without running out of disk storage space.",
-      "where_used": "System backup operations, logrotate daemon services, and server maintenance schedules.",
       "real_world_example": "A background job running a simple bash script that compresses last week's log folders and cleans up the server disk.",
-      "best_practices": "Always truncate the file using redirect operators (>) rather than deleting the file itself. Deleting the file while a program is actively writing to it will cause errors!",
-      "common_mistakes": "Deleting the log file completely, which makes the app crash because it still expects the file handle to exist in the filesystem."
+      "remember": "Always truncate log files using redirect operators (e.g. echo -n '' > app.log) instead of deleting the log file entirely, as deleting it can crash running programs that hold file handles.",
+      "pro_tip": "Run df -h (disk free, human-readable) to quickly audit how much storage space is available across all directories on your server.",
+      "common_mistakes": "Deleting active log files completely. The running application will fail to find the file handle and crash.",
+      "best_practices": "Automate log cleanups using system cron jobs, compressing historical logs to ensure minimal space usage.",
+      "commands": [
+        {
+          "name": "df -h",
+          "purpose": "Shows current disk storage usage for all mounted filesystems.",
+          "syntax": "df -h",
+          "parameters": "-h: Human-readable output (displays sizes in K, M, G instead of raw blocks).",
+          "example": "df -h",
+          "expected_output": "/dev/sda1       40G   24G   16G  60% /",
+          "output_explanation": "Tells you the primary disk partition has 40G total capacity, with 24G used and 16G free space.",
+          "when_to_use": "Use this regularly to audit server storage availability and prevent system locking."
+        },
+        {
+          "name": "tar",
+          "purpose": "Compresses multiple files or folders into a single archive file (tarball).",
+          "syntax": "tar -czf archive_name.tar.gz folder_to_compress",
+          "parameters": "-c: Create archive. -z: Compress using gzip. -f: Specify filename.",
+          "example": "tar -czf logs_backup.tar.gz drafts",
+          "expected_output": "(Archive created without terminal output)",
+          "output_explanation": "Compreses drafts folder contents into a single compressed archive file named logs_backup.tar.gz.",
+          "when_to_use": "Use this to pack up system logs or source code folders before transferring or cleanups."
+        }
+      ],
+      "summary": "Log rotation and compression (using tar or gzip) clean up server storage. Always check space usage with df -h to prevent disks locking up."
     }
   ],
   "interactive_examples": [

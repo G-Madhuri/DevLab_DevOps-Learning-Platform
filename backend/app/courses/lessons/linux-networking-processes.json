@@ -29,22 +29,70 @@
     {
       "title": "Demystifying Processes: Your System's Worker Ants",
       "definition": "A 'Process' is just a program in action. Every time you run a command or launch an app, Linux spins up a process and gives it a unique Process ID (PID).",
-      "explanation": "Think of your computer as a busy restaurant. The programs (like Python, Nginx, or Bash) are the recipes. But a recipe on a piece of paper doesn't feed anyone. When the chef actually starts cooking the recipe, it becomes a Process!\n\nTo keep track of everything, the restaurant manager assigns a ticket number to every order. In Linux, this ticket number is called a Process ID (PID).\n\nHere are the commands you use to manage them:\n- `ps aux`: Show a snapshot of every single worker ant (process) running on the system.\n- `top` (or `htop`): A live dashboard showing which processes are eating up the CPU and memory (like Task Manager on Windows).\n- `kill [PID]`: Stop a process. You can send a polite request to shut down (`kill -15 [PID]`) or, if it is completely frozen, force-terminate it instantly (`kill -9 [PID]`).",
+      "explanation": "Think of your computer as a busy restaurant. The programs (like Python, Nginx, or Bash) are the recipes. But a recipe on a piece of paper doesn't feed anyone. When the chef actually starts cooking the recipe, it becomes a Process!\n\nTo keep track of everything, the restaurant manager assigns a ticket number to every order. In Linux, this ticket number is called a Process ID (PID).\n\n| Command | Output Type | Best For |\n| :--- | :--- | :--- |\n| ps aux | Flat list snapshot | Scripting & searching for specific apps |\n| top / htop | Live interactive dashboard | Spotting real-time CPU/memory hogs |",
       "why_exists": "To let you monitor system health, locate resource hogs (like memory leaks), and shut down frozen applications safely.",
-      "where_used": "Debugging server performance issues, restarting crashed web services, and managing system resources.",
-      "real_world_example": "You deploy a Node.js app but it freezes. You run `ps aux | grep node` to find its PID (e.g. 2405), and run `kill -9 2405` to terminate it instantly.",
+      "real_world_example": "You deploy a Node.js app but it freezes. You run ps aux | grep node to find its PID (e.g. 2405), and run kill -9 2405 to terminate it instantly.",
+      "remember": "PIDs are completely dynamic and change every single time a program is restarted. Never hardcode PID numbers in scripts!",
+      "pro_tip": "If a process hangs, try sending a polite SIGTERM (15) first. Only use the aggressive SIGKILL (9) if the app refuses to respond, as SIGKILL doesn't let the app save open files.",
+      "common_mistakes": "Forgetting that killing a parent process might also kill all its child processes automatically.",
       "best_practices": "Always try to shut down a process politely using SIGTERM (15) first. Only use SIGKILL (9) as a last resort, since it can corrupt database files if the process was halfway through writing data.",
-      "common_mistakes": "Blindly copy-pasting a PID from a Google tutorial. PIDs are completely random and change every time a program restarts!"
+      "commands": [
+        {
+          "name": "ps aux",
+          "purpose": "Displays a complete snapshot of all running processes in the system.",
+          "syntax": "ps aux",
+          "parameters": "a: Show processes for all users. u: Display user-oriented format. x: Show processes not attached to a terminal.",
+          "example": "ps aux | grep nginx",
+          "expected_output": "root  1024  0.0  0.1  12400  1820 ?  Ss  10:30  0:00 nginx: master process",
+          "output_explanation": "Shows Nginx running as process ID 1024 owned by root, consuming minimal CPU/memory.",
+          "when_to_use": "Run this when you need to find the PID of an application to monitor or terminate it."
+        },
+        {
+          "name": "kill",
+          "purpose": "Sends a termination signal to a running process using its Process ID.",
+          "syntax": "kill [-signal] PID",
+          "parameters": "-15 (SIGTERM): Ask politely to exit (default). -9 (SIGKILL): Force-terminate immediately.",
+          "example": "kill -9 1024",
+          "expected_output": "(Process terminated without terminal output)",
+          "output_explanation": "Force-kills process ID 1024 immediately, freeing its locked resources.",
+          "when_to_use": "Use this when a web service or backend script freezes and refuses to stop."
+        }
+      ],
+      "summary": "Every program running in Linux is a process with a unique PID. Use ps aux to find the PID, and kill to terminate it."
     },
     {
       "title": "Sockets & Ports: The Mailboxes of Your Server",
       "definition": "A 'Port' is a virtual slot on your network interface (labeled 1 to 65535) that helps incoming internet traffic find the correct program.",
-      "explanation": "Imagine your server is a massive apartment building with the address `192.168.1.50`. If mail just gets sent to the building, how does the mailman know which resident it belongs to? They need an apartment number!\n\nIn networking, this apartment number is called a Port.\n- Web servers (like HTTP) live in apartment 80 or 443.\n- Databases (like PostgreSQL) live in apartment 5432.\n- Secure shell access (SSH) lives in apartment 22.\n\nTo see which programs are listening in their apartments right now, you run:\n`ss -lntp`\n- `-l`: Show only listening slots.\n- `-n`: Show numbers instead of names.\n- `-t`: Show TCP sockets.\n- `-p`: Show the actual PID/program name listening (like nginx or postgres).\n\nIf you try to launch a web server on port 80 but another program is already in that apartment, Linux will throw an 'Address already in use' error!",
+      "explanation": "Imagine your server is a massive apartment building with the address 192.168.1.50. If mail just gets sent to the building, how does the mailman know which resident it belongs to? They need an apartment number!\n\nIn networking, this apartment number is called a Port.\n- Web servers (like HTTP/HTTPS) live in ports 80 and 443.\n- Databases (like PostgreSQL) live in port 5432.\n- Secure shell access (SSH) lives in port 22.\n\nIf you try to launch a web server on port 80 but another program is already in that apartment, Linux will throw an 'Address already in use' error!",
       "why_exists": "Enables a single server to handle multiple different internet services (web pages, databases, file transfers) at the exact same time.",
-      "where_used": "Configuring network firewalls, setting up Docker container mappings, and troubleshooting connection timeouts.",
-      "real_world_example": "Checking `ss -lntp` to confirm your backend API is successfully listening on port 8000 and ready to receive client requests.",
+      "real_world_example": "Checking ss -lntp to confirm your backend API is successfully listening on port 8000 and ready to receive client requests.",
+      "remember": "Port numbers below 1024 are called 'privileged ports'. Only the root user (using sudo) can bind services to ports like 80, 443, or 22.",
+      "pro_tip": "If a port is locked or busy, you can identify which application is using it by running ss -lntp and checking the rightmost column.",
+      "common_mistakes": "Trying to run two applications on the exact same port simultaneously, which crashes the second app with a bind address conflict.",
       "best_practices": "For security, make sure database ports (like 5432) are configured to only listen locally (127.0.0.1) so they are not exposed to the public internet.",
-      "common_mistakes": "Forgetting that port numbers below 1024 are privileged. Regular users cannot start programs on port 80 or 443 without administrative permissions (using sudo)."
+      "commands": [
+        {
+          "name": "ss -lntp",
+          "purpose": "Displays active listening network ports and the applications holding them.",
+          "syntax": "ss -lntp",
+          "parameters": "-l: List listening sockets. -n: Show port numbers. -t: Show TCP ports. -p: Show process information.",
+          "example": "ss -lntp",
+          "expected_output": "LISTEN  0  128  0.0.0.0:80  0.0.0.0:*  users:((\"nginx\",pid=1024,fd=6))",
+          "output_explanation": "Identifies that Nginx (PID 1024) is listening for internet connections on port 80.",
+          "when_to_use": "Run this when troubleshooting connection errors or verifying if your web app started successfully."
+        },
+        {
+          "name": "curl",
+          "purpose": "Sends network requests to URLs or server ports and retrieves output content.",
+          "syntax": "curl [options] URL",
+          "parameters": "-I: Fetch response headers only. -v: Verbose mode (details connection headers).",
+          "example": "curl http://localhost:80",
+          "expected_output": "Welcome to nginx!",
+          "output_explanation": "Retrieves the HTML homepage text directly from the local web server running on port 80.",
+          "when_to_use": "Use curl to test if a website or API is responding from within the server command line."
+        }
+      ],
+      "summary": "Network ports are like mailbox numbers on a server. Use ss -lntp to inspect listening sockets, and curl to test web server responses."
     }
   ],
   "interactive_examples": [

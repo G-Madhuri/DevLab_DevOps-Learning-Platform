@@ -27,23 +27,85 @@
   "theory": [
     {
       "title": "Demystifying the rwx Code: Who Can Do What?",
-      "definition": "A 9-character code that tells Linux exactly who has the right to Read (r), Write (w), or Execute (x) a file.",
-      "explanation": "Imagine your computer is a massive shared apartment building. You don't want your roommates reading your private diary or deleting your files, right? Linux is a multi-user system, so it was designed from day one to keep files safe using three groups of access rights:\n\n1. 👤 User (Owner): The person who created the file.\n2. 👥 Group: A specific collection of users (e.g. the 'DevOps' team or the 'Admins').\n3. 🌍 Others: Anyone else who has access to the machine (the general public).\n\nWhen you run `ls -l`, you see a code like `-rwxr-xr--`. Let's break it down:\n- The first character tells you what it is: `-` means a file, and `d` means a directory (folder).\n- The next three `rwx` are for the User (can Read, Write, and Execute).\n- The next three `r-x` are for the Group (can Read and Execute, but not modify).\n- The last three `r--` are for Others (can only read the file, completely locked out from changing or running it!).",
+      "definition": "A 9-character code that tells Linux exactly who has the right to Read (r), Write (w), or Execute (x) a file or directory.",
+      "explanation": "Imagine your computer is a massive shared apartment building. You don't want your roommates reading your private diary or deleting your files, right? Linux is a multi-user system, so it was designed from day one to keep files safe using three groups of access rights:\n\n- User (Owner): The person who created the file.\n- Group: A specific collection of users (e.g. the 'DevOps' team or the 'Admins').\n- Others: Anyone else who has access to the machine (the general public).\n\nWhen you run ls -l, you see a code like -rwxr-xr--. Let's break it down:\n\n- The first character tells you what it is: - means a file, and d means a directory (folder).\n- The next three rwx are for the User (can Read, Write, and Execute).\n- The next three r-x are for the Group (can Read and Execute, but not modify).\n- The last three r-- are for Others (can only read the file, completely locked out from changing or running it!).",
       "why_exists": "Enforces system security, preventing regular users or compromised web apps from reading confidential configuration files or deleting operating system files.",
-      "where_used": "Securing API keys, setting up user directories, configuring application access privileges, and managing server security.",
       "real_world_example": "SSH keys (used to log into remote servers) are so sensitive that Linux will refuse to use them unless you lock down permissions to owner-only read (-r--------).",
+      "remember": "A directory (folder) needs execute (x) permissions for you to be able to enter it using the cd command! If a folder has read (r) but no execute (x), you can see the file names inside but cannot open any of them.",
+      "pro_tip": "You can quickly see the user and group owners of all files in the current folder by running ls -l. Look at columns 3 and 4 of the output table.",
+      "common_mistakes": "Assuming files are safe by default. In a shared server environment, other users can read your files unless you explicitly change their permissions!",
       "best_practices": "Always assign the least possible permissions. If a file only needs to be read, don't give it write (w) or execute (x) permissions.",
-      "common_mistakes": "Assuming files are safe by default. In a shared server environment, other users can read your files unless you explicitly change their permissions!"
+      "commands": [
+        {
+          "name": "chmod (Symbolic)",
+          "purpose": "Modifies file permissions using letter symbols (u, g, o, r, w, x).",
+          "syntax": "chmod [who][operator][permission] filename",
+          "parameters": "who: u (user), g (group), o (other), a (all). operator: + (add), - (remove), = (set exact). permission: r, w, x.",
+          "example": "chmod g+w welcome.txt",
+          "expected_output": "(Permissions changed without terminal output)",
+          "output_explanation": "Adds write permission for the group users to the file welcome.txt.",
+          "when_to_use": "Use symbolic mode when you want to quickly add or remove a single specific permission without affecting others."
+        }
+      ],
+      "summary": "Linux permissions are divided into User, Group, and Others. The characters r, w, and x represent read, write, and execute permissions respectively."
     },
     {
       "title": "Speaking in Numbers: Numeric chmod Notation",
-      "definition": "A shorthand math system to set permissions instantly using three numbers (like 755 or 600).",
-      "explanation": "Typing symbolic flags (like `u+rwx,g+rx,o+rx`) is verbose. Instead, Linux developers use a clever mathematical shorthand where each permission is assigned a number value:\n\n- 📖 Read (r) = 4\n- ✍️ Write (w) = 2\n- 🏃 Execute (x) = 1\n- 🚫 No permission (-) = 0\n\nTo set permissions, you just add the numbers together for each of the three groups (User, Group, Others):\n\n- 755 (Super common for scripts):\n  - User gets 4 + 2 + 1 = 7 (Full control: read, write, execute)\n  - Group gets 4 + 0 + 1 = 5 (Read & execute only)\n  - Others get 4 + 0 + 1 = 5 (Read & execute only)\n- 600 (Perfect for secrets/keys):\n  - User gets 4 + 2 + 0 = 6 (Read & write)\n  - Group gets 0 (Blocked)\n  - Others get 0 (Blocked)\n- 777 (The nuclear option):\n  - Everyone gets 7 (Full read, write, execute for the whole world!). WARNING: Never use 777 in production, it's a huge security risk!",
+      "definition": "A shorthand math system to set permissions instantly using three numbers (like 755 or 600) representing owner, group, and others.",
+      "explanation": "Typing symbolic flags (like u+rwx,g+rx,o+rx) is verbose. Instead, Linux developers use a clever mathematical shorthand where each permission is assigned a number value:\n\n- Read (r) = 4\n- Write (w) = 2\n- Execute (x) = 1\n- No permission (-) = 0\n\nTo set permissions, you just add the numbers together for each of the three groups (User, Group, Others):\n\n- 755 (Super common for scripts):\n  - User gets 4 + 2 + 1 = 7 (Full control)\n  - Group gets 4 + 0 + 1 = 5 (Read & execute only)\n  - Others get 4 + 0 + 1 = 5 (Read & execute only)\n- 600 (Perfect for secrets/keys):\n  - User gets 4 + 2 + 0 = 6 (Read & write)\n  - Group gets 0 (Blocked)\n  - Others get 0 (Blocked)\n- 777 (The nuclear option):\n  - Everyone gets 7 (Full access for the whole world!). WARNING: Never use 777 in production, it's a huge security risk!",
       "why_exists": "Provides a quick, standard, and automated way to configure file security inside deployment scripts and server setup tools.",
-      "where_used": "Dockerfile commands, CI/CD pipeline automation scripts, and server deployment playbooks.",
-      "real_world_example": "Writing `chmod 755 deploy.sh` to allow your continuous integration runner to execute the script while preventing unauthorized edits.",
-      "best_practices": "Default to 644 for files (owner reads/writes, others read) and 755 for folders/scripts. Use 600 for secret config keys.",
-      "common_mistakes": "Running `chmod 777` on a directory to fix a permission error because it's easy. It's like leaving your front door wide open with a sign saying 'free stuff inside' just because you lost your key!"
+      "real_world_example": "Writing chmod 755 deploy.sh to allow your continuous integration runner to execute the script while preventing unauthorized edits.",
+      "remember": "Think of numeric permission numbers as a sum of weights: 4 (Read), 2 (Write), 1 (Execute). For example, 6 is 4+2 (Read+Write); 5 is 4+1 (Read+Execute). There is only one unique sum for any combination!",
+      "pro_tip": "Default to 644 for files (owner reads/writes, others read) and 755 for folders/scripts. Use 600 for secret config keys.",
+      "common_mistakes": "Running chmod 777 on a directory to fix a permission error because it's easy. It's like leaving your front door wide open with a sign saying 'free stuff inside' just because you lost your key!",
+      "best_practices": "Avoid 777 permissions in production. If an application fails due to permissions, trace the exact user/group account instead of resorting to the nuclear option.",
+      "commands": [
+        {
+          "name": "chmod (Numeric)",
+          "purpose": "Sets complete file permissions using numeric octal shorthand values.",
+          "syntax": "chmod [octal_mode] filename",
+          "parameters": "octal_mode: A three-digit number representing owner, group, and others permissions respectively.",
+          "example": "chmod 755 script.sh",
+          "expected_output": "(Permissions changed without terminal output)",
+          "output_explanation": "Sets script.sh permissions to read/write/execute for owner, and read/execute for group and others.",
+          "when_to_use": "Use numeric chmod when you need to enforce a complete, exact permission profile on a file or folder."
+        }
+      ],
+      "summary": "Numeric notation represents permissions as numbers: 4=read, 2=write, 1=execute. Combine them for user, group, and others (e.g. 755 or 600)."
+    },
+    {
+      "title": "Managing Ownership: chown and chgrp",
+      "definition": "Operations used to change the owner user account or owner group of a file or directory.",
+      "explanation": "Every file and folder in Linux belongs to a specific owner user and group. Changing permissions restricts access, but sometimes you need to assign the file to a different owner user or group entirely.\n\nFor example, if you copy a configuration file as the administrative user (root), regular applications like web servers (nginx) won't be able to read it. You must change the file owner to the correct account:\n\n- chown: Change Owner (sets the owner user account).\n- chgrp: Change Group (sets the owner group).",
+      "why_exists": "Enables administrators to provision files, assign resources to service accounts, and manage project collaboration groups safely.",
+      "real_world_example": "Changing a web site's HTML file owner to the nginx web server account (www-data) so the server can display the pages to internet visitors.",
+      "remember": "Only the system administrator (root or using sudo) can change file ownership to a different user account.",
+      "pro_tip": "You can change BOTH user and group owner in a single chown command by separating them with a colon: chown user:group filename.",
+      "common_mistakes": "Changing file ownership to root accidentally, making files uneditable for your local development user accounts.",
+      "best_practices": "Keep your web and app assets owned by standard service accounts, not the root account, to minimize security attack risks.",
+      "commands": [
+        {
+          "name": "chown",
+          "purpose": "Changes the owner user of a file or directory.",
+          "syntax": "chown [owner_username] filename",
+          "parameters": "owner_username: The name of the target user account to receive ownership.",
+          "example": "chown student welcome.txt",
+          "expected_output": "(Ownership updated without terminal output)",
+          "output_explanation": "Sets welcome.txt owner account to student.",
+          "when_to_use": "Use this when you copy configuration templates from administrative folders and need to grant standard users control."
+        },
+        {
+          "name": "chgrp",
+          "purpose": "Changes the owner group of a file or directory.",
+          "syntax": "chgrp [group_name] filename",
+          "parameters": "group_name: The name of the target user group.",
+          "example": "chgrp developers welcome.txt",
+          "expected_output": "(Group updated without terminal output)",
+          "output_explanation": "Sets welcome.txt group owner to developers.",
+          "when_to_use": "Use this to share source code files with specific teams or department groups."
+        }
+      ],
+      "summary": "Use chown to change user ownership, and chgrp to change group ownership. You can also do both in one command using chown user:group."
     }
   ],
   "interactive_examples": [
