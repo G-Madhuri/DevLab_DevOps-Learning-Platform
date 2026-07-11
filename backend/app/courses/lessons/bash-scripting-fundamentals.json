@@ -1,59 +1,68 @@
 {
   "slug": "bash-scripting-fundamentals",
   "title": "Bash Scripting Fundamentals",
-  "theory": "A shell script is a text file containing commands executed sequentially. Scripts start with a shebang `#!/bin/bash` indicating the interpreter path. Variables are declared without spaces (e.g., `NAME=val`) and accessed using `$NAME`. Double parentheses `(( ))` compute mathematical expressions. Logical tests `[ ]` evaluate conditions (e.g., `-f file` check, `-gt` comparisons). Loops (`for`, `while`) automate repeating blocks, and positional parameters like `$1` pass inputs.",
+  "overview": {
+    "introduction": [
+      "At its core, a shell script is a simple text file containing a list of commands that the shell parses and executes sequentially. Instead of typing the same commands manually every day, DevOps engineers write Bash scripts to automate complex software builds, trigger daily database backups, clean up server disk sectors, and launch local development clusters.",
+      "Bash (Bourne Again SHell) scripting is the absolute baseline programming language of infrastructure automation. When a virtual machine boots in AWS, or a container initializes inside Kubernetes, it runs boot configuration scripts written in Bash. Understanding how to use variables, loops, conditional statements, and error codes is what allows you to replace hours of manual administration work with a single automated script.",
+      "This module starts from the absolute beginning: configuring your script files with the shebang syntax header, declaring and using local variables, performing numerical calculations, constructing logical checks with if-else conditionals, using loop statements to process files lists, and writing helper functions with positional parameters."
+    ],
+    "what_you_will_learn": [
+      "The role of the shebang header line and files executable flags.",
+      "Declaring shell variables and referencing scopes values.",
+      "Performing numerical math calculations in the shell.",
+      "Constructing logical checks and if-else branches.",
+      "Writing loops (for and while) to process variables sets.",
+      "Encapsulating logic blocks inside custom shell functions."
+    ],
+    "prerequisites": "Completion of Linux File System & Permissions course.",
+    "estimated_time": "120 mins",
+    "difficulty": "Intermediate",
+    "learning_outcomes": [
+      "Build fully automated executable scripting utilities from scratch.",
+      "Incorporate variable values, conditions, and computations.",
+      "Write loops that scan directories lists and perform operations.",
+      "Audit exit status codes to check success flags."
+    ]
+  },
+  "theory": [
+    {
+      "title": "The Shebang Syntax Header",
+      "definition": "The character sequence #! at the start of a script that directs the kernel to the interpreter program.",
+      "explanation": "When you execute a script using `./script.sh`, the system kernel reads the first line. The shebang `#!/bin/bash` tells the kernel that the following commands are written for the Bash shell parser and should be fed to `/bin/bash` for parsing. Without this header, the script might run using a default system shell (like Dash) which has different rules.",
+      "why_exists": "Ensures consistent script execution across different Linux environments regardless of the user's default shell.",
+      "where_used": "All custom system configuration scripts.",
+      "real_world_example": "A script starting with `#!/bin/bash` to ensure modern bash arrays are supported.",
+      "best_practices": "Always make `#!/bin/bash` the absolute first line of your custom shell scripts.",
+      "common_mistakes": "Forgetting the shebang line or writing spaces before the characters, breaking execution parameters."
+    },
+    {
+      "title": "Variables and Scope Values",
+      "definition": "Named memory storage spaces used to save strings, numbers, or command execution results.",
+      "explanation": "Variables are declared using standard names followed by `=` and value (e.g. `NAME='devops'`). Important: there must be absolutely no spaces around the equal sign! To reference or read the value later, prefix the variable name with the dollar symbol `$NAME`. System variables (like `$USER` or `$PATH`) are exported to make them accessible to child processes.",
+      "why_exists": "Enables dynamic configuration inputs and parameter adjustments inside reusable scripts.",
+      "where_used": "Environment configurations, script loops, and dynamic paths mapping.",
+      "real_world_example": "Setting variables: `BACKUP_DIR='/var/backups'` and copying files using `cp -R src/ $BACKUP_DIR`.",
+      "best_practices": "Use uppercase for environment variables (e.g. `PORT=80`) and lowercase for local script variables.",
+      "common_mistakes": "Adding spaces around the equal sign (e.g. writing `val = 10` instead of `val=10`), throwing command errors."
+    }
+  ],
   "interactive_examples": [
     {
-      "command": "export NAME=student",
-      "description": "Declares an environment variable accessible to children processes."
-    },
-    {
+      "objective": "Perform dynamic integer math calculations.",
       "command": "echo $(( 10 + 20 ))",
-      "description": "Performs integer addition calculation and prints it."
+      "explanation": "Evaluates math sum inside double parentheses and outputs result to standard stdout.",
+      "expected_output": "30",
+      "common_mistakes": "Using single parentheses which prints string brackets instead.",
+      "tips": "Store calculations directly in variables: `SUM=$(( 5 + 10 ))`."
     },
     {
-      "command": "[ -f welcome.txt ] && echo 'Found'",
-      "description": "Checks if welcome.txt is a file and prints success."
-    }
-  ],
-  "exercises": [
-    {
-      "description": "Write a script that accepts two numbers as arguments and prints their sum."
-    },
-    {
-      "description": "Write a condition checking if `/var/log` is a directory and printing status."
-    }
-  ],
-  "quiz": [
-    {
-      "question": "What is the correct shebang for starting a bash script?",
-      "options": [
-        "#/bin/sh",
-        "#!/bin/bash",
-        "python script.py",
-        "#!/usr/bin/env sh"
-      ],
-      "answer": "#!/bin/bash"
-    },
-    {
-      "question": "How do you reference the value stored in a variable named VAR?",
-      "options": [
-        "&VAR",
-        "VAR",
-        "$VAR",
-        "*VAR"
-      ],
-      "answer": "$VAR"
-    },
-    {
-      "question": "Which exit status code represents standard command success?",
-      "options": [
-        "1",
-        "255",
-        "0",
-        "-1"
-      ],
-      "answer": "0"
+      "objective": "Verify if a file exists using test command conditionals.",
+      "command": "[ -f welcome.txt ] && echo 'File exists'",
+      "explanation": "Evaluates if welcome.txt is a regular file. If true (exit code 0), prints string using &&.",
+      "expected_output": "File exists",
+      "common_mistakes": "Forgetting spacing inside brackets (e.g. typing `[-f welcome.txt]` instead of `[ -f welcome.txt ]`).",
+      "tips": "Spacing inside bracket tests is strictly required by the bash parser."
     }
   ],
   "lessons": [
@@ -170,7 +179,7 @@
       "example": "for file in *.txt; do echo $file; done",
       "expected": "hello.sh",
       "hint": "Type: for f in *.sh; do echo $f; done",
-      "solution": "for f in *.sh; do echo $f; done",
+      "solution": "hello.sh",
       "difficulty": "Intermediate",
       "estimated_duration": "4m"
     },
@@ -252,5 +261,274 @@
       "difficulty": "Advanced",
       "estimated_duration": "4m"
     }
-  ]
+  ],
+  "exercises": [
+    {
+      "title": "Automation directory backup",
+      "problem": "Create a script `backup_run.sh` that checks if directory `data` exists, and if so, copies all contents to a `backup` folder.",
+      "difficulty": "Intermediate",
+      "hint": "Use `if [ -d data ]; then cp -R data/ backup/; fi`.",
+      "expected_result": "Script correctly copies folder data files.",
+      "objective": "Practice implementing logical path checks."
+    },
+    {
+      "title": "Math increment values",
+      "problem": "Write a script that reads numerical value inputs and increments them using a double parentheses construct.",
+      "difficulty": "Beginner",
+      "hint": "Declare `c=5` followed by `echo $((c + 1))`.",
+      "expected_result": "Outputs the calculation value result.",
+      "objective": "Practice arithmetic variables logic."
+    },
+    {
+      "title": "For loop directories listing",
+      "problem": "Create a loop iterating through files ending in `.sh` and print their filenames to terminal output.",
+      "difficulty": "Intermediate",
+      "hint": "Use `for f in *.sh; do echo $f; done`.",
+      "expected_result": "Prints all script names present.",
+      "objective": "Practice directory globbing loops."
+    },
+    {
+      "title": "Positional inputs configurations",
+      "problem": "Construct a deployment script `setup.sh` that checks if the first parameter is 'production' and logs messages.",
+      "difficulty": "Intermediate",
+      "hint": "Evaluate `if [ \"$1\" = \"production\" ]; then echo 'Deploying...'; fi`.",
+      "expected_result": "Prints deployment messages if matching parameter is passed.",
+      "objective": "Learn using positional arguments inside conditions."
+    },
+    {
+      "title": "Custom logs rotator function",
+      "problem": "Write a local function `clean_logs()` that empties a temporary file and returns an exit code.",
+      "difficulty": "Advanced",
+      "hint": "Declare `clean_logs() { echo '' > temp.log; return 0; }`.",
+      "expected_result": "Function runs successfully resetting log content.",
+      "objective": "Practice encapsulation using shell functions."
+    },
+    {
+      "title": "While loop delay counter",
+      "problem": "Write a loop utility that prints countdown integers from 3 to 1.",
+      "difficulty": "Advanced",
+      "hint": "Use `c=3; while [ $c -gt 0 ]; do echo $c; c=$((c - 1)); done`.",
+      "expected_result": "Prints 3, 2, 1 sequentially.",
+      "objective": "Gain experience writing conditional loops."
+    }
+  ],
+  "quiz": [
+    {
+      "question": "Which character combination is known as the shebang and directs the script to the proper shell interpreter?",
+      "options": [
+        "##",
+        "/*",
+        "#!",
+        "$!"
+      ],
+      "answer": "#!",
+      "explanation": "#! points the kernel loader to the program executable parser path (e.g. /bin/bash).",
+      "incorrect_explanations": {
+        "##": "Double hash represents string comments.",
+        "/*": "Forward slash star represents block comments in languages like C.",
+        "$!": "Special variable returning PID of last background process."
+      }
+    },
+    {
+      "question": "Which variable declaration is valid in a Bash shell environment?",
+      "options": [
+        "NAME = student",
+        "NAME=student",
+        "NAME:student",
+        "$NAME=student"
+      ],
+      "answer": "NAME=student",
+      "explanation": "Bash requires name=value syntax with absolutely no spaces around the equal sign.",
+      "incorrect_explanations": {
+        "NAME = student": "Fails because the parser interprets 'NAME' as a command and '=' as an argument.",
+        "NAME:student": "Colon is not the variables assignment operator in bash.",
+        "$NAME=student": "Dollar prefix reads values, it cannot define new variables assignments."
+      }
+    },
+    {
+      "question": "How do you evaluate arithmetic math calculations inside a script?",
+      "options": [
+        "$(( expr ))",
+        "$[ expr ]",
+        "[ expr ]",
+        "expr"
+      ],
+      "answer": "$(( expr ))",
+      "explanation": "Double parentheses with dollar symbol prefix are the standard syntax for integer arithmetic expansions.",
+      "incorrect_explanations": {
+        "$[ expr ]": "Deprecated syntax for numeric evaluations, no longer recommended.",
+        "[ expr ]": "Brackets evaluate conditional string/logical tests, not mathematical operations.",
+        "expr": "Evaluates as a raw text string unless run through backticks."
+      }
+    },
+    {
+      "question": "Which comparison flag is used to check if a numeric value is 'greater than' another?",
+      "options": [
+        "-eq",
+        "-ne",
+        "-gt",
+        "-lt"
+      ],
+      "answer": "-gt",
+      "explanation": "-gt stands for 'greater than' and is used inside logical tests [ ].",
+      "incorrect_explanations": {
+        "-eq": "Stands for 'equals'.",
+        "-ne": "Stands for 'not equal to'.",
+        "-lt": "Stands for 'less than'."
+      }
+    },
+    {
+      "question": "What is the role of the -f check flag inside bracket test evaluations?",
+      "options": [
+        "Checks if path is a directory",
+        "Checks if file is executable",
+        "Checks if path is a regular file",
+        "Forces file overrides"
+      ],
+      "answer": "Checks if path is a regular file",
+      "explanation": "-f returns true (exit 0) if the target path points to a valid regular file.",
+      "incorrect_explanations": {
+        "Checks if path is a directory": "Evaluated using the -d directory flag.",
+        "Checks if file is executable": "Evaluated using the -x permission flag.",
+        "Forces file overrides": "-f does not change file access permissions."
+      }
+    },
+    {
+      "question": "How do you correctly close an if conditional block in Bash?",
+      "options": [
+        "endif",
+        "fi",
+        "done",
+        "close"
+      ],
+      "answer": "fi",
+      "explanation": "fi is 'if' written backward, indicating the end of the conditional logic sequence.",
+      "incorrect_explanations": {
+        "endif": "Used in other programming languages or C-Shell, not Bash.",
+        "done": "Used to terminate loop constructs (for/while).",
+        "close": "Not a keyword terminator in bash programming."
+      }
+    },
+    {
+      "question": "Which Special Variable holds the exit status code of the last executed command?",
+      "options": [
+        "$#",
+        "$@",
+        "$?",
+        "$!"
+      ],
+      "answer": "$?",
+      "explanation": "$? holds status (0 for success, non-zero representing system error code).",
+      "incorrect_explanations": {
+        "$#": "Holds the count of positional parameters passed to a script.",
+        "$@": "Represents the array list of all parameters.",
+        "$!": "Holds the PID of the last background job process."
+      }
+    },
+    {
+      "question": "True or False: Spacing inside bracket logical tests (e.g. `[ $A -gt $B ]`) is completely optional.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "answer": "False",
+      "explanation": "Brackets are aliases to the test command utility; they strictly require space margins to parse parameters.",
+      "incorrect_explanations": {
+        "True": "Omitting space (e.g. `[$A -gt $B]`) causes syntax errors."
+      }
+    },
+    {
+      "question": "What does the local keyword do when declared before variables inside a function?",
+      "options": [
+        "Makes them system-wide variables",
+        "Restricts variable scope strictly to the function",
+        "Speeds up mathematical evaluations",
+        "Locks files permission settings"
+      ],
+      "answer": "Restricts variable scope strictly to the function",
+      "explanation": "local prevents the variable from leaking out or colliding with global variables in parent scopes.",
+      "incorrect_explanations": {
+        "Makes them system-wide variables": "This is done using the export command.",
+        "Speeds up mathematical evaluations": "Has no effect on calculation runtime speeds.",
+        "Locks files permission settings": "Does not relate to directory security permissions."
+      }
+    },
+    {
+      "question": "Scenario: You need a script loop that runs exactly 5 times printing counter loops. Which construct is best?",
+      "options": [
+        "for i in {1..5}; do echo $i; done",
+        "while [ i -eq 5 ]; do echo $i; done",
+        "if [ $i -lt 5 ]; then echo $i; fi",
+        "for i in *.sh; do echo $i; done"
+      ],
+      "answer": "for i in {1..5}; do echo $i; done",
+      "explanation": "The range indicator {1..5} runs the block exactly five times, outputting the index each step.",
+      "incorrect_explanations": {
+        "while [ i -eq 5 ]; do echo $i; done": "Would trigger syntax errors since i is not initialized, or loop infinitely if i is 5.",
+        "if [ $i -lt 5 ]; then echo $i; fi": "This is a conditional statement that evaluates once, not a loop structure.",
+        "for i in *.sh; do echo $i; done": "Loops over files ending in .sh, which depends on folder contents, not a fixed range."
+      }
+    }
+  ],
+  "resources": {
+    "summary": "This module covers shebang shell script headers, variables mapping, arithmetic operations, bracket comparisons, conditional blocks, loops, exit status checks, and function wrappers.",
+    "cheat_sheet": "#!/bin/bash - shebang line\nNAME=val - set variable\n$NAME - read variable\n$((A+B)) - sum math\n[ -f file ] - check file\nif [ cond ]; then ...; fi - conditional\nfor i in list; do ...; done - loop\n$? - exit code\nfunc() { ... } - custom function",
+    "commands_table": [
+      {
+        "name": "read",
+        "syntax": "read [varname]",
+        "description": "Pause execution capturing keyboard standard input values."
+      },
+      {
+        "name": "export",
+        "syntax": "export [name=val]",
+        "description": "Promotes local variables to environment scope variables."
+      }
+    ],
+    "revision_notes": [
+      "Spacing inside brackets is strictly mandatory: `[ $x -eq 1 ]`.",
+      "Variables set with NAME=val, no spaces around the equal sign.",
+      "Use exit status $? directly to check errors after executing system utilities."
+    ],
+    "beginner_mistakes": [
+      "Writing script logic without setting files executable permissions (+x), prompting permission denied errors on launch.",
+      "Adding spaces around equals during variable declaration: `var = val`."
+    ],
+    "best_practices": [
+      "Always declare variables scopes local inside helper shell functions.",
+      "Double quote variables representing file paths to prevent space splitting errors."
+    ],
+    "interview_questions": [
+      {
+        "question": "How do you pass arguments to a script?",
+        "answer": "By passing parameters space-separated after the script command: `./script.sh arg1 arg2`."
+      },
+      {
+        "question": "What is the difference between > and >>?",
+        "answer": "> overwrites target files contents; >> appends new data lines to the bottom of the files."
+      }
+    ],
+    "additional_practice": [
+      "Write an automated deployment utility archiving log files into backups folders.",
+      "Construct a shell configuration script dynamically writing env variables into a config profile."
+    ],
+    "books": [
+      {
+        "title": "Classic Shell Scripting by Arnold Robbins",
+        "description": "The definitive textbook for automated operations scripts."
+      }
+    ],
+    "documentation": [
+      {
+        "title": "GNU Bash Reference Manual",
+        "url": "https://www.gnu.org/software/bash/manual/"
+      }
+    ],
+    "external_resources": [
+      {
+        "title": "Bash Hackers Wiki",
+        "url": "https://wiki.bash-hackers.org/"
+      }
+    ]
+  }
 }

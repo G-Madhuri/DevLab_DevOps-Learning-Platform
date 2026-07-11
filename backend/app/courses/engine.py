@@ -112,5 +112,31 @@ class CourseEngine:
         }
 
 
+    def get_learning_paths(self) -> List[Dict[str, Any]]:
+        """
+        Loads and returns the list of all DevOps Career Learning Paths.
+        """
+        paths_file = os.path.join(self.base_dir, "learning_paths.json")
+        if not os.path.exists(paths_file):
+            logger.warning(f"Learning paths configuration file not found at {paths_file}")
+            return []
+        try:
+            with open(paths_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error(f"Failed to load learning paths: {e}")
+            return []
+
+    def get_learning_path(self, path_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Retrieve a single learning path configuration by ID.
+        """
+        paths = self.get_learning_paths()
+        for p in paths:
+            if p.get("id") == path_id:
+                return p
+        return None
+
+
 # Global singleton instance
 course_engine = CourseEngine()

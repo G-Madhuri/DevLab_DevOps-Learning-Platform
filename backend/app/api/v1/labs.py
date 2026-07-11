@@ -189,3 +189,90 @@ def generate_academy_certificate(
         "message": f"Successfully generated {academy['title']} certificate!",
         "certificate_id": str(uuid.uuid4())
     }
+
+@router.get("/learning-paths/list")
+def get_learning_paths_list(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Retrieve list of career-focused roadmaps.
+    """
+    paths = course_engine.get_learning_paths()
+    progress_records = db.query(CourseProgress).filter(
+        CourseProgress.user_id == current_user.id
+    ).all()
+    progress_map = {p.course_slug: p for p in progress_records}
+
+    response = []
+    for path in paths:
+        course_percentages = []
+        for slug in path["courses"]:
+            p = progress_map.get(slug)
+            course_percentages.append(p.percentage if p else 0)
+        overall_progress = sum(course_percentages) // len(course_percentages) if course_percentages else 0
+
+        response.append({
+            **path,
+            "progress": overall_progress
+        })
+    return response
+
+@router.get("/learning-paths/detail/{path_id}")
+def get_learning_path_detail(
+    path_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Retrieve specific learning path with course statuses.
+    """
+    path = course_engine.get_learning_path(path_id)
+    if not path:
+        raise HTTPException(status_code=404, detail="Learning Path not found.")
+
+    progress_records = db.query(CourseProgress).filter(
+        CourseProgress.user_id == current_user.id
+    ).all()
+    progress_map = {p.course_slug: p for p in progress_records}
+
+    courses_details = []
+    course_percentages = []
+    for slug in path["courses"]:
+        p = progress_map.get(slug)
+        percentage = p.percentage if p else 0
+        course_percentages.append(percentage)
+        
+        # Look up course metadata inside academies courses list
+        academies = course_engine.get_academies()
+        found_course = None
+        for a in academies:
+            for c in a["courses"]:
+                if c["slug"] == slug:
+                    found_course = c
+                    break
+            if found_course:
+                break
+                
+        title = found_course["title"] if found_course else slug.replace("-", " ").title()
+        desc = found_course["description"] if found_course else "Learn modular skills and command operations."
+        duration = found_course["duration"] if found_course else "30m"
+        diff = found_course["difficulty"] if found_course else "beginner"
+
+        courses_details.append({
+            "slug": slug,
+            "title": title,
+            "description": desc,
+            "duration": duration,
+            "difficulty": diff,
+            "percentage": percentage,
+            "status": "completed" if percentage == 100 else "in-progress" if percentage > 0 else "not-started"
+        })
+
+    overall_progress = sum(course_percentages) // len(course_percentages) if course_percentages else 0
+
+    return {
+        **path,
+        "progress": overall_progress,
+        "courses_details": courses_details
+    }
