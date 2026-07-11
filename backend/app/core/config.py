@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 
     # Database Settings
     # Defaults to a local SQLite db if postgres isn't configured, but Neon is expected
-    DATABASE_URL: str = "sqlite:///./test.db"
+    DATABASE_URL: str = "postgresql://your_user:your_password@your_host:5432/your_db"
 
     # Upstash Redis Settings
     UPSTASH_REDIS_REST_URL: str = ""
