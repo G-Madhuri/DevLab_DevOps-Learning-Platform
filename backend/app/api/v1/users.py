@@ -10,11 +10,17 @@ router = APIRouter()
 
 
 @router.get("/me", response_model=UserResponse)
-def get_me(current_user: User = Depends(get_current_user)):
+def get_me(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """
     Get details of the currently logged-in user.
     """
-    return current_user
+    streak = user_service.calculate_streak(db, current_user.id)
+    user_res = UserResponse.model_validate(current_user)
+    user_res.streak = streak
+    return user_res
 
 
 @router.put("/me", response_model=UserResponse)
@@ -26,4 +32,8 @@ def update_me(
     """
     Update profile details (name/password) for the logged-in user.
     """
-    return user_service.update_user_profile(db, current_user=current_user, user_update=user_update)
+    updated_user = user_service.update_user_profile(db, current_user=current_user, user_update=user_update)
+    streak = user_service.calculate_streak(db, updated_user.id)
+    user_res = UserResponse.model_validate(updated_user)
+    user_res.streak = streak
+    return user_res

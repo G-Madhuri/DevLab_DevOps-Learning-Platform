@@ -4,12 +4,14 @@ export interface User {
   name: string;
   created_at: string;
   updated_at: string;
+  streak?: number;
 }
 
 export interface UserSimple {
   id: string;
   email: string;
   name: string;
+  streak?: number;
 }
 
 export interface AuthResponse {

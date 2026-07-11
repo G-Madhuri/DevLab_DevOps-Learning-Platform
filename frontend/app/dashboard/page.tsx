@@ -43,6 +43,13 @@ export default function DashboardPage() {
     queryFn: () => labSessionService.getActiveLinuxSession(),
   });
 
+  // Fetch recent session logs
+  const { data: sessionsData } = useQuery({
+    queryKey: ["user_lab_sessions"],
+    queryFn: () => labSessionService.getSessions(0, 5),
+  });
+  const recentSessions = sessionsData?.sessions || [];
+
   // Query progress records for Linux Basics
   const { data: linuxProgress } = useQuery({
     queryKey: ["course_progress", "linux-basics"],
@@ -68,7 +75,7 @@ export default function DashboardPage() {
     },
     {
       label: "Current Streak",
-      value: "1 Day",
+      value: user?.streak ? `${user.streak} ${user.streak === 1 ? "Day" : "Days"}` : "1 Day",
       icon: <Flame className="h-5 w-5 text-red-500 dark:text-red-400" />,
       desc: "Log in daily to keep streak",
     },
@@ -241,29 +248,45 @@ export default function DashboardPage() {
           <h2 className="text-lg font-bold text-foreground">Recent Activity</h2>
           <p className="text-xs text-muted-foreground mt-0.5">Your latest sandbox metrics</p>
         </div>
-        {activeSession ? (
+        {recentSessions.length > 0 ? (
           <div className="divide-y divide-border">
-            <div className="p-6 flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 rounded-lg">
-                  <TerminalIcon className="h-5 w-5" />
+            {recentSessions.map((sess: LabSession) => {
+              const isRunning = sess.status === "running" || sess.status === "starting";
+              return (
+                <div key={sess.id} className="p-6 flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div
+                      className={`p-2 rounded-lg border ${
+                        isRunning
+                          ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 animate-pulse"
+                          : "bg-muted border-border/40 text-muted-foreground"
+                      }`}
+                    >
+                      <TerminalIcon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-foreground capitalize">
+                        {sess.lab_name.replace("-basics", " Basics").replace("-", " ")}
+                      </h4>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {isRunning
+                          ? `Interactive sandbox container active. Status: ${sess.status}.`
+                          : `Sandbox session finished. Status: ${sess.status}.`}
+                      </p>
+                      <p className="text-[9px] text-muted-foreground/70 font-mono mt-0.5">
+                        ID: {sess.id.substring(0, 8)}... | Started: {new Date(sess.started_at || sess.created_at || "").toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  <Link href={sess.lab_name === "docker-basics" ? "/labs/docker-basics" : "/labs/linux-basics"}>
+                    <Button size="sm" variant="ghost" className="text-xs font-bold flex items-center space-x-1">
+                      <span>{isRunning ? "Open Console" : "Restart Lab"}</span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </Link>
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-foreground capitalize">
-                    {activeSession.lab_name.replace("-basics", " Basics").replace("-", " ")}
-                  </h4>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
-                    Interactive sandbox container active. Status: {activeSession.status}.
-                  </p>
-                </div>
-              </div>
-              <Link href={activeSession.lab_name === "docker-basics" ? "/labs/docker-basics" : "/labs/linux-basics"}>
-                <Button size="sm" variant="ghost" className="text-xs font-bold flex items-center space-x-1">
-                  <span>Open Console</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Button>
-              </Link>
-            </div>
+              );
+            })}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-16 px-4 text-center">

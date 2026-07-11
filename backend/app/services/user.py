@@ -56,5 +56,50 @@ class UserService:
 
         return user_repository.update(db, db_obj=current_user, obj_in_data=update_data)
 
+    def calculate_streak(self, db: Session, user_id) -> int:
+        """
+        Calculates the user's daily streak dynamically based on the days they created lab sessions.
+        """
+        from app.models.session import LabSession
+        from datetime import date
+        sessions = (
+            db.query(LabSession)
+            .filter(LabSession.user_id == user_id)
+            .order_by(LabSession.created_at.desc())
+            .all()
+        )
+        if not sessions:
+            return 1
+
+        # Extract unique dates (timezone naive)
+        unique_dates = sorted(
+            list(set(s.created_at.date() for s in sessions)),
+            reverse=True
+        )
+
+        if not unique_dates:
+            return 1
+
+        today = date.today()
+        recent = unique_dates[0]
+        diff_from_today = (today - recent).days
+
+        # If inactive today and yesterday, streak is reset to 1
+        if diff_from_today > 1:
+            return 1
+
+        streak = 1
+        current_date = recent
+        for next_date in unique_dates[1:]:
+            diff = (current_date - next_date).days
+            if diff == 1:
+                streak += 1
+                current_date = next_date
+            elif diff == 0:
+                continue
+            else:
+                break
+        return streak
+
 
 user_service = UserService()

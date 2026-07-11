@@ -51,6 +51,7 @@ class UserResponse(BaseModel):
     name: str
     created_at: datetime
     updated_at: datetime
+    streak: Optional[int] = 1
 
     class Config:
         from_attributes = True
