@@ -38,10 +38,21 @@ def launch_lab(
     Launch a new Linux basics sandbox container (or starts in Simulated Mode).
     Only allows one active session at a time per user.
     """
-    # Check if there is an active session
-    active = session_repository.get_running_session_for_user(db, user_id=current_user.id)
+    # Check if there is an active session for this specific lab
+    active = session_repository.get_active_session(db, user_id=current_user.id, lab_name=lab_name)
     if active:
         return active
+
+    # Stop any other active session of the user first (if it's for a different lab) to free resources
+    other_active = session_repository.get_running_session_for_user(db, user_id=current_user.id)
+    if other_active:
+        try:
+            logger.info(f"Auto-stopping previous lab session {other_active.id} ({other_active.lab_name}) to start {lab_name}")
+            runtime_service.stop_lab(str(other_active.id), other_active.container_id, other_active.lab_name)
+            other_active.status = "stopped"
+            db.commit()
+        except Exception as stop_err:
+            logger.error(f"Failed to auto-stop previous session {other_active.id}: {stop_err}")
 
     # Insert starting session into database
     session_data = {
