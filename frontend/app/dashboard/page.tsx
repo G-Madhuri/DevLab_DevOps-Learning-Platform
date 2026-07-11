@@ -43,6 +43,12 @@ export default function DashboardPage() {
     queryFn: () => labSessionService.getActiveLinuxSession(),
   });
 
+  // Fetch all active running sessions
+  const { data: activeSessions = [] } = useQuery<LabSession[]>({
+    queryKey: ["all_active_sessions"],
+    queryFn: () => labSessionService.getAllActiveLinuxSessions(),
+  });
+
   // Fetch recent session logs
   const { data: sessionsData } = useQuery({
     queryKey: ["user_lab_sessions"],
@@ -87,7 +93,7 @@ export default function DashboardPage() {
     },
     {
       label: "Active Labs",
-      value: activeSession ? "1" : "0",
+      value: activeSessions.length.toString(),
       icon: <Compass className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />,
       desc: "Simultaneous running sandboxes",
     },
@@ -112,20 +118,20 @@ export default function DashboardPage() {
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              {activeSession && (
-                <Link href={activeSession.lab_name === "docker-basics" ? "/labs/docker-basics" : "/labs/linux-basics"}>
+              {activeSessions.length > 0 && (
+                <Link href={activeSessions[0].lab_name === "docker-basics" ? "/labs/docker-basics" : "/labs/linux-basics"}>
                   <Button variant="outline" className="border-emerald-500/30 hover:bg-emerald-500/5 text-emerald-600 rounded-md flex items-center space-x-2">
                     <TerminalIcon className="h-4 w-4" />
-                    <span>Active Sandbox</span>
+                    <span>Active Sandbox ({activeSessions.length})</span>
                   </Button>
                 </Link>
               )}
             </div>
           </div>
 
-          {/* Active Session Status Widget */}
-          {activeSession && (
-            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          {/* Active Session Status Widgets */}
+          {activeSessions.map((sess: LabSession) => (
+            <div key={sess.id} className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="space-y-1.5">
                 <div className="flex items-center space-x-2">
                   <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -134,20 +140,20 @@ export default function DashboardPage() {
                   </span>
                 </div>
                 <h3 className="text-base font-bold text-foreground capitalize">
-                  {activeSession.lab_name.replace("-basics", " Basics").replace("-", " ")}
+                  {sess.lab_name.replace("-basics", " Basics").replace("-", " ")}
                 </h3>
                 <p className="text-xs text-muted-foreground flex items-center">
                   <Clock className="h-3.5 w-3.5 mr-1" />
-                  Launched: {new Date(activeSession.started_at || "").toLocaleTimeString()}
+                  Launched: {new Date(sess.started_at || "").toLocaleTimeString()}
                 </p>
               </div>
-              <Link href={activeSession.lab_name === "docker-basics" ? "/labs/docker-basics" : "/labs/linux-basics"}>
+              <Link href={sess.lab_name === "docker-basics" ? "/labs/docker-basics" : "/labs/linux-basics"}>
                 <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-bold px-5">
                   Continue Workspace
                 </Button>
               </Link>
             </div>
-          )}
+          ))}
 
           {/* Daily Motivation Card */}
           <div className="rounded-xl border border-border bg-card p-6 shadow-sm">

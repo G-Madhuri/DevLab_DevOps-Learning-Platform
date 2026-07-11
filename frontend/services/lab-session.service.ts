@@ -40,6 +40,11 @@ export const labSessionService = {
     return response.data;
   },
 
+  async getAllActiveLinuxSessions(): Promise<LabSession[]> {
+    const response = await apiClient.get("/labs/linux/active/all");
+    return response.data;
+  },
+
   async validateLinuxTask(sessionId: string, taskId: number): Promise<ValidationResponse> {
     const response = await apiClient.post(`/labs/linux/${sessionId}/validate`, {
       task_id: taskId,
