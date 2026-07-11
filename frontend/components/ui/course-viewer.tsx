@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import {
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Play,
   StopCircle,
   CheckCircle2,
@@ -31,6 +32,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(0);
   const [showHint, setShowHint] = useState(false);
+  const [showExplanation, setShowExplanation] = useState(false);
   const [validationMsg, setValidationMsg] = useState<{ success: boolean; text: string } | null>(null);
   const [isValidating, setIsValidating] = useState(false);
 
@@ -70,20 +72,20 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
 
   // Launch mutation
   const launchMutation = useMutation({
-    mutationFn: () => labSessionService.launchLinuxLab(courseSlug),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["active_linux_session"] });
       setValidationMsg(null);
     },
+    mutationFn: () => labSessionService.launchLinuxLab(courseSlug),
   });
 
   // Stop mutation
   const stopMutation = useMutation({
-    mutationFn: (id: string) => labSessionService.stopLinuxLab(id),
     onSuccess: () => {
       queryClient.setQueryData(["active_linux_session"], null);
       setValidationMsg(null);
     },
+    mutationFn: (id: string) => labSessionService.stopLinuxLab(id),
   });
 
   const activeTask = lessons[currentStep];
@@ -114,6 +116,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
     if (currentStep < lessons.length - 1) {
       setCurrentStep(currentStep + 1);
       setShowHint(false);
+      setShowExplanation(false);
       setValidationMsg(null);
     }
   };
@@ -122,6 +125,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
       setShowHint(false);
+      setShowExplanation(false);
       setValidationMsg(null);
     }
   };
@@ -182,6 +186,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
                   onClick={() => {
                     setCurrentStep(i);
                     setShowHint(false);
+                    setShowExplanation(false);
                     setValidationMsg(null);
                   }}
                   className={`h-2.5 w-2.5 rounded-full border transition-all cursor-pointer ${
@@ -202,9 +207,35 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
                 {activeTask.title}
               </h3>
               
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {activeTask.explanation}
-              </p>
+              {activeTask.definition && (
+                <p className="text-xs text-foreground/90 font-medium leading-relaxed">
+                  {activeTask.definition}
+                </p>
+              )}
+
+              {activeTask.explanation && (
+                <div className="border border-border/30 rounded-lg bg-muted/10 overflow-hidden">
+                  <button
+                    onClick={() => setShowExplanation(!showExplanation)}
+                    className="w-full flex items-center justify-between p-3 text-xs font-semibold text-primary hover:bg-muted/20 transition-colors cursor-pointer"
+                  >
+                    <span className="flex items-center space-x-1.5">
+                      <Code className="h-3.5 w-3.5" />
+                      <span>How it works (Command explanation)</span>
+                    </span>
+                    {showExplanation ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </button>
+                  {showExplanation && (
+                    <div className="p-3 pt-0 text-xs text-muted-foreground border-t border-border/25 leading-relaxed bg-card animate-fadeIn">
+                      {activeTask.explanation}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Example Command Box */}
               <div className="space-y-1">
