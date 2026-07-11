@@ -36,7 +36,7 @@ export default function LabsCatalogPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [difficulty, setDifficulty] = useState("All");
-  const [sort, setSort] = useState("alphabetical");
+  const [sort, setSort] = useState("default");
 
   const [expandedAcademies, setExpandedAcademies] = useState<Record<string, boolean>>({
     linux: true, // Expand Linux Academy by default
@@ -171,6 +171,12 @@ export default function LabsCatalogPage() {
     })
     .sort((a, b) => {
       // 4. Sort calculations
+      if (sort === "default") {
+        const oldOrder = [
+          "linux", "docker", "kubernetes", "terraform", "aws", "azure", "jenkins", "ansible", "git", "github-actions", "monitoring", "observability"
+        ];
+        return oldOrder.indexOf(a.id) - oldOrder.indexOf(b.id);
+      }
       if (sort === "alphabetical") {
         return a.title.localeCompare(b.title);
       }
@@ -259,6 +265,7 @@ export default function LabsCatalogPage() {
               onChange={(e) => setSort(e.target.value)}
               className="bg-transparent border-none text-xs font-semibold focus:outline-none w-full cursor-pointer text-foreground"
             >
+              <option value="default">Default Order</option>
               <option value="alphabetical">Alphabetical</option>
               <option value="difficulty">Difficulty</option>
               <option value="duration">Estimated Time</option>

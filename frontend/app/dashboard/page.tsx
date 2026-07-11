@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { labSessionService, LabSession } from "@/services/lab-session.service";
+import { labService } from "@/services/lab.service";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -56,21 +57,28 @@ export default function DashboardPage() {
   });
   const recentSessions = sessionsData?.sessions || [];
 
-  // Query progress records for Linux Basics
-  const { data: linuxProgress } = useQuery({
-    queryKey: ["course_progress", "linux-basics"],
-    queryFn: () => labSessionService.getCourseProgress("linux-basics"),
+  // Query Academies list (keeps progress synchronizations instant)
+  const { data: academies = [] } = useQuery({
+    queryKey: ["academies_list"],
+    queryFn: () => labService.listAcademies(),
   });
 
-  // Query progress records for Docker Basics
-  const { data: dockerProgress } = useQuery({
-    queryKey: ["course_progress", "docker-basics"],
-    queryFn: () => labSessionService.getCourseProgress("docker-basics"),
+  const linuxAcademy = academies.find((a) => a.id === "linux");
+  const dockerAcademy = academies.find((a) => a.id === "docker");
+
+  // Sum up all verified lessons across all academies
+  let totalCompleted = 0;
+  academies.forEach((academy) => {
+    academy.courses?.forEach((c: any) => {
+      totalCompleted += c.completed_lessons?.length || 0;
+    });
   });
 
-  const totalCompleted =
-    (linuxProgress?.completed_lessons?.length || 0) +
-    (dockerProgress?.completed_lessons?.length || 0);
+  const linuxTotalSteps = linuxAcademy?.courses?.reduce((acc: number, c: any) => acc + (c.completed_lessons?.length || 0), 0) || 0;
+  const linuxMaxSteps = 75; // 5 courses * 15 lessons
+
+  const dockerTotalSteps = dockerAcademy?.courses?.reduce((acc: number, c: any) => acc + (c.completed_lessons?.length || 0), 0) || 0;
+  const dockerMaxSteps = 18; // 1 course * 18 lessons
 
   const stats = [
     {
@@ -89,13 +97,13 @@ export default function DashboardPage() {
       label: "XP Earned",
       value: (totalCompleted * 50 + 150).toString(),
       icon: <Zap className="h-5 w-5 text-amber-500 dark:text-amber-400" />,
-      desc: "Experience points level",
+      desc: "Dynamic points breakdown",
     },
     {
-      label: "Active Labs",
-      value: activeSessions.length.toString(),
-      icon: <Compass className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />,
-      desc: "Simultaneous running sandboxes",
+      label: "Certificates",
+      value: (linuxAcademy?.certificate_unlocked ? 1 : 0).toString(),
+      icon: <Layers className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />,
+      desc: "Unlocked achievements",
     },
   ];
 
@@ -113,8 +121,8 @@ export default function DashboardPage() {
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
               <Link href="/labs">
-                <Button className="bg-primary hover:bg-primary/95 text-primary-foreground rounded-md flex items-center space-x-2">
-                  <span>Explore Labs Catalog</span>
+                <Button className="bg-primary hover:bg-primary/95 text-primary-foreground rounded-md flex items-center space-x-2 animate-pulse">
+                  <span>Explore Academies Catalog</span>
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -131,7 +139,7 @@ export default function DashboardPage() {
 
           {/* Active Session Status Widgets */}
           {activeSessions.map((sess: LabSession) => (
-            <div key={sess.id} className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div key={sess.id} className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in">
               <div className="space-y-1.5">
                 <div className="flex items-center space-x-2">
                   <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -172,29 +180,29 @@ export default function DashboardPage() {
           <div className="rounded-xl border border-border bg-card p-6 shadow-sm h-full flex flex-col justify-between">
             <div className="space-y-4">
               <div>
-                <h2 className="text-lg font-bold text-foreground">Course Progress</h2>
+                <h2 className="text-lg font-bold text-foreground">Academy Progress</h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Track your active DevOps learning pathways.
                 </p>
               </div>
 
               {/* Linux Progress Card */}
-              <div className="p-4 bg-muted/40 rounded-xl border border-border/50 space-y-2.5 text-left">
+              <div className="p-4 bg-muted/40 rounded-xl border border-border/50 space-y-2.5 text-left transition-all hover:bg-muted/60">
                 <div className="flex justify-between items-center text-xs font-bold">
-                  <span className="text-foreground">Linux Basics</span>
-                  <span className="text-primary font-black">{linuxProgress?.percentage || 0}%</span>
+                  <span className="text-foreground">Linux Academy</span>
+                  <span className="text-primary font-black">{linuxAcademy?.progress || 0}%</span>
                 </div>
                 <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-emerald-500 rounded-full transition-all duration-300"
-                    style={{ width: `${linuxProgress?.percentage || 0}%` }}
+                    style={{ width: `${linuxAcademy?.progress || 0}%` }}
                   />
                 </div>
                 <div className="flex justify-between items-center pt-1">
                   <span className="text-[10px] text-muted-foreground font-semibold">
-                    {linuxProgress?.completed_lessons?.length || 0} / 20 steps
+                    {linuxTotalSteps} / {linuxMaxSteps} steps
                   </span>
-                  <Link href="/labs/linux-basics">
+                  <Link href="/labs">
                     <Button size="sm" className="h-6 text-[10px] px-2.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/10 font-bold rounded">
                       Continue
                     </Button>
@@ -203,22 +211,22 @@ export default function DashboardPage() {
               </div>
 
               {/* Docker Progress Card */}
-              <div className="p-4 bg-muted/40 rounded-xl border border-border/50 space-y-2.5 text-left">
+              <div className="p-4 bg-muted/40 rounded-xl border border-border/50 space-y-2.5 text-left transition-all hover:bg-muted/60">
                 <div className="flex justify-between items-center text-xs font-bold">
-                  <span className="text-foreground">Docker Basics</span>
-                  <span className="text-primary font-black">{dockerProgress?.percentage || 0}%</span>
+                  <span className="text-foreground">Docker Academy</span>
+                  <span className="text-primary font-black">{dockerAcademy?.progress || 0}%</span>
                 </div>
                 <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-primary rounded-full transition-all duration-300"
-                    style={{ width: `${dockerProgress?.percentage || 0}%` }}
+                    style={{ width: `${dockerAcademy?.progress || 0}%` }}
                   />
                 </div>
                 <div className="flex justify-between items-center pt-1">
                   <span className="text-[10px] text-muted-foreground font-semibold">
-                    {dockerProgress?.completed_lessons?.length || 0} / 18 steps
+                    {dockerTotalSteps} / {dockerMaxSteps} steps
                   </span>
-                  <Link href="/labs/docker-basics">
+                  <Link href="/labs">
                     <Button size="sm" className="h-6 text-[10px] px-2.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/10 font-bold rounded">
                       Continue
                     </Button>
@@ -238,71 +246,68 @@ export default function DashboardPage() {
               <span className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
                 {stat.label}
               </span>
-              <div className="p-2 rounded-lg bg-muted">{stat.icon}</div>
+              {stat.icon}
             </div>
-            <p className="text-3xl font-black text-foreground">{stat.value}</p>
-            <p className="mt-1 text-[10px] text-muted-foreground leading-relaxed">
-              {stat.desc}
-            </p>
+            <div className="flex flex-col">
+              <span className="text-2xl font-black text-foreground tracking-tight">
+                {stat.value}
+              </span>
+              <span className="text-[10px] text-muted-foreground mt-1">
+                {stat.desc}
+              </span>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Recent Activity */}
-      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-border bg-muted/20">
-          <h2 className="text-lg font-bold text-foreground">Recent Activity</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Your latest sandbox metrics</p>
+      {/* Recent activity log */}
+      <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
+          <BookOpen className="h-4 w-4 text-primary" />
+          <span>Recent Activity Feed</span>
         </div>
-        {recentSessions.length > 0 ? (
-          <div className="divide-y divide-border">
-            {recentSessions.map((sess: LabSession) => {
-              const isRunning = sess.status === "running" || sess.status === "starting";
-              return (
-                <div key={sess.id} className="p-6 flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div
-                      className={`p-2 rounded-lg border ${
-                        isRunning
-                          ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 animate-pulse"
-                          : "bg-muted border-border/40 text-muted-foreground"
+
+        {recentSessions.length === 0 ? (
+          <div className="text-center py-6 text-xs text-muted-foreground">
+            No recent sandbox activities found. Go launch a course lab to get started!
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {recentSessions.map((sess: LabSession) => (
+              <div
+                key={sess.id}
+                className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-border/40 last:border-0 last:pb-0 text-xs"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-bold text-foreground capitalize">
+                      {sess.lab_name.replace("-basics", " Basics").replace("-", " ")}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 border rounded-full text-[9px] font-bold uppercase ${
+                        sess.status === "running"
+                          ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                          : sess.status === "stopped"
+                          ? "bg-slate-500/10 text-slate-600 border-slate-500/20"
+                          : "bg-red-500/10 text-red-600 border-red-500/20"
                       }`}
                     >
-                      <TerminalIcon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-foreground capitalize">
-                        {sess.lab_name.replace("-basics", " Basics").replace("-", " ")}
-                      </h4>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {isRunning
-                          ? `Interactive sandbox container active. Status: ${sess.status}.`
-                          : `Sandbox session finished. Status: ${sess.status}.`}
-                      </p>
-                      <p className="text-[9px] text-muted-foreground/70 font-mono mt-0.5">
-                        ID: {sess.id.substring(0, 8)}... | Started: {new Date(sess.started_at || sess.created_at || "").toLocaleString()}
-                      </p>
-                    </div>
+                      {sess.status}
+                    </span>
                   </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    ID: {sess.id.slice(0, 8)}... | Created at: {new Date(sess.started_at || "").toLocaleString()}
+                  </p>
+                </div>
+                <div className="flex space-x-2 w-full sm:w-auto justify-end">
                   <Link href={sess.lab_name === "docker-basics" ? "/labs/docker-basics" : "/labs/linux-basics"}>
-                    <Button size="sm" variant="ghost" className="text-xs font-bold flex items-center space-x-1">
-                      <span>{isRunning ? "Open Console" : "Restart Lab"}</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
+                    <Button size="sm" variant="outline" className="h-7 text-[10px] rounded">
+                      Open Console
                     </Button>
                   </Link>
                 </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted border border-border/40">
-              <FlaskConical className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <h3 className="text-sm font-bold text-foreground mb-1">No sessions recorded</h3>
-            <p className="text-xs text-muted-foreground max-w-sm leading-relaxed">
-              Go to the Explorer catalog and spin up your first Ubuntu container sandbox!
-            </p>
+              </div>
+            ))}
           </div>
         )}
       </div>
