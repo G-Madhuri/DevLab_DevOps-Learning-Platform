@@ -1,197 +1,256 @@
-[
-  {
-    "id": 1,
-    "title": "1. Create Capstone Workspace",
-    "definition": "The Capstone Project combines directories setup, variables configuration, and permissions.",
-    "explanation": "Create nested subfolders inside capstone to structure source codes, variables configurations, and backup stores.",
-    "instruction": "Create directories: capstone/src, capstone/configs, and capstone/backups using mkdir.",
-    "example": "mkdir -p project/app project/config project/logs",
-    "expected": "",
-    "hint": "Type: mkdir -p capstone/src capstone/configs capstone/backups",
-    "solution": "mkdir -p capstone/src capstone/configs capstone/backups",
-    "difficulty": "Advanced",
-    "estimated_duration": "5m"
-  },
-  {
-    "id": 2,
-    "title": "2. Create Server Configuration",
-    "definition": "Configuration files store system parameters, environment variables, and ports settings.",
-    "explanation": "Use echo to populate a simple server.conf file mapping PORT=8080.",
-    "instruction": "Write PORT=8080 into capstone/configs/server.conf.",
-    "example": "echo 'ENV=dev' > config.txt",
-    "expected": "",
-    "hint": "Type: echo 'PORT=8080' > capstone/configs/server.conf",
-    "solution": "echo 'PORT=8080' > capstone/configs/server.conf",
-    "difficulty": "Advanced",
-    "estimated_duration": "5m"
-  },
-  {
-    "id": 3,
-    "title": "3. Create Application Script",
-    "definition": "Shell scripts automate system operations, status reporting, and background processes.",
-    "explanation": "Create app.sh that prints status outputs, loop delays, and log paths.",
-    "instruction": "Write shebang and a startup message into capstone/src/app.sh.",
-    "example": "echo -e '#!/bin/bash\\necho \"Started\"' > script.sh",
-    "expected": "",
-    "hint": "Type: echo -e '#!/bin/bash\\necho \"App starting on port 8080...\"' > capstone/src/app.sh",
-    "solution": "echo -e '#!/bin/bash\\necho \"App starting on port 8080...\"' > capstone/src/app.sh",
-    "difficulty": "Advanced",
-    "estimated_duration": "5m"
-  },
-  {
-    "id": 4,
-    "title": "4. Set Execution Permissions",
-    "definition": "Execution flags allow scripts to run directly from shell pathways.",
-    "explanation": "Add execute (+x) permission flag to the application script.",
-    "instruction": "Make the script capstone/src/app.sh executable.",
-    "example": "chmod +x backup.sh",
-    "expected": "",
-    "hint": "Type: chmod +x capstone/src/app.sh",
-    "solution": "chmod +x capstone/src/app.sh",
-    "difficulty": "Advanced",
-    "estimated_duration": "4m"
-  },
-  {
-    "id": 5,
-    "title": "5. Create Administration Account",
-    "definition": "Administrative operations require dedicated restricted service accounts.",
-    "explanation": "Add a new simulation system user account named devops_admin.",
-    "instruction": "Add a new system user named devops_admin. (Use simulated useradd)",
-    "example": "useradd admin_user",
-    "expected": "",
-    "hint": "Type: useradd devops_admin",
-    "solution": "useradd devops_admin",
-    "difficulty": "Advanced",
-    "estimated_duration": "5m"
-  },
-  {
-    "id": 6,
-    "title": "6. Reassign Workspace Ownership",
-    "definition": "Securing configurations requires assigning file ownership to the service user.",
-    "explanation": "Use chown to reassign the capstone folder tree owner to devops_admin.",
-    "instruction": "Recursively assign ownership of the capstone folder to devops_admin.",
-    "example": "chown -R admin_user /var/www",
-    "expected": "",
-    "hint": "Type: chown -R devops_admin capstone",
-    "solution": "chown -R devops_admin capstone",
-    "difficulty": "Advanced",
-    "estimated_duration": "5m"
-  },
-  {
-    "id": 7,
-    "title": "7. Lock Configuration Secrets",
-    "definition": "Configuration values containing passwords or ports should be owner-read only.",
-    "explanation": "chmod 600 restricts access to only the file owner, hiding parameters from other system users.",
-    "instruction": "Change capstone/configs/server.conf permissions to 600.",
-    "example": "chmod 600 auth.json",
-    "expected": "",
-    "hint": "Type: chmod 600 capstone/configs/server.conf",
-    "solution": "chmod 600 capstone/configs/server.conf",
-    "difficulty": "Advanced",
-    "estimated_duration": "4m"
-  },
-  {
-    "id": 8,
-    "title": "8. Write Archival Script",
-    "definition": "Backup scripts copy source structures into compressed storage archives.",
-    "explanation": "Create backup.sh containing simple files cloning steps.",
-    "instruction": "Write shebang and copy instructions to capstone/src/backup.sh.",
-    "example": "echo -e '#!/bin/bash\\ntar -czf backup.tar.gz src/' > backup.sh",
-    "expected": "",
-    "hint": "Type: echo -e '#!/bin/bash\\ncp -R capstone/src capstone/backups/' > capstone/src/backup.sh",
-    "solution": "echo -e '#!/bin/bash\\ncp -R capstone/src capstone/backups/' > capstone/src/backup.sh",
-    "difficulty": "Advanced",
-    "estimated_duration": "5m"
-  },
-  {
-    "id": 9,
-    "title": "9. Script Executable Flag",
-    "definition": "Backup utilities must be executable to run inside automation cron loops.",
-    "explanation": "Add execution permission flag to backup.sh.",
-    "instruction": "Set executable permissions on capstone/src/backup.sh.",
-    "example": "chmod +x deploy.sh",
-    "expected": "",
-    "hint": "Type: chmod +x capstone/src/backup.sh",
-    "solution": "chmod +x capstone/src/backup.sh",
-    "difficulty": "Advanced",
-    "estimated_duration": "4m"
-  },
-  {
-    "id": 10,
-    "title": "10. Test System Backup",
-    "definition": "Validating backups before deployment checks copy scripts syntax.",
-    "explanation": "Run backup.sh command to copy source directories into backup folders.",
-    "instruction": "Run the backup script using the bash interpreter.",
-    "example": "bash deploy.sh",
-    "expected": "",
-    "hint": "Type: bash capstone/src/backup.sh",
-    "solution": "bash capstone/src/backup.sh",
-    "difficulty": "Advanced",
-    "estimated_duration": "5m"
-  },
-  {
-    "id": 11,
-    "title": "11. Verify Network Ports Bindings",
-    "definition": "Verify active port allocations using ss or netstat.",
-    "explanation": "Confirm which socket ports are active and open.",
-    "instruction": "Display active TCP listening socket routes.",
-    "example": "netstat -plnt",
-    "expected": "State",
-    "hint": "Type: ss -lnt",
-    "solution": "ss -lnt",
-    "difficulty": "Advanced",
-    "estimated_duration": "4m"
-  },
-  {
-    "id": 12,
-    "title": "12. Create Log Rotator",
-    "definition": "Log rotation clears old outputs preventing disk depletion.",
-    "explanation": "Write rotation scripts to empty log files periodically.",
-    "instruction": "Create capstone/src/rotate.sh containing echo command clearing app logs.",
-    "example": "echo -e '#!/bin/bash\\ncat /dev/null > error.log' > rotate.sh",
-    "expected": "",
-    "hint": "Type: echo -e '#!/bin/bash\\necho \"\" > capstone/app.log' > capstone/src/rotate.sh",
-    "solution": "echo -e '#!/bin/bash\\necho \"\" > capstone/app.log' > capstone/src/rotate.sh",
-    "difficulty": "Advanced",
-    "estimated_duration": "5m"
-  },
-  {
-    "id": 13,
-    "title": "13. Deploy Application Daemon",
-    "definition": "Running scripts in background launches them as persistent services.",
-    "explanation": "Launch app.sh redirecting outputs to capstone/app.log.",
-    "instruction": "Launch capstone/src/app.sh in background, redirecting stdout to capstone/app.log.",
-    "example": "bash script.sh > out.log &",
-    "expected": "[1]",
-    "hint": "Type: bash capstone/src/app.sh > capstone/app.log &",
-    "solution": "bash capstone/src/app.sh > capstone/app.log &",
-    "difficulty": "Advanced",
-    "estimated_duration": "5m"
-  },
-  {
-    "id": 14,
-    "title": "14. Inspect Active Log Output",
-    "definition": "tail views trailing parts of active logs to diagnose startup issues.",
-    "explanation": "Prints log tail configurations containing application output lines.",
-    "instruction": "Inspect active log output of capstone/app.log.",
-    "example": "tail -n 10 server.log",
-    "expected": "App starting on port 8080...",
-    "hint": "Type: cat capstone/app.log",
-    "solution": "cat capstone/app.log",
-    "difficulty": "Advanced",
-    "estimated_duration": "4m"
-  },
-  {
-    "id": 15,
-    "title": "15. Complete Capstone Review",
-    "definition": "Final validation of running background configurations and variables settings.",
-    "explanation": "Run process audit to check background execution is active.",
-    "instruction": "Expose background jobs list status to verify app completion.",
-    "example": "ps aux | grep script",
-    "expected": "Running",
-    "hint": "Type: jobs",
-    "solution": "jobs",
-    "difficulty": "Advanced",
-    "estimated_duration": "5m"
-  }
-]
+{
+  "slug": "linux-capstone-project",
+  "title": "Linux Capstone Project",
+  "theory": "The Capstone Project aggregates the skills learned: configuring nested folder systems, securing configurations files with restricted permissions owner-read, writing utility scripts (like automated backup copy or log rotation), executing scripts as background services redirecting logs outputs to tracking logs, checking TCP listener routes, and verifying system jobs list.",
+  "interactive_examples": [
+    {
+      "command": "mkdir -p capstone/src",
+      "description": "Creates capstone workspace directory structures."
+    },
+    {
+      "command": "chmod 600 capstone/configs/server.conf",
+      "description": "Secures server configurations to owner-only read/write."
+    },
+    {
+      "command": "chown -R devops_admin capstone",
+      "description": "Reassigns capstone directory tree owner to devops_admin user."
+    }
+  ],
+  "exercises": [
+    {
+      "description": "Inspect file modifications timestamps in the capstone folder tree using `ls -laR capstone`."
+    },
+    {
+      "description": "Audit running background jobs using `jobs`."
+    }
+  ],
+  "quiz": [
+    {
+      "question": "What is the primary purpose of the Linux Capstone Project?",
+      "options": [
+        "Build Docker images",
+        "Integrate shell settings, permissions, scripts, and processes",
+        "Deploy cloud apps",
+        "Configure DNS rules"
+      ],
+      "answer": "Integrate shell settings, permissions, scripts, and processes"
+    },
+    {
+      "question": "What permission mask is set on configuration secrets files?",
+      "options": [
+        "777",
+        "755",
+        "600",
+        "444"
+      ],
+      "answer": "600"
+    },
+    {
+      "question": "Which command checks TCP server listening ports?",
+      "options": [
+        "top",
+        "ss -lnt",
+        "ip a",
+        "jobs"
+      ],
+      "answer": "ss -lnt"
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Create Capstone Workspace",
+      "definition": "The Capstone Project combines directories setup, variables configuration, and permissions.",
+      "explanation": "Create nested subfolders inside capstone to structure source codes, variables configurations, and backup stores.",
+      "instruction": "Create directories: capstone/src, capstone/configs, and capstone/backups using mkdir.",
+      "example": "mkdir -p project/app project/config project/logs",
+      "expected": "",
+      "hint": "Type: mkdir -p capstone/src capstone/configs capstone/backups",
+      "solution": "mkdir -p capstone/src capstone/configs capstone/backups",
+      "difficulty": "Advanced",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 2,
+      "title": "2. Create Server Configuration",
+      "definition": "Configuration files store system parameters, environment variables, and ports settings.",
+      "explanation": "Use echo to populate a simple server.conf file mapping PORT=8080.",
+      "instruction": "Write PORT=8080 into capstone/configs/server.conf.",
+      "example": "echo 'ENV=dev' > config.txt",
+      "expected": "",
+      "hint": "Type: echo 'PORT=8080' > capstone/configs/server.conf",
+      "solution": "echo 'PORT=8080' > capstone/configs/server.conf",
+      "difficulty": "Advanced",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 3,
+      "title": "3. Create Application Script",
+      "definition": "Shell scripts automate system operations, status reporting, and background processes.",
+      "explanation": "Create app.sh that prints status outputs, loop delays, and log paths.",
+      "instruction": "Write shebang and a startup message into capstone/src/app.sh.",
+      "example": "echo -e '#!/bin/bash\\necho \"Started\"' > script.sh",
+      "expected": "",
+      "hint": "Type: echo -e '#!/bin/bash\\necho \"App starting on port 8080...\"' > capstone/src/app.sh",
+      "solution": "echo -e '#!/bin/bash\\necho \"App starting on port 8080...\"' > capstone/src/app.sh",
+      "difficulty": "Advanced",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 4,
+      "title": "4. Set Execution Permissions",
+      "definition": "Execution flags allow scripts to run directly from shell pathways.",
+      "explanation": "Add execute (+x) permission flag to the application script.",
+      "instruction": "Make the script capstone/src/app.sh executable.",
+      "example": "chmod +x backup.sh",
+      "expected": "",
+      "hint": "Type: chmod +x capstone/src/app.sh",
+      "solution": "chmod +x capstone/src/app.sh",
+      "difficulty": "Advanced",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 5,
+      "title": "5. Create Administration Account",
+      "definition": "Administrative operations require dedicated restricted service accounts.",
+      "explanation": "Add a new simulation system user account named devops_admin.",
+      "instruction": "Add a new system user named devops_admin. (Use simulated useradd)",
+      "example": "useradd admin_user",
+      "expected": "",
+      "hint": "Type: useradd devops_admin",
+      "solution": "useradd devops_admin",
+      "difficulty": "Advanced",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 6,
+      "title": "6. Reassign Workspace Ownership",
+      "definition": "Securing configurations requires assigning file ownership to the service user.",
+      "explanation": "Use chown to reassign the capstone folder tree owner to devops_admin.",
+      "instruction": "Recursively assign ownership of the capstone folder to devops_admin.",
+      "example": "chown -R admin_user /var/www",
+      "expected": "",
+      "hint": "Type: chown -R devops_admin capstone",
+      "solution": "chown -R devops_admin capstone",
+      "difficulty": "Advanced",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 7,
+      "title": "7. Lock Configuration Secrets",
+      "definition": "Configuration values containing passwords or ports should be owner-read only.",
+      "explanation": "chmod 600 restricts access to only the file owner, hiding parameters from other system users.",
+      "instruction": "Change capstone/configs/server.conf permissions to 600.",
+      "example": "chmod 600 auth.json",
+      "expected": "",
+      "hint": "Type: chmod 600 capstone/configs/server.conf",
+      "solution": "chmod 600 capstone/configs/server.conf",
+      "difficulty": "Advanced",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 8,
+      "title": "8. Write Archival Script",
+      "definition": "Backup scripts copy source structures into compressed storage archives.",
+      "explanation": "Create backup.sh containing simple files cloning steps.",
+      "instruction": "Write shebang and copy instructions to capstone/src/backup.sh.",
+      "example": "echo -e '#!/bin/bash\\ntar -czf backup.tar.gz src/' > backup.sh",
+      "expected": "",
+      "hint": "Type: echo -e '#!/bin/bash\\ncp -R capstone/src capstone/backups/' > capstone/src/backup.sh",
+      "solution": "echo -e '#!/bin/bash\\ncp -R capstone/src capstone/backups/' > capstone/src/backup.sh",
+      "difficulty": "Advanced",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 9,
+      "title": "9. Script Executable Flag",
+      "definition": "Backup utilities must be executable to run inside automation cron loops.",
+      "explanation": "Add execution permission flag to backup.sh.",
+      "instruction": "Set executable permissions on capstone/src/backup.sh.",
+      "example": "chmod +x deploy.sh",
+      "expected": "",
+      "hint": "Type: chmod +x capstone/src/backup.sh",
+      "solution": "chmod +x capstone/src/backup.sh",
+      "difficulty": "Advanced",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 10,
+      "title": "10. Test System Backup",
+      "definition": "Validating backups before deployment checks copy scripts syntax.",
+      "explanation": "Run backup.sh command to copy source directories into backup folders.",
+      "instruction": "Run the backup script using the bash interpreter.",
+      "example": "bash deploy.sh",
+      "expected": "",
+      "hint": "Type: bash capstone/src/backup.sh",
+      "solution": "bash capstone/src/backup.sh",
+      "difficulty": "Advanced",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 11,
+      "title": "11. Verify Network Ports Bindings",
+      "definition": "Verify active port allocations using ss or netstat.",
+      "explanation": "Confirm which socket ports are active and open.",
+      "instruction": "Display active TCP listening socket routes.",
+      "example": "netstat -plnt",
+      "expected": "State",
+      "hint": "Type: ss -lnt",
+      "solution": "ss -lnt",
+      "difficulty": "Advanced",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 12,
+      "title": "12. Create Log Rotator",
+      "definition": "Log rotation clears old outputs preventing disk depletion.",
+      "explanation": "Write rotation scripts to empty log files periodically.",
+      "instruction": "Create capstone/src/rotate.sh containing echo command clearing app logs.",
+      "example": "echo -e '#!/bin/bash\\ncat /dev/null > error.log' > rotate.sh",
+      "expected": "",
+      "hint": "Type: echo -e '#!/bin/bash\\necho \"\" > capstone/app.log' > capstone/src/rotate.sh",
+      "solution": "echo -e '#!/bin/bash\\necho \"\" > capstone/app.log' > capstone/src/rotate.sh",
+      "difficulty": "Advanced",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 13,
+      "title": "13. Deploy Application Daemon",
+      "definition": "Running scripts in background launches them as persistent services.",
+      "explanation": "Launch app.sh redirecting outputs to capstone/app.log.",
+      "instruction": "Launch capstone/src/app.sh in background, redirecting stdout to capstone/app.log.",
+      "example": "bash script.sh > out.log &",
+      "expected": "[1]",
+      "hint": "Type: bash capstone/src/app.sh > capstone/app.log &",
+      "solution": "bash capstone/src/app.sh > capstone/app.log &",
+      "difficulty": "Advanced",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 14,
+      "title": "14. Inspect Active Log Output",
+      "definition": "tail views trailing parts of active logs to diagnose startup issues.",
+      "explanation": "Prints log tail configurations containing application output lines.",
+      "instruction": "Inspect active log output of capstone/app.log.",
+      "example": "tail -n 10 server.log",
+      "expected": "App starting on port 8080...",
+      "hint": "Type: cat capstone/app.log",
+      "solution": "cat capstone/app.log",
+      "difficulty": "Advanced",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 15,
+      "title": "15. Complete Capstone Review",
+      "definition": "Final validation of running background configurations and variables settings.",
+      "explanation": "Run process audit to check background execution is active.",
+      "instruction": "Expose background jobs list status to verify app completion.",
+      "example": "ps aux | grep script",
+      "expected": "Running",
+      "hint": "Type: jobs",
+      "solution": "jobs",
+      "difficulty": "Advanced",
+      "estimated_duration": "5m"
+    }
+  ]
+}

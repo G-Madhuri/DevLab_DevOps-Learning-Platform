@@ -44,10 +44,44 @@ class CourseEngine:
             
         try:
             with open(json_path, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                if isinstance(data, dict):
+                    return data.get("lessons", [])
+                return data
         except Exception as e:
             logger.error(f"Failed to load course lessons JSON: {e}")
             return []
+
+    def get_course_details(self, course_slug: str) -> Dict[str, Any]:
+        """
+        Retrieve complete course structure detail including theory, examples, exercises and quiz.
+        """
+        json_path = os.path.join(self.base_dir, "lessons", f"{course_slug}.json")
+        if not os.path.exists(json_path):
+            slug_key = course_slug.replace("-basics", "")
+            json_path = os.path.join(self.base_dir, slug_key, "lessons.json")
+            
+        if not os.path.exists(json_path):
+            return {}
+            
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    return data
+                # For backward compatibility, wrap list:
+                return {
+                    "slug": course_slug,
+                    "title": course_slug.replace("-", " ").title(),
+                    "theory": "Explore theory concept guidelines here.",
+                    "interactive_examples": [],
+                    "exercises": [],
+                    "quiz": [],
+                    "lessons": data
+                }
+        except Exception as e:
+            logger.error(f"Failed to load course details: {e}")
+            return {}
 
     def get_lesson(self, course_slug: str, lesson_id: int) -> Optional[Dict[str, Any]]:
         """
