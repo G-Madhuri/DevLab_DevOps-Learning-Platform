@@ -45,7 +45,7 @@ def test_academies_list_authorized(client, db):
     # Assert academies present
     linux_academy = next((a for a in data if a["id"] == "linux"), None)
     assert linux_academy is not None
-    assert linux_academy["title"] == "Linux Academy"
+    assert linux_academy["title"] == "Linux"
     assert linux_academy["coming_soon"] is False
     assert linux_academy["progress"] == 0
     assert linux_academy["certificate_status"] == "locked"

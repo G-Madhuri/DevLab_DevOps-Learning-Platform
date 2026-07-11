@@ -195,7 +195,7 @@ export default function DashboardPage() {
               {/* Linux Progress Card */}
               <div className="p-4 bg-muted/40 rounded-xl border border-border/50 space-y-2.5 text-left transition-all hover:bg-muted/60">
                 <div className="flex justify-between items-center text-xs font-bold">
-                  <span className="text-foreground">Linux Academy</span>
+                  <span className="text-foreground">Linux</span>
                   <span className="text-primary font-black">{linuxAcademy?.progress || 0}%</span>
                 </div>
                 <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
@@ -219,7 +219,7 @@ export default function DashboardPage() {
               {/* Docker Progress Card */}
               <div className="p-4 bg-muted/40 rounded-xl border border-border/50 space-y-2.5 text-left transition-all hover:bg-muted/60">
                 <div className="flex justify-between items-center text-xs font-bold">
-                  <span className="text-foreground">Docker Academy</span>
+                  <span className="text-foreground">Docker</span>
                   <span className="text-primary font-black">{dockerAcademy?.progress || 0}%</span>
                 </div>
                 <div className="h-2 w-full bg-muted rounded-full overflow-hidden">

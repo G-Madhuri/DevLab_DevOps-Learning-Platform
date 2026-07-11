@@ -1,7 +1,7 @@
 [
   {
     "id": "linux",
-    "title": "Linux Academy",
+    "title": "Linux",
     "description": "Master files navigation, path routing, permissions security, shell scripting, networking, processes, and service management.",
     "icon": "terminal",
     "difficulty": "Beginner",
@@ -47,7 +47,7 @@
   },
   {
     "id": "docker",
-    "title": "Docker Academy",
+    "title": "Docker",
     "description": "Master container packaging, networking, storage, volume management, and multi-container architectures.",
     "icon": "box",
     "difficulty": "Beginner",
@@ -85,7 +85,7 @@
   },
   {
     "id": "kubernetes",
-    "title": "Kubernetes Academy",
+    "title": "Kubernetes",
     "description": "Learn production-grade container orchestration, deployments, ingress, storage claims, and service discovery.",
     "icon": "layers",
     "difficulty": "Intermediate",
@@ -123,7 +123,7 @@
   },
   {
     "id": "git",
-    "title": "Git Academy",
+    "title": "Git",
     "description": "Master distributed version control, branching models, interactive rebases, and merge conflict resolution.",
     "icon": "git-branch",
     "difficulty": "Beginner",
@@ -147,7 +147,7 @@
   },
   {
     "id": "terraform",
-    "title": "Terraform Academy",
+    "title": "Terraform",
     "description": "Build Infrastructure as Code using HCL declarations, state storage, variables, and reusable modules.",
     "icon": "cpu",
     "difficulty": "Beginner",
@@ -178,7 +178,7 @@
   },
   {
     "id": "aws",
-    "title": "AWS Academy",
+    "title": "AWS",
     "description": "Implement enterprise cloud resources in Amazon Web Services including VPCs, IAM policies, and S3.",
     "icon": "globe",
     "difficulty": "Beginner",
@@ -209,7 +209,7 @@
   },
   {
     "id": "azure",
-    "title": "Azure Academy",
+    "title": "Azure",
     "description": "Deploy infrastructure components to Microsoft Azure cloud including VMs, blob storage, and identity management.",
     "icon": "hard-drive",
     "difficulty": "Beginner",
@@ -233,7 +233,7 @@
   },
   {
     "id": "ansible",
-    "title": "Ansible Academy",
+    "title": "Ansible",
     "description": "Configure and automate system deployments via declarative Ansible Playbooks and Roles.",
     "icon": "book-open",
     "difficulty": "Beginner",
@@ -257,7 +257,7 @@
   },
   {
     "id": "github-actions",
-    "title": "GitHub Actions Academy",
+    "title": "GitHub Actions",
     "description": "Automate linting, unit tests, container builds, and cloud deployments directly from GitHub events.",
     "icon": "play",
     "difficulty": "Beginner",
@@ -281,7 +281,7 @@
   },
   {
     "id": "jenkins",
-    "title": "Jenkins Academy",
+    "title": "Jenkins",
     "description": "Build production declarative pipelines, deploy local agent runners, and build Groovy shared libraries.",
     "icon": "settings",
     "difficulty": "Intermediate",
@@ -305,7 +305,7 @@
   },
   {
     "id": "monitoring",
-    "title": "Monitoring Academy",
+    "title": "Monitoring",
     "description": "Scrape node metrics, query timeseries alerts, and configure dashboard visualizations using Prometheus.",
     "icon": "bar-chart",
     "difficulty": "Intermediate",
@@ -329,7 +329,7 @@
   },
   {
     "id": "observability",
-    "title": "Observability Academy",
+    "title": "Observability",
     "description": "Analyze distributed logs and traces using Elastic Stack (ELK), Jaeger tracing, and open telemetry.",
     "icon": "activity",
     "difficulty": "Intermediate",
