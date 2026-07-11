@@ -34,8 +34,9 @@ export const labSessionService = {
     return response.data;
   },
 
-  async getActiveLinuxSession(): Promise<LabSession | null> {
-    const response = await apiClient.get("/labs/linux/active");
+  async getActiveLinuxSession(labName?: string): Promise<LabSession | null> {
+    const url = labName ? `/labs/linux/active?lab_name=${labName}` : "/labs/linux/active";
+    const response = await apiClient.get(url);
     return response.data;
   },
 

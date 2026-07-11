@@ -38,8 +38,8 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
 
   // Fetch active session query
   const { data: session, isLoading: isLoadingSession } = useQuery<LabSession | null>({
-    queryKey: ["active_linux_session"],
-    queryFn: labSessionService.getActiveLinuxSession,
+    queryKey: ["active_linux_session", courseSlug],
+    queryFn: () => labSessionService.getActiveLinuxSession(courseSlug),
   });
 
   // Fetch course lessons query
@@ -73,7 +73,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
   // Launch mutation
   const launchMutation = useMutation({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["active_linux_session"] });
+      queryClient.invalidateQueries({ queryKey: ["active_linux_session", courseSlug] });
       setValidationMsg(null);
     },
     mutationFn: () => labSessionService.launchLinuxLab(courseSlug),
@@ -82,7 +82,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
   // Stop mutation
   const stopMutation = useMutation({
     onSuccess: () => {
-      queryClient.setQueryData(["active_linux_session"], null);
+      queryClient.setQueryData(["active_linux_session", courseSlug], null);
       setValidationMsg(null);
     },
     mutationFn: (id: string) => labSessionService.stopLinuxLab(id),
@@ -424,7 +424,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
 
               <Terminal
                 sessionId={session.id}
-                onClose={() => queryClient.invalidateQueries({ queryKey: ["active_linux_session"] })}
+                onClose={() => queryClient.invalidateQueries({ queryKey: ["active_linux_session", courseSlug] })}
               />
             </div>
           )}

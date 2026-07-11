@@ -40,7 +40,7 @@ export default function DashboardPage() {
   // Fetch current active running session
   const { data: activeSession } = useQuery<LabSession | null>({
     queryKey: ["active_linux_session"],
-    queryFn: labSessionService.getActiveLinuxSession,
+    queryFn: () => labSessionService.getActiveLinuxSession(),
   });
 
   // Query progress records for Linux Basics
