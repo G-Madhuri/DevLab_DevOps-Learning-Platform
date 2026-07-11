@@ -33,6 +33,7 @@ class LabSessionListResponse(BaseModel):
 
 class TaskValidationRequest(BaseModel):
     task_id: int
+    course_slug: Optional[str] = None
 
 
 class TaskValidationResponse(BaseModel):

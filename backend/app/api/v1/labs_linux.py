@@ -182,18 +182,18 @@ def validate_lab_task(
         return {"success": False, "message": "Sandbox container is not active."}
 
     # Evaluate validation challenge
+    course_slug = req.course_slug or db_session.lab_name
     mode = "simulated" if (db_session.container_id and db_session.container_id.startswith("simulated-")) else "docker"
     res = validation_engine.validate_task(
         session_id=str(db_session.id),
         container_id=db_session.container_id,
         task_id=req.task_id,
         mode=mode,
-        lab_name=db_session.lab_name,
+        lab_name=course_slug,
     )
 
     # Auto-update progress on successful check
     if res.get("success") is True:
-        course_slug = db_session.lab_name
         progress = db.query(CourseProgress).filter(
             CourseProgress.user_id == current_user.id,
             CourseProgress.course_slug == course_slug

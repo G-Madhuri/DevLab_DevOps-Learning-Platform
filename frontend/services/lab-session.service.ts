@@ -45,9 +45,10 @@ export const labSessionService = {
     return response.data;
   },
 
-  async validateLinuxTask(sessionId: string, taskId: number): Promise<ValidationResponse> {
+  async validateLinuxTask(sessionId: string, taskId: number, courseSlug?: string): Promise<ValidationResponse> {
     const response = await apiClient.post(`/labs/linux/${sessionId}/validate`, {
       task_id: taskId,
+      course_slug: courseSlug,
     });
     return response.data;
   },

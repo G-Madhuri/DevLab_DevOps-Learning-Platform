@@ -13,11 +13,9 @@
       "Understand container basics with Docker configurations."
     ],
     "courses": [
-      "linux-command-line-basics",
-      "linux-file-system-permissions",
-      "bash-scripting-fundamentals",
-      "linux-networking-processes",
-      "linux-capstone-project"
+      "linux",
+      "docker",
+      "git"
     ]
   },
   {
@@ -34,10 +32,10 @@
       "Configure systems monitoring alerts to observe health metrics."
     ],
     "courses": [
-      "linux-command-line-basics",
-      "linux-file-system-permissions",
-      "linux-networking-processes",
-      "linux-capstone-project"
+      "linux",
+      "aws",
+      "azure",
+      "terraform"
     ]
   },
   {
@@ -54,9 +52,10 @@
       "Implement serverless applications using Lambda triggers."
     ],
     "courses": [
-      "linux-command-line-basics",
-      "linux-networking-processes",
-      "linux-capstone-project"
+      "linux",
+      "aws",
+      "terraform",
+      "monitoring"
     ]
   },
   {
@@ -73,9 +72,10 @@
       "Monitor application performance metrics using Azure Monitor."
     ],
     "courses": [
-      "linux-command-line-basics",
-      "linux-file-system-permissions",
-      "linux-networking-processes"
+      "linux",
+      "azure",
+      "terraform",
+      "monitoring"
     ]
   },
   {
@@ -92,9 +92,10 @@
       "Automate application rollouts using GitOps sync engines."
     ],
     "courses": [
-      "linux-command-line-basics",
-      "linux-networking-processes",
-      "linux-capstone-project"
+      "linux",
+      "docker",
+      "kubernetes",
+      "git"
     ]
   },
   {
@@ -111,9 +112,11 @@
       "Maintain organizational compliance policies automatically."
     ],
     "courses": [
-      "linux-command-line-basics",
-      "bash-scripting-fundamentals",
-      "linux-capstone-project"
+      "linux",
+      "docker",
+      "kubernetes",
+      "terraform",
+      "github-actions"
     ]
   },
   {
@@ -130,9 +133,11 @@
       "Tune Linux OS kernel TCP buffers for high-performance scale."
     ],
     "courses": [
-      "linux-command-line-basics",
-      "linux-networking-processes",
-      "linux-capstone-project"
+      "linux",
+      "docker",
+      "kubernetes",
+      "monitoring",
+      "observability"
     ]
   },
   {
@@ -149,9 +154,10 @@
       "Automate configurations compliance checks in code."
     ],
     "courses": [
-      "linux-command-line-basics",
-      "bash-scripting-fundamentals",
-      "linux-capstone-project"
+      "linux",
+      "terraform",
+      "ansible",
+      "git"
     ]
   },
   {
@@ -168,9 +174,11 @@
       "Manage release package registries and build caches."
     ],
     "courses": [
-      "linux-command-line-basics",
-      "bash-scripting-fundamentals",
-      "linux-networking-processes"
+      "linux",
+      "docker",
+      "git",
+      "github-actions",
+      "jenkins"
     ]
   },
   {
@@ -187,10 +195,10 @@
       "Configure network policies enforcing least-privilege models."
     ],
     "courses": [
-      "linux-command-line-basics",
-      "linux-file-system-permissions",
-      "linux-networking-processes",
-      "linux-capstone-project"
+      "linux",
+      "docker",
+      "kubernetes",
+      "github-actions"
     ]
   },
   {
@@ -207,9 +215,10 @@
       "Trace API call timings across distributed microservices."
     ],
     "courses": [
-      "linux-command-line-basics",
-      "linux-networking-processes",
-      "linux-capstone-project"
+      "linux",
+      "docker",
+      "monitoring",
+      "observability"
     ]
   },
   {
@@ -226,9 +235,9 @@
       "Implement Horizontal Pod Autoscalers (HPA) using metrics servers."
     ],
     "courses": [
-      "linux-command-line-basics",
-      "linux-networking-processes",
-      "linux-capstone-project"
+      "linux",
+      "docker",
+      "kubernetes"
     ]
   }
 ]
