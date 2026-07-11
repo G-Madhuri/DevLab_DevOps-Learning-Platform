@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { labService } from "@/services/lab.service";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,6 @@ import {
   Search,
   SlidersHorizontal,
   Clock,
-  ExternalLink,
   BookOpen,
   HelpCircle,
   Terminal,
@@ -19,81 +18,75 @@ import {
   Layers,
   Cpu,
   Globe,
-  Settings,
+  Settings as SettingsIcon,
   GitBranch,
   Play,
   BarChart,
   Activity,
   HardDrive,
+  ChevronDown,
+  ChevronUp,
+  Award,
+  CheckCircle2,
+  Lock,
 } from "lucide-react";
 
 export default function LabsCatalogPage() {
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All");
-  const [difficulty, setDifficulty] = useState("All");
-  const [sort, setSort] = useState("alphabetical");
-
-  // Fetch labs list using React Query
-  const { data, isLoading } = useQuery({
-    queryKey: ["labs", search, category, difficulty, sort],
-    queryFn: () =>
-      labService.listLabs({
-        search: search || undefined,
-        category: category === "All" ? undefined : category,
-        difficulty: difficulty === "All" ? undefined : difficulty,
-        sort_by: sort,
-      }),
+  const [expandedAcademies, setExpandedAcademies] = useState<Record<string, boolean>>({
+    linux: true, // Expand Linux Academy by default
   });
 
-  const categories = [
-    "All",
-    "Linux",
-    "Docker",
-    "Kubernetes",
-    "Terraform",
-    "AWS",
-    "Azure",
-    "Jenkins",
-    "Ansible",
-    "Git",
-    "GitHub Actions",
-    "Monitoring",
-    "Observability",
-  ];
+  // Query academies list using React Query
+  const { data: academies = [], isLoading } = useQuery({
+    queryKey: ["academies_list"],
+    queryFn: () => labService.listAcademies(),
+  });
 
-  // Helper to map categories to React Icons dynamically
-  const getCategoryIcon = (cat: string) => {
-    switch (cat.toLowerCase()) {
-      case "linux":
-        return <Terminal className="h-4 w-4" />;
-      case "docker":
-        return <Container className="h-4 w-4" />;
-      case "kubernetes":
-        return <Layers className="h-4 w-4" />;
-      case "terraform":
-        return <Cpu className="h-4 w-4" />;
-      case "aws":
-        return <Globe className="h-4 w-4" />;
-      case "azure":
-        return <HardDrive className="h-4 w-4" />;
-      case "jenkins":
-        return <Settings className="h-4 w-4" />;
-      case "ansible":
-        return <BookOpen className="h-4 w-4" />;
-      case "git":
-        return <GitBranch className="h-4 w-4" />;
-      case "github actions":
-        return <Play className="h-4 w-4" />;
-      case "monitoring":
-        return <BarChart className="h-4 w-4" />;
-      case "observability":
-        return <Activity className="h-4 w-4" />;
+  // Generate certificate mutation
+  const generateCertMutation = useMutation({
+    onSuccess: (res) => {
+      alert(res.message);
+      queryClient.invalidateQueries({ queryKey: ["academies_list"] });
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.detail || "Failed to generate certificate.");
+    },
+    mutationFn: (academyId: string) => labService.generateCertificate(academyId),
+  });
+
+  const getAcademyIcon = (iconName: string) => {
+    switch (iconName.toLowerCase()) {
+      case "terminal":
+        return <Terminal className="h-6 w-6 text-primary" />;
+      case "box":
+        return <Container className="h-6 w-6 text-primary" />;
+      case "layers":
+        return <Layers className="h-6 w-6 text-primary" />;
+      case "cpu":
+        return <Cpu className="h-6 w-6 text-primary" />;
+      case "globe":
+        return <Globe className="h-6 w-6 text-primary" />;
+      case "hard-drive":
+        return <HardDrive className="h-6 w-6 text-primary" />;
+      case "settings":
+        return <SettingsIcon className="h-6 w-6 text-primary" />;
+      case "book-open":
+        return <BookOpen className="h-6 w-6 text-primary" />;
+      case "git-branch":
+        return <GitBranch className="h-6 w-6 text-primary" />;
+      case "play":
+        return <Play className="h-6 w-6 text-primary" />;
+      case "bar-chart":
+        return <BarChart className="h-6 w-6 text-primary" />;
+      case "activity":
+        return <Activity className="h-6 w-6 text-primary" />;
       default:
-        return <HelpCircle className="h-4 w-4" />;
+        return <HelpCircle className="h-6 w-6 text-primary" />;
     }
   };
 
-  // Helper to get difficulty badges classes
   const getDifficultyStyles = (diff: string) => {
     switch (diff.toLowerCase()) {
       case "beginner":
@@ -107,245 +100,329 @@ export default function LabsCatalogPage() {
     }
   };
 
-  // Simulated tags generator based on labs title & categories to make cards pop
-  const generateMockSkills = (title: string, cat: string) => {
-    const defaultSkills = [cat, "DevOps"];
-    if (title.toLowerCase().includes("basics") || title.toLowerCase().includes("intro")) {
-      return [...defaultSkills, "CLI", "Foundations"];
-    }
-    if (title.toLowerCase().includes("pipeline") || title.toLowerCase().includes("ci")) {
-      return [...defaultSkills, "Automation", "CI/CD"];
-    }
-    if (title.toLowerCase().includes("state") || title.toLowerCase().includes("store")) {
-      return [...defaultSkills, "Backend", "Storage"];
-    }
-    if (title.toLowerCase().includes("advanced") || title.toLowerCase().includes("deep")) {
-      return [...defaultSkills, "Expert", "Security"];
-    }
-    return [...defaultSkills, "Configuration"];
+  const toggleAcademy = (id: string) => {
+    setExpandedAcademies((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
   };
+
+  // Filter academies client-side based on search query
+  const filteredAcademies = academies.filter((academy) => {
+    const query = search.toLowerCase();
+    const matchesTitle = academy.title.toLowerCase().includes(query);
+    const matchesDesc = academy.description.toLowerCase().includes(query);
+    const matchesCourses = academy.courses.some(
+      (c: any) =>
+        c.title.toLowerCase().includes(query) ||
+        c.description.toLowerCase().includes(query)
+    );
+    return matchesTitle || matchesDesc || matchesCourses;
+  });
 
   return (
     <DashboardShell>
       {/* Page Header */}
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Interactive Labs</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">DevOps Academies</h1>
         <p className="text-sm text-muted-foreground">
-          Select an exercise topic below to read details. Environments will become deployable in Phase 3.
+          Choose a specialized pathway, complete interactive browser-based terminal sandboxes, and unlock completion certificates.
         </p>
       </div>
 
-      {/* Categories Scroller */}
-      <div className="flex overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 gap-2 scrollbar-none">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setCategory(cat)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold border shrink-0 transition-all cursor-pointer ${
-              category === cat
-                ? "bg-primary border-primary text-primary-foreground shadow-sm font-bold"
-                : "bg-card border-border text-muted-foreground hover:text-foreground hover:bg-muted"
-            }`}
-          >
-            <span className="flex items-center space-x-1.5">
-              {cat !== "All" && getCategoryIcon(cat)}
-              <span>{cat}</span>
-            </span>
-          </button>
-        ))}
+      {/* Search Bar */}
+      <div className="relative w-full max-w-xl">
+        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search academies or courses..."
+          className="pl-9 w-full bg-card border border-border rounded-xl"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
 
-      {/* Search & Filter Toolbar */}
-      <div className="flex flex-col md:flex-row gap-4 items-center bg-card border border-border p-4 rounded-xl shadow-sm">
-        {/* Search */}
-        <div className="relative w-full md:flex-1">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search labs by title, category, or descriptions..."
-            className="pl-9 w-full bg-background border border-input rounded-md"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        {/* Filters */}
-        <div className="flex w-full md:w-auto items-center gap-2">
-          {/* Difficulty Filter */}
-          <div className="flex items-center space-x-2 bg-background border border-input px-3 py-1.5 rounded-md min-w-[140px]">
-            <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
-            <select
-              value={difficulty}
-              onChange={(e) => setDifficulty(e.target.value)}
-              className="bg-transparent border-none text-xs font-semibold focus:outline-none w-full cursor-pointer text-foreground"
-            >
-              <option value="All">All Levels</option>
-              <option value="Beginner">Beginner</option>
-              <option value="Intermediate">Intermediate</option>
-              <option value="Advanced">Advanced</option>
-            </select>
-          </div>
-
-          {/* Sort Filter */}
-          <div className="flex items-center space-x-2 bg-background border border-input px-3 py-1.5 rounded-md min-w-[140px]">
-            <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-              className="bg-transparent border-none text-xs font-semibold focus:outline-none w-full cursor-pointer text-foreground"
-            >
-              <option value="alphabetical">Alphabetical</option>
-              <option value="difficulty">Difficulty</option>
-              <option value="duration">Estimated Time</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Skeletons Loader */}
+      {/* Loader */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[...Array(6)].map((_, i) => (
+        <div className="space-y-6">
+          {[...Array(3)].map((_, i) => (
             <div
               key={i}
-              className="border border-border bg-card/60 rounded-xl p-5 space-y-4 animate-pulse"
+              className="border border-border bg-card/60 rounded-xl p-6 space-y-4 animate-pulse"
             >
-              <div className="flex justify-between items-center">
-                <div className="h-5 bg-muted rounded w-20" />
-                <div className="h-5 bg-muted rounded w-16" />
-              </div>
-              <div className="h-6 bg-muted rounded w-2/3" />
-              <div className="space-y-2">
-                <div className="h-4 bg-muted rounded w-full" />
-                <div className="h-4 bg-muted rounded w-5/6" />
-              </div>
-              <div className="flex gap-2">
-                <div className="h-5 bg-muted rounded-full w-12" />
-                <div className="h-5 bg-muted rounded-full w-16" />
-              </div>
-              <div className="flex gap-4 pt-2">
-                <div className="h-9 bg-muted rounded w-24" />
-                <div className="h-9 bg-muted rounded w-24" />
+              <div className="flex items-center space-x-4">
+                <div className="h-12 w-12 bg-muted rounded-lg" />
+                <div className="space-y-2 flex-1">
+                  <div className="h-5 bg-muted rounded w-1/4" />
+                  <div className="h-4 bg-muted rounded w-2/3" />
+                </div>
               </div>
             </div>
           ))}
         </div>
-      ) : data?.labs.length === 0 ? (
-        /* Empty State */
+      ) : filteredAcademies.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-12 text-center shadow-sm">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted border border-border">
             <Search className="h-5 w-5 text-muted-foreground" />
           </div>
-          <h3 className="mt-4 text-base font-bold text-foreground">No labs match search</h3>
+          <h3 className="mt-4 text-base font-bold text-foreground">No academies match search</h3>
           <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
-            We couldn&apos;t find any labs matching your filters. Try removing keywords or clearing search fields.
+            We couldn&apos;t find any academies matching your filters. Try checking spelling or keywords.
           </p>
           <Button
             variant="outline"
-            className="mt-4 rounded-md text-xs font-semibold"
-            onClick={() => {
-              setSearch("");
-              setCategory("All");
-              setDifficulty("All");
-            }}
+            className="mt-4 rounded-xl text-xs font-semibold"
+            onClick={() => setSearch("")}
           >
-            Clear Filters
+            Clear Search
           </Button>
         </div>
       ) : (
-        /* Labs Grid List */
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {data?.labs.map((lab) => (
-            <div
-              key={lab.id}
-              className="flex flex-col justify-between border border-border bg-card rounded-xl p-5 hover:shadow-md hover:border-primary/30 transition-all duration-200"
-            >
-              <div className="space-y-3">
-                {/* Tag Header */}
-                <div className="flex justify-between items-center text-xs">
-                  <span className="inline-flex items-center space-x-1.5 font-bold text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full uppercase text-[10px]">
-                    {getCategoryIcon(lab.category)}
-                    <span>{lab.category}</span>
-                  </span>
-                  <span
-                    className={`px-2 py-0.5 border rounded-full text-[10px] font-bold uppercase tracking-wider ${getDifficultyStyles(
-                      lab.difficulty
-                    )}`}
-                  >
-                    {lab.difficulty}
-                  </span>
-                </div>
+        /* Academies Stack */
+        <div className="space-y-6">
+          {filteredAcademies.map((academy) => {
+            const isExpanded = !!expandedAcademies[academy.id];
+            const coursesCount = academy.courses.length;
+            // Calculate total time
+            const totalDurationMinutes = academy.courses.reduce((acc: number, c: any) => {
+              const minutes = parseInt(c.duration) || 30;
+              return acc + minutes;
+            }, 0);
 
-                {/* Title */}
-                <h3 className="text-base font-bold text-foreground leading-snug tracking-tight">
-                  {lab.title}
-                </h3>
+            return (
+              <div
+                key={academy.id}
+                className="border border-border bg-card rounded-xl shadow-sm overflow-hidden transition-all duration-200"
+              >
+                {/* Academy Header Card */}
+                <div className="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card hover:bg-muted/10 transition-colors">
+                  <div className="flex items-start space-x-4 flex-1">
+                    <div className="p-3 bg-primary/10 rounded-xl border border-primary/20 shrink-0">
+                      {getAcademyIcon(academy.icon)}
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <h2 className="text-lg font-bold text-foreground tracking-tight">
+                          {academy.title}
+                        </h2>
+                        <span
+                          className={`px-2 py-0.5 border rounded-full text-[9px] font-bold uppercase tracking-wider ${getDifficultyStyles(
+                            academy.difficulty
+                          )}`}
+                        >
+                          {academy.difficulty}
+                        </span>
+                        {academy.coming_soon && (
+                          <span className="px-2 py-0.5 border border-muted bg-muted/50 text-muted-foreground rounded-full text-[9px] font-bold uppercase tracking-wider">
+                            Locked
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
+                        {academy.description}
+                      </p>
+                    </div>
+                  </div>
 
-                {/* Description */}
-                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                  {lab.description}
-                </p>
+                  {/* Summary metrics / Progress */}
+                  <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full md:w-auto text-xs shrink-0">
+                    <div className="flex items-center space-x-4 text-muted-foreground border-border/40 md:border-r pr-4">
+                      <div className="space-y-0.5">
+                        <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Courses</p>
+                        <p className="font-bold text-foreground">{coursesCount} modules</p>
+                      </div>
+                      <div className="space-y-0.5">
+                        <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Duration</p>
+                        <p className="font-bold text-foreground">{totalDurationMinutes} mins</p>
+                      </div>
+                    </div>
 
-                {/* Simulated Tags */}
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {generateMockSkills(lab.title, lab.category).map((skill, index) => (
-                    <span
-                      key={index}
-                      className="text-[10px] text-muted-foreground bg-muted/60 border border-border/50 px-1.5 py-0.5 rounded"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
+                    {/* Progress details */}
+                    {!academy.coming_soon && (
+                      <div className="space-y-1 w-full md:w-32">
+                        <div className="flex justify-between font-bold text-foreground text-[10px]">
+                          <span>PROGRESS</span>
+                          <span>{academy.progress}%</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden border border-border/50">
+                          <div
+                            className="h-full bg-primary transition-all duration-300"
+                            style={{ width: `${academy.progress}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
 
-              {/* Action Toolbar Footer */}
-              <div className="flex items-center justify-between pt-4 mt-4 border-t border-border/40">
-                <div className="flex items-center text-xs text-muted-foreground">
-                  <Clock className="h-3.5 w-3.5 mr-1" />
-                  <span>{lab.estimated_time}</span>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Link href={`/labs/${lab.slug}`}>
-                    <Button variant="ghost" size="sm" className="text-xs font-semibold rounded-md">
-                      <span className="flex items-center space-x-1">
-                        <span>Details</span>
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </span>
-                    </Button>
-                  </Link>
-
-                  {lab.slug === "linux-command-line-basics" ? (
-                    <Link href="/labs/linux-basics">
-                      <Button
-                        size="sm"
-                        className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-semibold rounded-md shadow-sm border border-transparent"
-                      >
-                        Launch Lab
-                      </Button>
-                    </Link>
-                  ) : lab.slug === "docker-fundamentals" ? (
-                    <Link href="/labs/docker-basics">
-                      <Button
-                        size="sm"
-                        className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-semibold rounded-md shadow-sm border border-transparent"
-                      >
-                        Launch Lab
-                      </Button>
-                    </Link>
-                  ) : (
                     <Button
+                      variant="outline"
                       size="sm"
-                      disabled
-                      className="bg-primary/50 text-primary-foreground/70 cursor-not-allowed text-xs font-semibold rounded-md shadow-sm border border-transparent"
+                      onClick={() => toggleAcademy(academy.id)}
+                      className="rounded-xl flex items-center space-x-1.5 py-2 cursor-pointer border border-border bg-card"
                     >
-                      Coming Soon
+                      <span>{isExpanded ? "Collapse" : "Explore"}</span>
+                      {isExpanded ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
                     </Button>
-                  )}
+                  </div>
                 </div>
+
+                {/* Expanded Course Listing Section */}
+                {isExpanded && (
+                  <div className="border-t border-border/50 bg-muted/10 p-6 space-y-4">
+                    {academy.coming_soon ? (
+                      <div className="text-center py-6">
+                        <Lock className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                        <h4 className="text-sm font-bold text-foreground">Academy Coming Soon</h4>
+                        <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                          Our curriculum team is currently writing courses and configurations for this Academy. Stay tuned!
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {academy.courses.map((course: any, idx: number) => {
+                          const isCompleted = course.percentage === 100;
+                          return (
+                            <div
+                              key={course.slug}
+                              className={`flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl border bg-card transition-all duration-150 ${
+                                course.is_capstone
+                                  ? "border-indigo-500/30 hover:border-indigo-500/50 bg-indigo-500/[0.01]"
+                                  : "border-border hover:border-primary/20"
+                              }`}
+                            >
+                              <div className="space-y-1.5 flex-1 pr-4">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-xs font-bold text-muted-foreground shrink-0">
+                                    {String(idx + 1).padStart(2, "0")}.
+                                  </span>
+                                  <h3 className="text-sm font-bold text-foreground tracking-tight">
+                                    {course.title}
+                                  </h3>
+                                  {course.is_capstone && (
+                                    <span className="bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider">
+                                      Capstone
+                                    </span>
+                                  )}
+                                  {isCompleted && (
+                                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                                  )}
+                                </div>
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                  {course.description}
+                                </p>
+                                <div className="flex items-center space-x-3 text-[10px] text-muted-foreground">
+                                  <span className="flex items-center">
+                                    <Clock className="h-3 w-3 mr-1" />
+                                    {course.duration}
+                                  </span>
+                                  <span className="capitalize">{course.difficulty}</span>
+                                </div>
+                              </div>
+
+                              {/* Progress bar and launching actions */}
+                              <div className="flex items-center space-x-4 w-full sm:w-auto mt-4 sm:mt-0 shrink-0 border-t sm:border-t-0 border-border/40 pt-3 sm:pt-0">
+                                <div className="space-y-1 w-24">
+                                  <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden border border-border/50">
+                                    <div
+                                      className="h-full bg-primary transition-all duration-200"
+                                      style={{ width: `${course.percentage}%` }}
+                                    />
+                                  </div>
+                                </div>
+
+                                <Link href={`/labs/workspace/${course.slug}`}>
+                                  <Button
+                                    size="sm"
+                                    className={`rounded-xl text-xs font-semibold ${
+                                      isCompleted
+                                        ? "bg-muted text-muted-foreground hover:bg-muted/80"
+                                        : "bg-primary text-primary-foreground hover:bg-primary/95"
+                                    }`}
+                                  >
+                                    {isCompleted ? "Restart Lab" : "Launch Lab"}
+                                  </Button>
+                                </Link>
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {/* Certificate Locked/Unlocked card slot */}
+                        <div
+                          className={`p-4 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-card ${
+                            academy.certificate_unlocked
+                              ? "border-amber-500/30 bg-amber-500/[0.01]"
+                              : "border-border/60 bg-card/60 opacity-90"
+                          }`}
+                        >
+                          <div className="flex items-start space-x-3">
+                            <div
+                              className={`p-2 rounded-lg shrink-0 ${
+                                academy.certificate_unlocked
+                                  ? "bg-amber-500/10 border border-amber-500/20 text-amber-600"
+                                  : "bg-muted text-muted-foreground border border-border/50"
+                              }`}
+                            >
+                              <Award className="h-5 w-5" />
+                            </div>
+                            <div className="space-y-1">
+                              <h4 className="text-sm font-bold text-foreground">
+                                {academy.certificate_unlocked ? "🏆" : "🔒"}{" "}
+                                {academy.title.replace("Academy", "Fundamentals")} Certificate
+                              </h4>
+                              <p className="text-xs text-muted-foreground leading-relaxed max-w-md">
+                                {academy.certificate_unlocked
+                                  ? "Congratulations! You have completed every module and the Capstone project in this Academy. You are ready to generate your certificate."
+                                  : `Complete every course module and the Capstone project in ${academy.title} to unlock your completion certificate.`}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-2 w-full sm:w-auto shrink-0 border-t sm:border-t-0 border-border/40 pt-3 sm:pt-0">
+                            {academy.certificate_unlocked ? (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="rounded-xl text-xs border-amber-500/30 text-amber-600 hover:bg-amber-500/10 cursor-pointer"
+                                  onClick={() => alert("Preview Certificate will display your final certification page.")}
+                                >
+                                  Preview Certificate
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  className="rounded-xl text-xs bg-amber-600 hover:bg-amber-700 text-white cursor-pointer"
+                                  disabled={generateCertMutation.isPending}
+                                  onClick={() => generateCertMutation.mutate(academy.id)}
+                                >
+                                  {generateCertMutation.isPending ? "Generating..." : "Generate Certificate"}
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="rounded-xl text-xs border border-border cursor-pointer"
+                                  onClick={() => alert("Downloading PDF...")}
+                                >
+                                  Download PDF
+                                </Button>
+                              </>
+                            ) : (
+                              <span className="text-xs font-semibold text-muted-foreground bg-muted border border-border/50 px-3 py-1.5 rounded-xl flex items-center space-x-1.5 select-none">
+                                <Lock className="h-3 w-3" />
+                                <span>Locked</span>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </DashboardShell>
