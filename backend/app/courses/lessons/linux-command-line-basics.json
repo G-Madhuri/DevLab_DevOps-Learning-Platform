@@ -26,34 +26,190 @@
   },
   "theory": [
     {
-      "title": "What is an Operating System & Why Should You Care?",
-      "definition": "An Operating System is the ultimate manager of your computer, deciding which program gets to use the screen, memory, and CPU.",
-      "explanation": "Think of an Operating System (OS) as the conductor of an orchestra. Your hardware (screen, keyboard, CPU) are the musicians, and the apps (Spotify, Chrome) are the sheet music. The conductor coordinates them so you don't get chaos!\n\nYou're probably familiar with Windows (great for gaming) and macOS (super sleek). But in the cloud world, Linux is the absolute king. Over 90% of the world's web servers run on Linux!\n\nWhy Linux?\n- It's free and open-source: Anyone can inspect, edit, and improve the code.\n- It's super lightweight: Windows takes up gigabytes of memory just to show a desktop. Linux can run on a tiny credit-card-sized computer (like a Raspberry Pi) using almost zero memory!\n- No GUI needed: Linux is designed to be fully controlled via text commands, making it perfect for automated cloud setups.",
-      "why_exists": "To manage the hardware resources so you can run applications without writing raw machine code for every single processor chip.",
-      "where_used": "Behind the scenes on Google, Netflix, smart TVs, Android phones, space rockets, and cloud server clusters.",
-      "real_world_example": "When you visit a website, a Linux server in a massive datacenter receives your request, reads the HTML code from its disk, and beams it to your browser in milliseconds.",
-      "best_practices": "Learn the command line early because it gives you superpowers to control servers globally without ever touching a mouse.",
-      "common_mistakes": "Thinking you need to be a math genius or hacker to use Linux. It's actually just like sending text messages to your computer!"
+      "title": "Meet the Linux Terminal & The CLI",
+      "definition": "The Terminal is a text-based interface used to talk directly to your operating system using typed commands instead of graphical buttons.",
+      "explanation": "Think of your computer as a house. Windows and macOS give you a Graphical User Interface (GUI), which is like walking through the front door and clicking physical light switches. The Command Line Interface (CLI) is like accessing the house's electrical control panel directly: it takes a bit of learning, but it gives you complete control over every single wire!\n\nFor DevOps and Cloud Engineers, the terminal is your daily driver. Cloud platforms like AWS, Azure, or Kubernetes run on remote virtual servers that do not have screens, keyboards, or graphic desktops. To manage them, you connect via a text interface and type commands.\n\nHere is a simple comparison between the GUI and the CLI:\n\n| Feature | GUI (Graphical User Interface) | CLI (Command Line Interface) |\n| :--- | :--- | :--- |\n| Control | Clicking icons, buttons, menus | Typing text commands |\n| Speed | Slower (requires clicking paths) | Faster (instant execution with shortcuts) |\n| Memory | High (graphics are resource heavy) | Extremely low (runs using raw text streams) |\n| Scripting| Hard/Impossible to automate | Incredibly simple to write script files |",
+      "why_exists": "Allows developers to manage cloud servers globally, execute code programmatically, and write scripts that run tasks automatically without human interaction.",
+      "real_world_example": "When a Netflix video starts streaming, a remote Linux server receives a quick CLI request, locates the media file, and sends the data stream to your device in milliseconds.",
+      "remember": "In Linux, spacing and casing matter! The system treats file.txt and File.txt as two completely different files. Also, always add a space between a command and its parameters (e.g. write 'ls -a', not 'ls-a').",
+      "pro_tip": "You don't need to type out long file paths manually. Press the Tab key on your keyboard while typing a path, and the terminal will automatically fill in the rest of the name for you! If there are multiple matches, press Tab twice to see all options.",
+      "common_mistakes": "Forgetting spaces between command parameters (e.g. typing ls-la instead of ls -la), which results in a 'command not found' error.",
+      "best_practices": "Avoid typing root administration command headers (like sudo) unless you absolutely need to. Working as a regular user protects you from accidentally corrupting operating system files.",
+      "commands": [
+        {
+          "name": "whoami",
+          "purpose": "Displays the username of the active session you are currently logged in as.",
+          "syntax": "whoami",
+          "parameters": "None. It takes no options or arguments.",
+          "example": "whoami",
+          "expected_output": "student",
+          "output_explanation": "This tells you that you are currently running commands under the 'student' user account session.",
+          "when_to_use": "Run this inside automation scripts to confirm if your code has administrative privileges (like root) before running system configurations."
+        }
+      ],
+      "summary": "The terminal is a text-based power tool. Using commands like whoami is your first step to controlling servers programmatically without using a mouse."
     },
     {
-      "title": "The Linux Family Tree: Meet the Distributions",
-      "definition": "A Linux 'Distribution' (or Distro) is a pre-packaged version of the Linux kernel combined with various software tools.",
-      "explanation": "Because Linux is open-source, anyone can take the core code (the 'Kernel') and bundle it with their favorite tools to build their own version. These versions are called Distributions (or 'Distros' for short).\n\nHere are the most popular families:\n1. 🐧 Debian / Ubuntu: The friendly neighborhood Linux. Ubuntu is the most popular distro for beginners. It has a massive community, so if you run into an error, someone has already solved it on Google!\n2. 🎩 Red Hat (RHEL / Rocky Linux): The suit-and-tie Linux. It's enterprise-grade, ultra-stable, and used by massive banks and corporations.\n3. 🏔️ Alpine Linux: The minimalist. It's incredibly tiny (only about 5MB!). Perfect for microservice containers where speed and security are critical.\n4. 🏹 Arch Linux: The 'build-your-own-car' Linux. For advanced users who want to configure every single byte manually.\n\nWhich one should you choose?\n- For learning and general coding: Ubuntu is your best friend.\n- For container deployments: Alpine is the gold standard.\n- For enterprise servers: Rocky Linux / RHEL is preferred.",
-      "why_exists": "To cater to different operational requirements: enterprise security support, developer ease of use, desktop aesthetics, or micro-sized container layers.",
-      "where_used": "Selecting cloud base images, containerizing apps, and hosting databases.",
-      "real_world_example": "A company using Ubuntu on developer laptops, Rocky Linux on staging servers, and Alpine for deploying lightweight production containers.",
-      "best_practices": "Stick with Ubuntu/Debian when starting out so you can easily install packages and find tutorials online.",
-      "common_mistakes": "Choosing a rolling-release distro (like Arch) for production servers, leading to system updates breaking configurations unexpectedly."
+      "title": "Finding Your Way: Navigation Commands",
+      "definition": "Navigation is the process of moving between folders (directories) in the system's hierarchical file tree.",
+      "explanation": "Linux organizes everything into a single, giant tree structure. Instead of having separate drive letters (like C: or D: in Windows), everything starts from a single parent directory called the Root (represented by a forward slash /).\n\nInside this root directory, folders contain application configurations, libraries, and user files. Your personal workspace is called the Home Directory (represented by a tilde ~). Inside our sandbox, your home directory is located at /home/student.\n\nTo move around this tree, you need to understand two types of directions:\n- Absolute Paths: Directions that start from the very beginning (Root /). Example: /home/student/drafts.\n- Relative Paths: Directions that start from where you are standing right now. Example: drafts (look inside the current folder) or .. (go up to the parent folder).",
+      "why_exists": "Allows you to navigate folders, locate system logs, and change directories programmatically inside server environments.",
+      "real_world_example": "Navigating to a web server configuration folder (/etc/nginx) to edit site routing parameters before restarting the service.",
+      "remember": "A single dot . represents your current directory. A double dot .. represents the parent folder (one level up).",
+      "pro_tip": "Type cd by itself (or cd ~) from anywhere in the filesystem, and the shell will instantly transport you back home to /home/student!",
+      "common_mistakes": "Typing backslashes \\ for directories. Linux strictly uses forward slashes / for folder paths.",
+      "best_practices": "Always run pwd if you are unsure where you are standing before running file deletion commands like rm.",
+      "commands": [
+        {
+          "name": "pwd",
+          "purpose": "Prints the absolute path of the current directory you are working in.",
+          "syntax": "pwd",
+          "parameters": "None.",
+          "example": "pwd",
+          "expected_output": "/home/student",
+          "output_explanation": "This means your terminal is currently positioned inside the student home directory folder.",
+          "when_to_use": "Run this command before performing file actions to verify you are in the correct directory context."
+        },
+        {
+          "name": "cd",
+          "purpose": "Changes the current working directory to a new folder location.",
+          "syntax": "cd [directory_path]",
+          "parameters": "directory_path (optional): The target folder path. Defaults to home (~) if omitted.",
+          "example": "cd drafts",
+          "expected_output": "(Folder changed without terminal output)",
+          "output_explanation": "The shell successfully moved you inside the drafts directory.",
+          "when_to_use": "Use this to jump into different folders to view or modify their files."
+        }
+      ],
+      "summary": "Everything in Linux starts from the Root (/). You use pwd to check where you are, and cd to jump between folders in the system tree."
     },
     {
-      "title": "Your Command Line Cheat Sheet: The 80/20 Rule",
-      "definition": "The handful of essential terminal commands that you will use 80% of the time as a DevOps engineer.",
-      "explanation": "You don't need to memorize hundreds of commands. In fact, you only need about 10-15 core commands to do almost everything! Here is your quick navigation cheat sheet:\n\n📂 Navigating the Folders:\n- whoami: 'Who am I logged in as?' (usually prints 'student').\n- pwd: 'Where am I right now?' (Print Working Directory).\n- ls: 'What files are in this folder?' (List).\n- ls -a: Show ALL files, including hidden configuration files (files starting with a dot, like .bashrc).\n- ls -l: Show details like file sizes, permissions, and creation dates.\n- cd [folder]: 'Go inside this folder' (Change Directory).\n- cd ~: 'Take me back home' (to /home/student).\n\n📝 Creating & Modifying Files:\n- touch [file]: Create a brand new, empty file.\n- mkdir [folder]: Create a brand new empty folder (Make Directory).\n- echo 'text' > [file]: Write 'text' into a file, overwriting whatever was there.\n- echo 'text' >> [file]: Append 'text' to the end of a file without deleting the old stuff.\n- cat [file]: Dump the contents of a file on the screen so you can read it.\n\n✂️ Moving & Deleting:\n- cp [src] [dest]: Copy a file.\n- mv [src] [dest]: Move a file (also used to rename files!).\n- rm [file]: Permanently delete a file (warning: there is no Recycle Bin here!).",
-      "why_exists": "To provide a complete catalog cheatsheet reference directly inside the theory tab before you start running them in the interactive terminal.",
-      "where_used": "Command line navigation reference and automated scripting tasks.",
-      "real_world_example": "Quickly referencing syntax parameters (like absolute path directories or file overwrite operators) before typing them in the sandbox.",
-      "best_practices": "Keep this cheatsheet handy as a fast command lookup table when running the interactive lab steps.",
-      "common_mistakes": "Typing commands with wrong spaces or casing, which returns errors in execution."
+      "title": "Inspecting Folder Contents: The List Command",
+      "definition": "Listing is the action of displaying the files and folders inside a directory, along with details like file size and permissions.",
+      "explanation": "Since you cannot see files visually in the terminal, the ls command is your eyes. It outputs names of files in the specified directory.\n\nBy default, ls ignores hidden files. In Linux, any file or folder starting with a dot . is hidden (like .bashrc or .profile). These files contain user settings and system configurations. To view them, we pass flags to modify the command's behavior:\n\n- -a: Show All files (including hidden ones).\n- -l: Show details in Long format (owner, group, size, permissions, modification date).",
+      "why_exists": "Enables you to audit folder items, verify file creations, inspect file sizes, and review access privileges.",
+      "real_world_example": "Checking an applications folder using ls -l to verify if a backup archive has been created and checking its file size in bytes.",
+      "remember": "You can combine flags together! Typing ls -la (or ls -al) combines both details and hidden files into a single, detailed list.",
+      "pro_tip": "Add the -h flag to make file sizes print in human-readable units (like 4K or 5M) instead of raw bytes: ls -lh.",
+      "common_mistakes": "Confusing the lowercase letter l with the number 1 when running ls -l.",
+      "best_practices": "Use ls -l regularly to check ownership settings and ensure your application files are owned by the correct user accounts.",
+      "commands": [
+        {
+          "name": "ls",
+          "purpose": "Lists files and directories inside your current folder.",
+          "syntax": "ls [directory_path]",
+          "parameters": "directory_path (optional): The folder path to inspect. Defaults to current directory if blank.",
+          "example": "ls",
+          "expected_output": "drafts welcome.txt",
+          "output_explanation": "This lists the visible folder drafts and file welcome.txt inside your current directory.",
+          "when_to_use": "Run this whenever you navigate to a new directory to see what is inside it."
+        },
+        {
+          "name": "ls -a",
+          "purpose": "Lists all files and directories, including hidden configuration files.",
+          "syntax": "ls -a",
+          "parameters": "None.",
+          "example": "ls -a",
+          "expected_output": ". .. .bashrc drafts welcome.txt",
+          "output_explanation": "Shows current directory (.), parent directory (..), hidden file (.bashrc), and the visible files.",
+          "when_to_use": "Use this to verify configuration files exist inside your user home directory."
+        },
+        {
+          "name": "ls -l",
+          "purpose": "Lists files in detailed long format displaying owner permissions and size metadata.",
+          "syntax": "ls -l",
+          "parameters": "None.",
+          "example": "ls -l",
+          "expected_output": "-rw-r--r-- 1 student student 45 Jan 12 10:30 welcome.txt",
+          "output_explanation": "Displays permissions (-rw-r--r--), owner (student), group (student), size (45 bytes), date, and filename.",
+          "when_to_use": "Use this to audit who owns a file or inspect if execution permissions are active."
+        }
+      ],
+      "summary": "The ls command is your terminal eyes. Use ls by itself to see files, ls -a to reveal hidden configs, and ls -l to inspect file details."
+    },
+    {
+      "title": "Working with Files: Create, Write, and Copy",
+      "definition": "Creating, writing, and copying are file operations that let you initialize, save text inside, duplicate, rename, or delete files.",
+      "explanation": "Creating and editing files are essential skills. You use:\n- touch: To quickly create a brand new, empty file.\n- mkdir: To make a new folder.\n- echo with redirection: To write text directly into a file.\n  - The > operator writes text, overwriting the file if it already exists.\n  - The >> operator appends text to the end of the file without deleting old data.\n- cat: To view file content on the screen.\n- cp: To make copies of files.\n- mv: To move files to a different folder, or rename them.\n- rm: To delete files permanently.",
+      "why_exists": "Allows you to write scripts, update configuration files, create directory structures, and manage deployment files.",
+      "real_world_example": "Creating an empty configuration file using touch config.env, writing settings using echo 'PORT=8080' > config.env, and copying it to a backup directory.",
+      "remember": "The rm command deletes files instantly and permanently. There is no Recycle Bin or Trash folder in the terminal!",
+      "pro_tip": "Use mv to rename a file: mv oldname.txt newname.txt tells Linux to move the file to the exact same directory but with a new name!",
+      "common_mistakes": "Forgetting to write double-quotes in echo when writing text that has special shell characters.",
+      "best_practices": "Double check the filename before running the rm command to avoid deleting critical project code files.",
+      "commands": [
+        {
+          "name": "touch",
+          "purpose": "Creates a new empty file or updates the timestamp of an existing file.",
+          "syntax": "touch filename",
+          "parameters": "filename: The name of the file to create.",
+          "example": "touch script.sh",
+          "expected_output": "(Empty file created without terminal output)",
+          "output_explanation": "An empty file named script.sh has been created.",
+          "when_to_use": "Use this to quickly initialize blank source or configuration files."
+        },
+        {
+          "name": "mkdir",
+          "purpose": "Creates a new empty folder (directory).",
+          "syntax": "mkdir folder_name",
+          "parameters": "folder_name: The name of the new directory.",
+          "example": "mkdir projects",
+          "expected_output": "(Folder created without terminal output)",
+          "output_explanation": "A new folder named projects has been created.",
+          "when_to_use": "Use this to organize your files and directory structures."
+        },
+        {
+          "name": "echo",
+          "purpose": "Prints text to the screen or redirects it into a file.",
+          "syntax": "echo \"text\"",
+          "parameters": "text: The text string to output.",
+          "example": "echo \"Hello World\"",
+          "expected_output": "Hello World",
+          "output_explanation": "Outputs the text Hello World directly on the terminal screen.",
+          "when_to_use": "Use this to print messages, verify variable values, or write text parameters."
+        },
+        {
+          "name": "cat",
+          "purpose": "Concatenates and displays the contents of a file on the terminal screen.",
+          "syntax": "cat filename",
+          "parameters": "filename: The name of the file to read.",
+          "example": "cat welcome.txt",
+          "expected_output": "Welcome to DevLab Linux Basics!",
+          "output_explanation": "Prints the full text contents of welcome.txt on the screen.",
+          "when_to_use": "Use this to read configuration parameters or check logs content."
+        },
+        {
+          "name": "cp",
+          "purpose": "Copies a file or folder from a source path to a destination path.",
+          "syntax": "cp source_file destination_file",
+          "parameters": "source_file: The file to copy. destination_file: The path of the copy.",
+          "example": "cp welcome.txt backup.txt",
+          "expected_output": "(File copied without terminal output)",
+          "output_explanation": "Creates a duplicate copy of welcome.txt named backup.txt.",
+          "when_to_use": "Use this to create backups of configuration files before modifying them."
+        },
+        {
+          "name": "mv",
+          "purpose": "Moves or renames files and directories.",
+          "syntax": "mv source_file destination_file",
+          "parameters": "source_file: The file to rename/move. destination_file: The target name/path.",
+          "example": "mv welcome.txt intro.txt",
+          "expected_output": "(File moved/renamed without terminal output)",
+          "output_explanation": "Renames welcome.txt to intro.txt in the same directory.",
+          "when_to_use": "Use this to organize folders or change filenames."
+        },
+        {
+          "name": "rm",
+          "purpose": "Permanently deletes a file.",
+          "syntax": "rm filename",
+          "parameters": "filename: The name of the file to remove.",
+          "example": "rm backup.txt",
+          "expected_output": "(File deleted without terminal output)",
+          "output_explanation": "The file backup.txt has been permanently removed from the system.",
+          "when_to_use": "Use this to delete temporary files and free up disk space."
+        }
+      ],
+      "summary": "Creating files starts with touch or mkdir. Redirection operators (> and >>) write text, cat prints contents, cp/mv manage copies, and rm cleans up."
     }
   ],
   "interactive_examples": [

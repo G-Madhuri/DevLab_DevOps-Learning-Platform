@@ -28,23 +28,61 @@
   "theory": [
     {
       "title": "The Magic of the Shebang: How Scripts Boot",
-      "definition": "The special combination of characters `#!/bin/bash` at the very beginning of a file that tells your computer exactly which program should run the script.",
-      "explanation": "Imagine you write a letter, but you write it in French. If you hand it to an English speaker, they'll stare at it blankly. You need to write a little note at the top saying: 'Translator, please read this!'\n\nIn the world of coding, files containing shell commands are just plain text. When you run a script, the Linux kernel looks at the very first line of the file. If it sees the characters `#!` (called the 'Shebang' or 'Hash-bang'), it knows it needs to hand the file over to an interpreter.\n\nBy writing `#!/bin/bash` at the very top, you are saying: 'Hey Linux, feed all the text in this file directly into the Bash interpreter so it can execute them!' Without this, Linux might use a different, more basic shell, and your advanced script might crash.",
+      "definition": "The special combination of characters #!/bin/bash at the very beginning of a file that tells your computer exactly which program should run the script.",
+      "explanation": "Imagine you write a letter, but you write it in French. If you hand it to an English speaker, they'll stare at it blankly. You need to write a little note at the top saying: 'Translator, please read this!'\n\nIn the world of coding, files containing shell commands are just plain text. When you run a script, the Linux kernel looks at the very first line of the file. If it sees the characters #! (called the 'Shebang' or 'Hash-bang'), it knows it needs to hand the file over to an interpreter.\n\nBy writing #!/bin/bash at the very top, you are saying: 'Hey Linux, feed all the text in this file directly into the Bash interpreter so it can execute them!' Without this, Linux might use a different, more basic shell, and your advanced script might crash.",
       "why_exists": "Ensures your script executes reliably on any Linux machine, regardless of which shell the current user is active in.",
-      "where_used": "The very first line of every shell script, automation tool, and cron job utility.",
-      "real_world_example": "Writing `#!/bin/bash` on line 1 of your backup script, followed by `echo 'Starting backup...'` on line 2.",
-      "best_practices": "Always put the shebang on the absolute first line of your script file. Do not put spaces before the `#` or after the `!`.",
-      "common_mistakes": "Writing comments or blank lines before the shebang. The shebang MUST be on line 1, character 1, or Linux will completely ignore it!"
+      "real_world_example": "Writing #!/bin/bash on line 1 of your backup script, followed by echo 'Starting backup...' on line 2.",
+      "remember": "The shebang must be on the absolute first line of your script file. Do not put spaces before the # or after the !.",
+      "pro_tip": "You can locate the path of your active bash binary by running the command: which bash.",
+      "common_mistakes": "Writing comments or blank lines before the shebang. The shebang MUST be on line 1, character 1, or Linux will completely ignore it!",
+      "best_practices": "Always write #!/bin/bash instead of plain #!/bin/sh to ensure access to modern Bash features like arrays and advanced conditions.",
+      "commands": [
+        {
+          "name": "chmod +x",
+          "purpose": "Grants executable permissions to a script file so it can be run directly.",
+          "syntax": "chmod +x filename.sh",
+          "parameters": "filename.sh: The script file to make executable.",
+          "example": "chmod +x backup.sh",
+          "expected_output": "(Permissions updated without terminal output)",
+          "output_explanation": "Marks backup.sh as runnable, enabling execution using standard ./ path notation.",
+          "when_to_use": "Run this once immediately after creating a new script file."
+        },
+        {
+          "name": "./filename.sh",
+          "purpose": "Executes a script file in the current folder path.",
+          "syntax": "./filename.sh",
+          "parameters": "filename.sh: The name of the script file.",
+          "example": "./backup.sh",
+          "expected_output": "(Runs the commands stored inside your backup.sh script)",
+          "output_explanation": "The shell loads backup.sh, reads shebang interpreter, and executes commands line by line.",
+          "when_to_use": "Use this whenever you need to run your custom automation scripts."
+        }
+      ],
+      "summary": "The shebang (#!/bin/bash) on line 1 tells Linux to interpret the file using Bash. Run chmod +x and use ./ to execute the script."
     },
     {
       "title": "Variables & The Golden Rule of No Spaces",
       "definition": "Named boxes in memory where you can store text or numbers to reuse them throughout your script.",
-      "explanation": "Variables in Bash are like labeled drawers. You put some text inside the drawer, write a label on it, and slide it shut. Later, you can pull the drawer open by using its label!\n\nHere is how you declare a variable in Bash:\n`SERVER_NAME=\"production-db\"`\n\n⚠️ THE GOLDEN RULE OF BASH: You MUST NOT put spaces around the equal sign (=)! If you write `SERVER_NAME = \"production-db\"` (with spaces), Bash will get confused and try to run `SERVER_NAME` as a command! It is the number one mistake beginners make.\n\nTo retrieve and print the variable, prefix it with a dollar sign ($):\n`echo \"Connecting to $SERVER_NAME...\"`",
+      "explanation": "Variables in Bash are like labeled drawers. You put some text inside the drawer, write a label on it, and slide it shut. Later, you can pull the drawer open by using its label!\n\nHere is how you declare a variable in Bash:\nSERVER_NAME=\"production-db\"\n\nTo retrieve and print the variable, prefix it with a dollar sign ($):\necho \"Connecting to $SERVER_NAME...\"\n\n| Operator / Syntax | Description | Example |\n| :--- | :--- | :--- |\n| = | Declares variable (no spaces allowed) | NAME=\"John\" |\n| $ | References value of a variable | echo $NAME |",
       "why_exists": "Allows your scripts to be dynamic and reusable, so you can change a single variable at the top instead of editing fifty lines of code.",
-      "where_used": "Storing API credentials, directory file paths, configuration flags, and server addresses.",
-      "real_world_example": "Setting `DB_BACKUP_PATH=\"/var/backups/db\"` and then copying database dumps to `$DB_BACKUP_PATH`.",
-      "best_practices": "Use descriptive names in ALL_CAPS for environment variables, and lowercase for local variable names.",
-      "common_mistakes": "Adding spaces around the `=` sign when declaring, or forgetting the `$` when referencing the variable value."
+      "real_world_example": "Setting DB_BACKUP_PATH=\"/var/backups/db\" and then copying database dumps to $DB_BACKUP_PATH.",
+      "remember": "You MUST NOT put spaces around the equal sign (=) when assigning variables! If you write SERVER_NAME = \"production-db\" (with spaces), Bash will get confused and try to run SERVER_NAME as a command!",
+      "pro_tip": "You can wrap your variable names in curly braces ${VARIABLE_NAME} to safely isolate them from surrounding text (e.g. echo \"${NAME}_backup\").",
+      "common_mistakes": "Adding spaces around the = sign when declaring, or forgetting the $ when referencing the variable value.",
+      "best_practices": "Use uppercase letters for environment and global variables, and lowercase for temporary local variables.",
+      "commands": [
+        {
+          "name": "read",
+          "purpose": "Prompts the user for input keyboard values and saves it into a variable.",
+          "syntax": "read [-p prompt_msg] variable_name",
+          "parameters": "-p prompt_msg: Displays a message before waiting for input. variable_name: The target storage variable.",
+          "example": "read -p \"Enter server username: \" input_user",
+          "expected_output": "Enter server username: (waits for keyboard typing)",
+          "output_explanation": "Prompts you to type a value, then saves whatever you type into $input_user.",
+          "when_to_use": "Use this when you want to build interactive scripts that require user input at runtime."
+        }
+      ],
+      "summary": "Bash variables are defined using NAME=\"value\" (strictly no spaces around =). Access them using $NAME or ${NAME}. Use read to prompt for inputs."
     }
   ],
   "interactive_examples": [
