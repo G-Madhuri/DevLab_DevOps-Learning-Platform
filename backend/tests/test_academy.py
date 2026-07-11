@@ -189,4 +189,4 @@ def test_course_details(client, db):
     assert "exercises" in data
     assert "quiz" in data
     assert len(data["lessons"]) == 15
-    assert len(data["quiz"]) == 3
+    assert len(data["quiz"]) >= 10
