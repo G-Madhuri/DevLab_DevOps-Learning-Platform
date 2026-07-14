@@ -156,6 +156,12 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
       progress.completed_lessons.forEach((item: any) => {
         if (typeof item === "string") {
           tabsMap[item] = true;
+          if (item === "theory") {
+            tabsMap["concepts"] = true;
+          }
+          if (item === "resources") {
+            tabsMap["exercises"] = true;
+          }
         }
       });
       setCompletedTabs(tabsMap);
@@ -166,7 +172,15 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
 
   // Complete tab mutation
   const completeTabMutation = useMutation({
-    mutationFn: (tabId: string) => labSessionService.completeCourseTab(courseSlug, tabId),
+    mutationFn: (tabId: string) => {
+      let backendTabId = tabId;
+      if (tabId === "concepts") {
+        backendTabId = "theory";
+      } else if (tabId === "exercises") {
+        backendTabId = "resources";
+      }
+      return labSessionService.completeCourseTab(courseSlug, backendTabId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["course_progress", courseSlug] });
       queryClient.invalidateQueries({ queryKey: ["academies_list"] });
@@ -191,7 +205,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
       });
     }, observerOptions);
 
-    const targets = ["overview", "concepts", "examples", "exercises"];
+    const targets = ["overview", "concepts", "examples", "exercises", "resources"];
     targets.forEach((id) => {
       const el = document.getElementById(`bottom-detector-${id}`);
       if (el) {
@@ -297,6 +311,19 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
 
   const isCompleted = (id: number) => {
     return progress?.completed_lessons?.includes(id) || false;
+  };
+
+  const isTabCompleted = (tabId: string) => {
+    if (tabId === "concepts") {
+      return completedTabs["concepts"] || completedTabs["theory"] || false;
+    }
+    if (tabId === "lab") {
+      return lessons.length > 0 && lessons.every((l: any) => isCompleted(l.id));
+    }
+    if (tabId === "exercises") {
+      return completedTabs["exercises"] || completedTabs["resources"] || false;
+    }
+    return completedTabs[tabId] || false;
   };
 
   const handleCopyToClipboard = (text: string, index: number) => {
@@ -409,7 +436,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
             }`}
           >
             <span>{t.label}</span>
-            {completedTabs[t.id] && (
+            {isTabCompleted(t.id) && (
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 fill-emerald-500/10 shrink-0" />
             )}
           </button>
@@ -1664,6 +1691,8 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
               </div>
             )}
           </div>
+
+          <div id="bottom-detector-resources" data-tab-id="resources" className="h-1 w-full" />
 
           <div className="pt-6 border-t border-border/40 text-center">
             <Button
