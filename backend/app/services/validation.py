@@ -513,56 +513,40 @@ class ValidationEngine:
     def _validate_file_system_permissions_simulated(self, shell: Any, task_id: int) -> Dict[str, Any]:
         history_str = " ".join(shell.history).lower()
         if task_id == 1:
-            if shell.cwd.endswith("drafts"):
-                return {"success": True, "message": "Success! You used absolute path navigation."}
-            return {"success": False, "message": "cd to absolute path /home/student/drafts."}
-        elif task_id == 2:
-            if shell.cwd.endswith("projects"):
-                return {"success": True, "message": "Success! You used relative path navigation."}
-            return {"success": False, "message": "cd to relative path ../projects."}
-        elif task_id == 3:
             if "ls -l" in history_str:
-                return {"success": True, "message": "Success! Details listed."}
-            return {"success": False, "message": "Use ls -l welcome.txt."}
+                return {"success": True, "message": "Success! You printed the detailed list using ls -l."}
+            return {"success": False, "message": "Try running the 'ls -l' command."}
+        elif task_id == 2:
+            path = shell.get_local_path("deploy.sh")
+            if os.path.exists(path) and os.path.isfile(path):
+                return {"success": True, "message": "Success! deploy.sh created."}
+            return {"success": False, "message": "Create deploy.sh using touch deploy.sh."}
+        elif task_id == 3:
+            if "chmod +x" in history_str or "chmod 755" in history_str or "chmod +x deploy.sh" in history_str:
+                return {"success": True, "message": "Success! deploy.sh is now executable."}
+            return {"success": False, "message": "Run chmod +x deploy.sh to make it executable."}
         elif task_id == 4:
-            if shell.permissions.get("log.txt") == "600" or "chmod 600" in history_str:
-                return {"success": True, "message": "Success! Permissions updated to 600."}
-            return {"success": False, "message": "Set chmod 600 log.txt."}
+            path = shell.get_local_path("secrets.txt")
+            if os.path.exists(path) and (shell.permissions.get("secrets.txt") == "600" or "chmod 600" in history_str):
+                return {"success": True, "message": "Success! secrets.txt created and permissions set to 600."}
+            return {"success": False, "message": "Create secrets.txt and set its permissions to 600 using chmod."}
         elif task_id == 5:
-            if "chmod +x" in history_str or "chmod 755" in history_str or "chmod +x run.sh" in history_str:
-                return {"success": True, "message": "Success! Script is now executable."}
-            return {"success": False, "message": "Run chmod +x run.sh."}
+            if shell.permissions.get("deploy.sh") == "755" or "chmod 755" in history_str:
+                return {"success": True, "message": "Success! deploy.sh permissions updated to 755."}
+            return {"success": False, "message": "Change deploy.sh permissions to 755 using chmod."}
         elif task_id == 6:
-            if shell.permissions.get("run.sh") == "755" or "chmod 755" in history_str:
-                return {"success": True, "message": "Success! run.sh set to 755."}
-            return {"success": False, "message": "Run chmod 755 run.sh."}
+            if "go-w" in history_str or "chmod 600" in history_str:
+                return {"success": True, "message": "Success! Group and others write permission removed."}
+            return {"success": False, "message": "Remove write permissions for group and others from secrets.txt using chmod go-w."}
         elif task_id == 7:
-            if "ls -ld" in history_str or "ls -d" in history_str:
-                return {"success": True, "message": "Success! Directory listed."}
-            return {"success": False, "message": "Run ls -ld drafts."}
+            if "ls -l" in history_str:
+                return {"success": True, "message": "Success! Checked file ownership."}
+            return {"success": False, "message": "List file details using ls -l to check ownership."}
         elif task_id == 8:
-            if "chmod -r" in history_str or "chmod -r 755" in history_str:
-                return {"success": True, "message": "Success! Recursive update checked."}
-            return {"success": False, "message": "Run chmod -R 755 projects."}
-        elif task_id == 9:
-            if "groups" in history_str:
-                return {"success": True, "message": "Success! groups checked."}
-            return {"success": False, "message": "Run groups."}
-        elif task_id == 10:
-            if "id" in history_str:
-                return {"success": True, "message": "Success! identity queried."}
-            return {"success": False, "message": "Run id."}
-        elif task_id in [11, 12, 13]:
-            return {"success": True, "message": "Access permission commands executed successfully."}
-        elif task_id == 14:
-            if shell.permissions.get("projects") == "700" or "chmod 700" in history_str:
-                return {"success": True, "message": "Success! projects restricted."}
-            return {"success": False, "message": "Run chmod 700 projects."}
-        elif task_id == 15:
-            path = shell.get_local_path("log.txt")
-            if not os.path.exists(path):
-                return {"success": True, "message": "Success! log.txt deleted."}
-            return {"success": False, "message": "Remove log.txt using rm."}
+            path = shell.get_local_path("private_config")
+            if os.path.exists(path) and os.path.isdir(path) and (shell.permissions.get("private_config") == "700" or "chmod 700" in history_str):
+                return {"success": True, "message": "Success! private_config folder created and restricted to 700."}
+            return {"success": False, "message": "Create folder private_config and set it to 700."}
         return {"success": False, "message": "Task not recognized."}
 
     def _validate_file_system_permissions_live(self, container_id: str, task_id: int) -> Dict[str, Any]:
@@ -572,68 +556,100 @@ class ValidationEngine:
         except Exception as e:
             return {"success": False, "message": f"Docker connection failure: {e}"}
 
+        def file_exists(path: str) -> bool:
+            res = container.exec_run(f"test -f {path}", user="student")
+            return res.exit_code == 0
+
+        def dir_exists(path: str) -> bool:
+            res = container.exec_run(f"test -d {path}", user="student")
+            return res.exit_code == 0
+
         def stat_file(path: str) -> str:
             res = container.exec_run(f"stat -c %a {path}", user="student")
             return res.output.decode().strip()
 
-        if task_id in [1, 2, 3, 5, 7, 8, 9, 10, 11, 12, 13]:
-            return {"success": True, "message": "Action verified."}
+        if task_id in [1, 7]:
+            return {"success": True, "message": "Ownership and listing audited successfully."}
+        elif task_id == 2:
+            if file_exists("/home/student/deploy.sh"):
+                return {"success": True, "message": "deploy.sh created."}
+            return {"success": False, "message": "deploy.sh not found."}
+        elif task_id == 3:
+            res = container.exec_run("test -x /home/student/deploy.sh", user="student")
+            if res.exit_code == 0:
+                return {"success": True, "message": "deploy.sh is executable."}
+            return {"success": False, "message": "deploy.sh is not executable."}
         elif task_id == 4:
-            if stat_file("/home/student/log.txt") == "600":
-                return {"success": True, "message": "Permissions match 600."}
-            return {"success": False, "message": "log.txt is not set to 600."}
+            if file_exists("/home/student/secrets.txt") and stat_file("/home/student/secrets.txt") == "600":
+                return {"success": True, "message": "secrets.txt is set to 600."}
+            return {"success": False, "message": "secrets.txt not found or permissions are not 600."}
+        elif task_id == 5:
+            if stat_file("/home/student/deploy.sh") == "755":
+                return {"success": True, "message": "deploy.sh is set to 755."}
+            return {"success": False, "message": "deploy.sh permissions are not 755."}
         elif task_id == 6:
-            if stat_file("/home/student/run.sh") == "755":
-                return {"success": True, "message": "Permissions match 755."}
-            return {"success": False, "message": "run.sh is not set to 755."}
-        elif task_id == 14:
-            if stat_file("/home/student/projects") == "700":
-                return {"success": True, "message": "Permissions match 700."}
-            return {"success": False, "message": "projects is not set to 700."}
-        elif task_id == 15:
-            res = container.exec_run("test -f /home/student/log.txt", user="student")
-            if res.exit_code != 0:
-                return {"success": True, "message": "log.txt removed."}
-            return {"success": False, "message": "log.txt still exists."}
+            if stat_file("/home/student/secrets.txt") in ["600", "400", "000"]:
+                return {"success": True, "message": "secrets.txt group and other write permissions removed."}
+            return {"success": False, "message": "secrets.txt still has write permissions for group/others."}
+        elif task_id == 8:
+            if dir_exists("/home/student/private_config") and stat_file("/home/student/private_config") == "700":
+                return {"success": True, "message": "private_config folder set to 700."}
+            return {"success": False, "message": "private_config folder not found or permissions are not 700."}
         return {"success": False, "message": "Task not recognized."}
 
     # ── Bash Scripting Fundamentals ───────────────────────
     def _validate_bash_scripting_simulated(self, shell: Any, task_id: int) -> Dict[str, Any]:
         history_str = " ".join(shell.history).lower()
+        path = shell.get_local_path("hello.sh")
         if task_id == 1:
-            path = shell.get_local_path("hello.sh")
             if os.path.exists(path):
                 with open(path, "r", encoding="utf-8") as f:
                     if "#!/bin/bash" in f.read():
                         return {"success": True, "message": "Success! hello.sh shebang verified."}
             return {"success": False, "message": "Create hello.sh writing shebang '#!/bin/bash'."}
         elif task_id == 2:
-            if "hello.sh" in history_str and "bash" in history_str:
-                return {"success": True, "message": "Success! Script executed."}
-            return {"success": False, "message": "Run script: bash hello.sh."}
+            if "chmod +x" in history_str or "chmod 755" in history_str or "chmod +x hello.sh" in history_str:
+                return {"success": True, "message": "Success! hello.sh is now executable."}
+            return {"success": False, "message": "Run chmod +x hello.sh to make it executable."}
         elif task_id == 3:
-            if shell.env.get("NAME") == "student" or "export name=student" in history_str:
-                return {"success": True, "message": "Success! variable NAME exported."}
-            return {"success": False, "message": "Export NAME=student."}
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                    if "hello devlab" in content.lower():
+                        return {"success": True, "message": "Success! echo command added to hello.sh."}
+            return {"success": False, "message": "Append \"echo 'Hello DevLab'\" to hello.sh."}
         elif task_id == 4:
-            if "30" in history_str or "10 + 20" in history_str or "10+20" in history_str:
-                return {"success": True, "message": "Success! Arithmetic evaluated."}
-            return {"success": False, "message": "Print sum: echo $((10 + 20))."}
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8") as f:
+                    if "my_name=devopsuser" in f.read().lower():
+                        return {"success": True, "message": "Success! MY_NAME variable defined in hello.sh."}
+            return {"success": False, "message": "Add variable MY_NAME=DevOpsUser to hello.sh."}
         elif task_id == 5:
-            if "-gt" in history_str or "15" in history_str:
-                return {"success": True, "message": "Success! Greater-than matched."}
-            return {"success": False, "message": "Run numeric test expression."}
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                    if "$my_name" in content.lower() or "${my_name}" in content.lower():
+                        return {"success": True, "message": "Success! Variable usage verified."}
+            return {"success": False, "message": "Add echo referencing $MY_NAME to hello.sh."}
         elif task_id == 6:
-            if "-f welcome.txt" in history_str:
-                return {"success": True, "message": "Success! welcome.txt checked."}
-            return {"success": False, "message": "Check file using test [ -f welcome.txt ]."}
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                    if "today=" in content.lower() and "date" in content.lower():
+                        return {"success": True, "message": "Success! Captured date output in variable."}
+            return {"success": False, "message": "Add TODAY=$(date) variable assignment to hello.sh."}
         elif task_id == 7:
-            path = shell.get_local_path("logs")
-            if os.path.exists(path) and os.path.isdir(path):
-                return {"success": True, "message": "Success! logs directory verified."}
-            return {"success": False, "message": "Run if block to create logs folder."}
-        elif task_id in [8, 9, 10, 11, 12, 13, 14, 15]:
-            return {"success": True, "message": "Script loops/functions commands checked."}
+            cpath = shell.get_local_path("check.sh")
+            if os.path.exists(cpath):
+                with open(cpath, "r", encoding="utf-8") as f:
+                    content = f.read()
+                    if "if " in content and "hello.sh" in content and "fi" in content:
+                        return {"success": True, "message": "Success! check.sh conditional script verified."}
+            return {"success": False, "message": "Create check.sh with if conditional block checking hello.sh."}
+        elif task_id == 8:
+            if "for " in history_str and "in" in history_str and "done" in history_str:
+                return {"success": True, "message": "Success! for loop execution verified."}
+            return {"success": False, "message": "Run a for loop over a b c to echo them."}
         return {"success": False, "message": "Task not recognized."}
 
     def _validate_bash_scripting_live(self, container_id: str, task_id: int) -> Dict[str, Any]:
@@ -643,124 +659,117 @@ class ValidationEngine:
         except Exception as e:
             return {"success": False, "message": f"Docker connection failure: {e}"}
 
+        def file_exists(path: str) -> bool:
+            res = container.exec_run(f"test -f {path}", user="student")
+            return res.exit_code == 0
+
         def file_contains(path: str, word: str) -> bool:
             res = container.exec_run(f"grep -i '{word}' {path}", user="student")
             return res.exit_code == 0
 
-        if task_id in [2, 3, 4, 5, 6, 8, 9, 10, 12, 13, 14, 15]:
-            return {"success": True, "message": "Bash script check validated."}
+        if task_id in [2, 8]:
+            return {"success": True, "message": "Action verified."}
         elif task_id == 1:
-            if file_contains("/home/student/hello.sh", "#!/bin/bash"):
-                return {"success": True, "message": "hello.sh has shebang."}
-            return {"success": False, "message": "Shebang not found in hello.sh."}
+            if file_exists("/home/student/hello.sh") and file_contains("/home/student/hello.sh", "#!/bin/bash"):
+                return {"success": True, "message": "hello.sh shebang verified."}
+            return {"success": False, "message": "hello.sh shebang not found."}
+        elif task_id == 3:
+            if file_contains("/home/student/hello.sh", "hello devlab"):
+                return {"success": True, "message": "echo command verified."}
+            return {"success": False, "message": "hello devlab echo not found in hello.sh."}
+        elif task_id == 4:
+            if file_contains("/home/student/hello.sh", "my_name="):
+                return {"success": True, "message": "Variable definition verified."}
+            return {"success": False, "message": "MY_NAME variable not found in hello.sh."}
+        elif task_id == 5:
+            if file_contains("/home/student/hello.sh", "hello"):
+                return {"success": True, "message": "Variable usage verified."}
+            return {"success": False, "message": "Variable reference not found in hello.sh."}
+        elif task_id == 6:
+            if file_contains("/home/student/hello.sh", "today=") and file_contains("/home/student/hello.sh", "date"):
+                return {"success": True, "message": "Date capture verified."}
+            return {"success": False, "message": "Date variable capture not found in hello.sh."}
         elif task_id == 7:
-            res = container.exec_run("test -d /home/student/logs", user="student")
-            if res.exit_code == 0:
-                return {"success": True, "message": "logs directory created."}
-            return {"success": False, "message": "logs directory not found."}
-        elif task_id == 11:
-            res = container.exec_run("test -f /home/student/arg.sh", user="student")
-            if res.exit_code == 0:
-                return {"success": True, "message": "arg.sh created."}
-            return {"success": False, "message": "arg.sh not found."}
+            if file_exists("/home/student/check.sh") and file_contains("/home/student/check.sh", "if") and file_contains("/home/student/check.sh", "hello.sh"):
+                return {"success": True, "message": "check.sh conditional verified."}
+            return {"success": False, "message": "check.sh not found or conditional is incorrect."}
         return {"success": False, "message": "Task not recognized."}
 
     # ── Networking & Processes ───────────────────────
     def _validate_networking_processes_simulated(self, shell: Any, task_id: int) -> Dict[str, Any]:
         history_str = " ".join(shell.history).lower()
-        if task_id in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]:
-            cmd_map = {
-                1: "ps", 2: "ps", 3: "top", 4: "kill", 5: "sleep", 6: "jobs", 7: "fg",
-                8: "ip", 9: "ip route", 10: "ping", 11: "ss", 12: "dig", 13: "curl",
-                14: "systemctl", 15: "systemctl"
-            }
+        cmd_map = {
+            1: "ps",
+            2: "grep",
+            3: "ss",
+            4: "curl",
+            5: "sleep",
+            6: "jobs",
+            7: "kill",
+            8: "ping"
+        }
+        if task_id in cmd_map:
             target = cmd_map[task_id]
             if target in history_str:
-                return {"success": True, "message": f"Success! You executed {target} diagnostics."}
-            return {"success": False, "message": f"Execute networking/process utility: {target}."}
+                return {"success": True, "message": f"Success! You executed {target} correctly."}
+            return {"success": False, "message": f"Try running the '{target}' utility command."}
         return {"success": False, "message": "Task not recognized."}
 
     def _validate_networking_processes_live(self, container_id: str, task_id: int) -> Dict[str, Any]:
-        return {"success": True, "message": "Interactive networking diagnostics complete."}
+        return {"success": True, "message": "Networking diagnostics completed successfully."}
 
     # ── Linux Capstone Project ───────────────────────
     def _validate_capstone_simulated(self, shell: Any, task_id: int) -> Dict[str, Any]:
         history_str = " ".join(shell.history).lower()
         if task_id == 1:
-            path_src = shell.get_local_path("capstone/src")
-            path_conf = shell.get_local_path("capstone/configs")
-            path_bak = shell.get_local_path("capstone/backups")
-            if os.path.exists(path_src) and os.path.exists(path_conf) and os.path.exists(path_bak):
+            path_app = shell.get_local_path("devops-project/app")
+            path_scr = shell.get_local_path("devops-project/scripts")
+            path_log = shell.get_local_path("devops-project/logs")
+            path_bak = shell.get_local_path("devops-project/backups")
+            if os.path.exists(path_app) and os.path.exists(path_scr) and os.path.exists(path_log) and os.path.exists(path_bak):
                 return {"success": True, "message": "Success! Directory structure mapped."}
-            return {"success": False, "message": "Create capstone/src, capstone/configs, capstone/backups."}
+            return {"success": False, "message": "Create devops-project structure: app, scripts, logs, backups."}
         elif task_id == 2:
-            path = shell.get_local_path("capstone/configs/server.conf")
-            if os.path.exists(path):
-                with open(path, "r", encoding="utf-8") as f:
-                    if "port=8080" in f.read().lower():
-                        return {"success": True, "message": "Success! server.conf config set to port 8080."}
-            return {"success": False, "message": "Write PORT=8080 to capstone/configs/server.conf."}
+            path = shell.get_local_path("devops-project/app/app.env")
+            if os.path.exists(path) and (shell.permissions.get("devops-project/app/app.env") == "600" or "chmod 600" in history_str):
+                return {"success": True, "message": "Success! app.env created and set to 600."}
+            return {"success": False, "message": "Create app.env and chmod 600."}
         elif task_id == 3:
-            path = shell.get_local_path("capstone/src/app.sh")
-            if os.path.exists(path):
-                with open(path, "r", encoding="utf-8") as f:
-                    content = f.read().lower()
-                    if "#!/bin/bash" in content:
-                        return {"success": True, "message": "Success! app.sh script created."}
-            return {"success": False, "message": "Create app.sh writing shebang '#!/bin/bash'."}
+            path = shell.get_local_path("devops-project/scripts/deploy.sh")
+            if os.path.exists(path) and (shell.permissions.get("devops-project/scripts/deploy.sh") == "755" or "chmod 755" in history_str or "chmod +x" in history_str):
+                return {"success": True, "message": "Success! deploy.sh created and executable."}
+            return {"success": False, "message": "Create deploy.sh script and chmod 755."}
         elif task_id == 4:
-            if "chmod +x" in history_str or "chmod 755" in history_str or "chmod +x capstone/src/app.sh" in history_str:
-                return {"success": True, "message": "Success! app.sh script executable."}
-            return {"success": False, "message": "Grant execute to capstone/src/app.sh."}
+            path = shell.get_local_path("devops-project/logs/deploy.log")
+            if os.path.exists(path) or "deploy.log" in history_str:
+                return {"success": True, "message": "Success! Event logged."}
+            return {"success": False, "message": "Log event to deploy.log using redirection."}
         elif task_id == 5:
-            if "useradd" in history_str or "devops_admin" in history_str:
-                return {"success": True, "message": "Success! User account created."}
-            return {"success": False, "message": "Add administrative user devops_admin using useradd."}
+            path = shell.get_local_path("devops-project/backups/app.env.bak")
+            if os.path.exists(path):
+                return {"success": True, "message": "Success! Configuration backed up."}
+            return {"success": False, "message": "Backup app.env as backups/app.env.bak."}
         elif task_id == 6:
-            if "chown" in history_str or "devops_admin" in history_str:
-                return {"success": True, "message": "Success! Ownership reassigned."}
-            return {"success": False, "message": "Change owner recursively using chown -R devops_admin capstone."}
+            if "ls -la" in history_str or "ls -l" in history_str:
+                return {"success": True, "message": "Success! Permissions audited."}
+            return {"success": False, "message": "Run ls -la to audit directories."}
         elif task_id == 7:
-            if shell.permissions.get("capstone/configs/server.conf") == "600" or "chmod 600" in history_str:
-                return {"success": True, "message": "Success! Secret configuration permissions locked."}
-            return {"success": False, "message": "Set chmod 600 capstone/configs/server.conf."}
+            if "ss" in history_str:
+                return {"success": True, "message": "Success! Listening ports checked."}
+            return {"success": False, "message": "Run ss -lntp."}
         elif task_id == 8:
-            path = shell.get_local_path("capstone/src/backup.sh")
-            if os.path.exists(path):
-                with open(path, "r", encoding="utf-8") as f:
-                    content = f.read().lower()
-                    if "#!/bin/bash" in content and "cp" in content:
-                        return {"success": True, "message": "Success! backup.sh script created."}
-            return {"success": False, "message": "Create backup.sh to copy capstone/src files."}
+            if "ping" in history_str:
+                return {"success": True, "message": "Success! Connectivity checked."}
+            return {"success": False, "message": "Run ping."}
         elif task_id == 9:
-            if "chmod +x" in history_str or "chmod 755" in history_str or "chmod +x capstone/src/backup.sh" in history_str:
-                return {"success": True, "message": "Success! backup.sh script executable."}
-            return {"success": False, "message": "Grant execute to capstone/src/backup.sh."}
-        elif task_id == 10:
-            if "backup.sh" in history_str:
-                return {"success": True, "message": "Success! Backup script tested."}
-            return {"success": False, "message": "Test execution run: bash capstone/src/backup.sh."}
-        elif task_id == 11:
-            if "ss" in history_str or "netstat" in history_str:
-                return {"success": True, "message": "Success! Sockets bindings audited."}
-            return {"success": False, "message": "Inspect active sockets bindings using ss -lnt."}
-        elif task_id == 12:
-            path = shell.get_local_path("capstone/src/rotate.sh")
+            path = shell.get_local_path("devops-project/scripts/healthcheck.sh")
             if os.path.exists(path):
-                return {"success": True, "message": "Success! rotate.sh rotate utility configured."}
-            return {"success": False, "message": "Create rotate.sh log rotation utility script."}
-        elif task_id == 13:
-            if "app.sh" in history_str and "app.log" in history_str:
-                return {"success": True, "message": "Success! Daemon app deployed."}
-            return {"success": False, "message": "Deploy app redirecting stdout to capstone/app.log background process."}
-        elif task_id == 14:
-            if "cat capstone/app.log" in history_str or "app.log" in history_str:
-                return {"success": True, "message": "Success! app.log logs tails audit verified."}
-            return {"success": False, "message": "Read contents of capstone/app.log."}
-        elif task_id == 15:
-            if "jobs" in history_str or "ps" in history_str:
-                return {"success": True, "message": "Success! Final Capstone verified."}
-            return {"success": False, "message": "Verify background jobs status using jobs."}
+                return {"success": True, "message": "Success! healthcheck.sh created."}
+            return {"success": False, "message": "Create healthcheck.sh in scripts/."}
+        elif task_id == 10:
+            if "ls -lar" in history_str or "ls -la" in history_str:
+                return {"success": True, "message": "Success! Final project checked."}
+            return {"success": False, "message": "Run recursive ls -laR check."}
         return {"success": False, "message": "Task not recognized."}
 
     def _validate_capstone_live(self, container_id: str, task_id: int) -> Dict[str, Any]:
@@ -773,39 +782,36 @@ class ValidationEngine:
         def run_check(cmd: str) -> bool:
             return container.exec_run(cmd, user="student").exit_code == 0
 
-        if task_id in [5, 6, 9, 10, 11, 13, 14, 15]:
-            return {"success": True, "message": "Audited."}
+        def stat_file(path: str) -> str:
+            res = container.exec_run(f"stat -c %a {path}", user="student")
+            return res.output.decode().strip()
+
+        if task_id in [6, 7, 8, 10]:
+            return {"success": True, "message": "Capstone health checklist passed."}
         elif task_id == 1:
-            if run_check("test -d /home/student/capstone/src -a -d /home/student/capstone/configs -a -d /home/student/capstone/backups"):
-                return {"success": True, "message": "Found capstone workspace folders."}
-            return {"success": False, "message": "Folders not created."}
+            if run_check("test -d /home/student/devops-project/app -a -d /home/student/devops-project/scripts -a -d /home/student/devops-project/logs"):
+                return {"success": True, "message": "Directory structure exists."}
+            return {"success": False, "message": "devops-project directory structure not found."}
         elif task_id == 2:
-            res = container.exec_run("cat /home/student/capstone/configs/server.conf", user="student")
-            if "port=8080" in res.output.decode().lower():
-                return {"success": True, "message": "Found port configuration."}
-            return {"success": False, "message": "port configuration not set to 8080."}
+            if run_check("test -f /home/student/devops-project/app/app.env") and stat_file("/home/student/devops-project/app/app.env") == "600":
+                return {"success": True, "message": "app.env exists with mode 600."}
+            return {"success": False, "message": "app.env not found or permissions are not 600."}
         elif task_id == 3:
-            if run_check("grep -i '#!/bin/bash' /home/student/capstone/src/app.sh"):
-                return {"success": True, "message": "Found app.sh script."}
-            return {"success": False, "message": "app.sh script shebang mismatch."}
+            if run_check("test -f /home/student/devops-project/scripts/deploy.sh") and run_check("test -x /home/student/devops-project/scripts/deploy.sh"):
+                return {"success": True, "message": "deploy.sh exists and is executable."}
+            return {"success": False, "message": "deploy.sh not found or not executable."}
         elif task_id == 4:
-            res = container.exec_run("stat -c %a /home/student/capstone/src/app.sh", user="student")
-            if res.output.decode().strip() in ["755", "700", "777", "764"]:
-                return {"success": True, "message": "Executable script."}
-            return {"success": False, "message": "app.sh script has no execute flags."}
-        elif task_id == 7:
-            res = container.exec_run("stat -c %a /home/student/capstone/configs/server.conf", user="student")
-            if res.output.decode().strip() == "600":
-                return {"success": True, "message": "Secret config locked."}
-            return {"success": False, "message": "server.conf is not set to 600."}
-        elif task_id == 8:
-            if run_check("test -f /home/student/capstone/src/backup.sh"):
-                return {"success": True, "message": "backup.sh created."}
-            return {"success": False, "message": "backup.sh file not found."}
-        elif task_id == 12:
-            if run_check("test -f /home/student/capstone/src/rotate.sh"):
-                return {"success": True, "message": "rotate.sh created."}
-            return {"success": False, "message": "rotate.sh not found."}
+            if run_check("test -f /home/student/devops-project/logs/deploy.log"):
+                return {"success": True, "message": "deploy.log found."}
+            return {"success": False, "message": "deploy.log not found."}
+        elif task_id == 5:
+            if run_check("test -f /home/student/devops-project/backups/app.env.bak"):
+                return {"success": True, "message": "app.env.bak backup found."}
+            return {"success": False, "message": "app.env.bak backup not found."}
+        elif task_id == 9:
+            if run_check("test -f /home/student/devops-project/scripts/healthcheck.sh") and run_check("test -x /home/student/devops-project/scripts/healthcheck.sh"):
+                return {"success": True, "message": "healthcheck.sh exists and is executable."}
+            return {"success": False, "message": "healthcheck.sh not found or not executable."}
         return {"success": False, "message": "Task not recognized."}
 
 
