@@ -6,14 +6,20 @@
     "career_objective": "Become an entry-level DevOps engineer by mastering foundational terminal skills, scripting automation, and containers orchestration.",
     "duration": "24 hrs",
     "difficulty": "Beginner",
-    "prerequisites": ["None - zero prior technical experience required."],
+    "prerequisites": [
+      "None - zero prior technical experience required."
+    ],
     "learning_outcomes": [
       "Navigate and manage Linux systems with standard CLI tools.",
       "Automate sysadmin tasks using bash scripts.",
       "Understand container basics with Docker configurations."
     ],
     "courses": [
-      "linux",
+      "linux-command-line-basics",
+      "linux-file-system-permissions",
+      "bash-scripting-fundamentals",
+      "linux-networking-processes",
+      "linux-capstone-project",
       "docker",
       "git"
     ]
@@ -25,14 +31,20 @@
     "career_objective": "Configure and maintain production systems across hybrid cloud and multi-tier architectures.",
     "duration": "18 hrs",
     "difficulty": "Intermediate",
-    "prerequisites": ["Linux CLI basics and basic networking concepts."],
+    "prerequisites": [
+      "Linux CLI basics and basic networking concepts."
+    ],
     "learning_outcomes": [
       "Provision secure cloud resources and networking gateways.",
       "Write infrastructure code scripts for repeatable environments.",
       "Configure systems monitoring alerts to observe health metrics."
     ],
     "courses": [
-      "linux",
+      "linux-command-line-basics",
+      "linux-file-system-permissions",
+      "bash-scripting-fundamentals",
+      "linux-networking-processes",
+      "linux-capstone-project",
       "aws",
       "azure",
       "terraform"
@@ -45,14 +57,20 @@
     "career_objective": "Design, deploy, and support scalable architectures on the Amazon Web Services platform.",
     "duration": "30 hrs",
     "difficulty": "Intermediate",
-    "prerequisites": ["Cloud computing foundations and basic command line navigation."],
+    "prerequisites": [
+      "Cloud computing foundations and basic command line navigation."
+    ],
     "learning_outcomes": [
       "Deploy elastic virtual compute servers and relational databases.",
       "Design highly available, secure VPC subnet configurations.",
       "Implement serverless applications using Lambda triggers."
     ],
     "courses": [
-      "linux",
+      "linux-command-line-basics",
+      "linux-file-system-permissions",
+      "bash-scripting-fundamentals",
+      "linux-networking-processes",
+      "linux-capstone-project",
       "aws",
       "terraform",
       "monitoring"
@@ -65,14 +83,20 @@
     "career_objective": "Build and manage secure Microsoft Azure infrastructures for enterprise integrations.",
     "duration": "30 hrs",
     "difficulty": "Intermediate",
-    "prerequisites": ["Basic Windows/Linux server admin concepts."],
+    "prerequisites": [
+      "Basic Windows/Linux server admin concepts."
+    ],
     "learning_outcomes": [
       "Govern resource access utilizing Azure Active Directory roles.",
       "Deploy scalable virtual machine scale sets and load balancers.",
       "Monitor application performance metrics using Azure Monitor."
     ],
     "courses": [
-      "linux",
+      "linux-command-line-basics",
+      "linux-file-system-permissions",
+      "bash-scripting-fundamentals",
+      "linux-networking-processes",
+      "linux-capstone-project",
       "azure",
       "terraform",
       "monitoring"
@@ -85,14 +109,20 @@
     "career_objective": "Architect and manage production-grade microservice clusters at high scale.",
     "duration": "35 hrs",
     "difficulty": "Advanced",
-    "prerequisites": ["Docker fundamentals and advanced Linux networking knowledge."],
+    "prerequisites": [
+      "Docker fundamentals and advanced Linux networking knowledge."
+    ],
     "learning_outcomes": [
       "Deploy multi-node Kubernetes clusters from bare-metal or cloud.",
       "Write Kubernetes config manifests, pods, ingress, and PVs.",
       "Automate application rollouts using GitOps sync engines."
     ],
     "courses": [
-      "linux",
+      "linux-command-line-basics",
+      "linux-file-system-permissions",
+      "bash-scripting-fundamentals",
+      "linux-networking-processes",
+      "linux-capstone-project",
       "docker",
       "kubernetes",
       "git"
@@ -105,14 +135,20 @@
     "career_objective": "Design and deliver product interfaces that optimize developers delivery speed and security.",
     "duration": "40 hrs",
     "difficulty": "Advanced",
-    "prerequisites": ["Cloud architecture configurations and microservices deployments."],
+    "prerequisites": [
+      "Cloud architecture configurations and microservices deployments."
+    ],
     "learning_outcomes": [
       "Create clean developer tooling wrappers around clouds.",
       "Build automated self-service databases provisioners.",
       "Maintain organizational compliance policies automatically."
     ],
     "courses": [
-      "linux",
+      "linux-command-line-basics",
+      "linux-file-system-permissions",
+      "bash-scripting-fundamentals",
+      "linux-networking-processes",
+      "linux-capstone-project",
       "docker",
       "kubernetes",
       "terraform",
@@ -126,14 +162,20 @@
     "career_objective": "Maintain system reliability, speed up debugging routines, and minimize outages of massive scale services.",
     "duration": "32 hrs",
     "difficulty": "Advanced",
-    "prerequisites": ["Linux kernel parameters, networking, and basic python/bash scripting."],
+    "prerequisites": [
+      "Linux kernel parameters, networking, and basic python/bash scripting."
+    ],
     "learning_outcomes": [
       "Establish Service Level Objectives (SLOs) and Error Budgets.",
       "Automate incident analysis utilizing real-time metrics tracers.",
       "Tune Linux OS kernel TCP buffers for high-performance scale."
     ],
     "courses": [
-      "linux",
+      "linux-command-line-basics",
+      "linux-file-system-permissions",
+      "bash-scripting-fundamentals",
+      "linux-networking-processes",
+      "linux-capstone-project",
       "docker",
       "kubernetes",
       "monitoring",
@@ -147,14 +189,20 @@
     "career_objective": "Eliminate manual configurations by declaring full datacenters inside source-controlled code.",
     "duration": "28 hrs",
     "difficulty": "Intermediate",
-    "prerequisites": ["Basic networking adapters and environment variables knowledge."],
+    "prerequisites": [
+      "Basic networking adapters and environment variables knowledge."
+    ],
     "learning_outcomes": [
       "Write dry, modular Terraform configuration templates.",
       "Manage infrastructure states locks across distributed teams.",
       "Automate configurations compliance checks in code."
     ],
     "courses": [
-      "linux",
+      "linux-command-line-basics",
+      "linux-file-system-permissions",
+      "bash-scripting-fundamentals",
+      "linux-networking-processes",
+      "linux-capstone-project",
       "terraform",
       "ansible",
       "git"
@@ -167,14 +215,20 @@
     "career_objective": "Build automated pipelines that fast-track secure code deliveries from local workspace to production systems.",
     "duration": "26 hrs",
     "difficulty": "Intermediate",
-    "prerequisites": ["Basic shell scripting and git structures."],
+    "prerequisites": [
+      "Basic shell scripting and git structures."
+    ],
     "learning_outcomes": [
       "Write multi-tier pipeline definition scripts.",
       "Orchestrate parallel automated testing environments runtimes.",
       "Manage release package registries and build caches."
     ],
     "courses": [
-      "linux",
+      "linux-command-line-basics",
+      "linux-file-system-permissions",
+      "bash-scripting-fundamentals",
+      "linux-networking-processes",
+      "linux-capstone-project",
       "docker",
       "git",
       "github-actions",
@@ -188,14 +242,20 @@
     "career_objective": "Verify infrastructure safety and security posture at every step of development delivery pipelines.",
     "duration": "30 hrs",
     "difficulty": "Advanced",
-    "prerequisites": ["Basic security parameters and networking setups."],
+    "prerequisites": [
+      "Basic security parameters and networking setups."
+    ],
     "learning_outcomes": [
       "Integrate SAST/DAST scanner checks in code commits hooks.",
       "Inject secret keys dynamically using secure key vault tools.",
       "Configure network policies enforcing least-privilege models."
     ],
     "courses": [
-      "linux",
+      "linux-command-line-basics",
+      "linux-file-system-permissions",
+      "bash-scripting-fundamentals",
+      "linux-networking-processes",
+      "linux-capstone-project",
       "docker",
       "kubernetes",
       "github-actions"
@@ -208,14 +268,20 @@
     "career_objective": "Establish full transparency of massive container networks health states using advanced tracing suites.",
     "duration": "24 hrs",
     "difficulty": "Intermediate",
-    "prerequisites": ["Linux CLI, networking protocols, and basic API concepts."],
+    "prerequisites": [
+      "Linux CLI, networking protocols, and basic API concepts."
+    ],
     "learning_outcomes": [
       "Instrument apps to export standardized metrics signals.",
       "Write alert definitions targeting latency and error anomalies.",
       "Trace API call timings across distributed microservices."
     ],
     "courses": [
-      "linux",
+      "linux-command-line-basics",
+      "linux-file-system-permissions",
+      "bash-scripting-fundamentals",
+      "linux-networking-processes",
+      "linux-capstone-project",
       "docker",
       "monitoring",
       "observability"
@@ -228,14 +294,20 @@
     "career_objective": "Orchestrate massive Docker container operations using native Kubernetes scheduler parameters.",
     "duration": "34 hrs",
     "difficulty": "Advanced",
-    "prerequisites": ["Docker Basics and intermediate Linux sysadmin skills."],
+    "prerequisites": [
+      "Docker Basics and intermediate Linux sysadmin skills."
+    ],
     "learning_outcomes": [
       "Configure advanced container namespaces isolation configurations.",
       "Deploy custom storage controllers on active clusters.",
       "Implement Horizontal Pod Autoscalers (HPA) using metrics servers."
     ],
     "courses": [
-      "linux",
+      "linux-command-line-basics",
+      "linux-file-system-permissions",
+      "bash-scripting-fundamentals",
+      "linux-networking-processes",
+      "linux-capstone-project",
       "docker",
       "kubernetes"
     ]

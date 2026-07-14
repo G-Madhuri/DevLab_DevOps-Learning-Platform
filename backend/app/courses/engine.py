@@ -73,7 +73,7 @@ class CourseEngine:
                 return {
                     "slug": course_slug,
                     "title": course_slug.replace("-", " ").title(),
-                    "theory": "Explore theory concept guidelines here.",
+                    "theory": [],
                     "interactive_examples": [],
                     "exercises": [],
                     "quiz": [],
