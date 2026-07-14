@@ -443,6 +443,74 @@ class SimulatedShell:
             return make_prompt("  PID TTY          TIME CMD\r\n    1 pts/0    00:00:00 bash\r\n   42 pts/0    00:00:00 ps")
         elif cmd == "htop":
             return make_prompt("htop dashboard complete.")
+        elif cmd == "for":
+            try:
+                cmd_lower = cmd_line.lower()
+                in_idx = cmd_lower.find(" in ")
+                semi_idx = cmd_lower.find(";")
+                do_idx = cmd_lower.find(" do ")
+                done_idx = cmd_lower.rfind("done")
+                if in_idx != -1 and semi_idx != -1 and do_idx != -1:
+                    var_name = cmd_line[4:in_idx].strip()
+                    items_str = cmd_line[in_idx+4:semi_idx].strip()
+                    items = items_str.split()
+                    echo_cmd_part = cmd_line[do_idx+4:done_idx].strip().strip(";").strip()
+                    output_lines = []
+                    for item in items:
+                        curr_cmd = echo_cmd_part.replace(f"${var_name}", item)
+                        res = self.execute_command(curr_cmd)
+                        prompt_marker = "student@devlab:~"
+                        if prompt_marker in res:
+                            res = res.split(prompt_marker)[0].strip()
+                        if res:
+                            output_lines.append(res)
+                    return make_prompt("\r\n".join(output_lines))
+            except Exception as e:
+                logger.error(f"Failed to parse simulated for loop: {e}")
+                return make_prompt("bash: syntax error near unexpected token 'for'")
+            return make_prompt("bash: syntax error near unexpected token 'for'")
+        elif cmd == "if":
+            try:
+                cmd_lower = cmd_line.lower()
+                then_idx = cmd_lower.find("; then ")
+                else_idx = cmd_lower.find("; else ")
+                fi_idx = cmd_lower.rfind("; fi")
+                if fi_idx == -1:
+                    fi_idx = cmd_lower.rfind(" fi")
+                if then_idx != -1:
+                    condition = cmd_line[3:then_idx].strip().strip("[").strip("]").strip()
+                    parts_cond = condition.split()
+                    is_true = False
+                    if len(parts_cond) >= 2:
+                        test_flag = parts_cond[0]
+                        test_path = parts_cond[1]
+                        local_test_path = self.get_local_path(test_path)
+                        if test_flag == "-f":
+                            is_true = os.path.exists(local_test_path) and os.path.isfile(local_test_path)
+                        elif test_flag == "-d":
+                            is_true = os.path.exists(local_test_path) and os.path.isdir(local_test_path)
+                        elif test_flag == "-e":
+                            is_true = os.path.exists(local_test_path)
+                    then_branch = ""
+                    else_branch = ""
+                    if else_idx != -1:
+                        then_branch = cmd_line[then_idx+7:else_idx].strip()
+                        else_branch = cmd_line[else_idx+7:fi_idx].strip()
+                    else:
+                        then_branch = cmd_line[then_idx+7:fi_idx].strip()
+                    target_branch = then_branch if is_true else else_branch
+                    if target_branch:
+                        res = self.execute_command(target_branch)
+                        prompt_marker = "student@devlab:~"
+                        if prompt_marker in res:
+                            res = res.split(prompt_marker)[0].strip()
+                        return make_prompt(res)
+                    else:
+                        return make_prompt()
+            except Exception as e:
+                logger.error(f"Failed to parse simulated if conditional: {e}")
+                return make_prompt("bash: syntax error near unexpected token 'if'")
+            return make_prompt("bash: syntax error near unexpected token 'if'")
         else:
             return make_prompt(f"bash: {cmd}: command not found")
 

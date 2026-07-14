@@ -138,7 +138,7 @@ export function CourseViewer({ courseSlug, courseTitle }: CourseViewerProps) {
 
   const lessons = details?.lessons || [];
   // Support both "key_concepts" (new) and "theory" (legacy) field names
-  const keyConcepts = details?.key_concepts || details?.theory || [];
+  const keyConcepts = Array.isArray(details?.key_concepts) ? details.key_concepts : Array.isArray(details?.theory) ? details.theory : [];
   const examples = details?.interactive_examples || [];
   const exercises = details?.exercises || [];
   const quiz = details?.quiz || [];
