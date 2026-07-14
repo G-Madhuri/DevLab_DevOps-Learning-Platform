@@ -19,127 +19,88 @@
   },
   "key_concepts": [
     {
-      "title": "Understanding the Permission String",
-      "definition": "Every file has a 10-character permission string that defines who can read, write, or execute it — shown in ls -l output.",
-      "why_important": [
-        "Determines who can access sensitive files like private keys and passwords.",
-        "Prevents unauthorized users from modifying scripts or configs.",
-        "SSH refuses to connect if your private key has loose permissions.",
-        "Web servers and apps fail to start if config files aren't readable."
-      ],
-      "explanation": "When you run `ls -l`, the first column is the permission string:\n\n  -rwxr-xr--\n  ↑ ↑↑↑ ↑↑↑ ↑↑↑\n  │ │││ │││ └── Others: r-- (read only)\n  │ │││ └────── Group: r-x (read + execute)\n  │ └────────── Owner: rwx (read + write + execute)\n  └──────────── File type: - (file) or d (directory)\n\nThree permission levels:\n\n| Who | Symbol | Description |\n|:---|:---|:---|\n| Owner (u) | user | The file creator/owner |\n| Group (g) | group | Users in the file's group |\n| Others (o) | other | Everyone else |\n\nThree permission types:\n\n| Permission | Symbol | Meaning on file | Meaning on directory |\n|:---|:---|:---|:---|\n| Read | r | View file content | List directory contents |\n| Write | w | Modify file | Create/delete files inside |\n| Execute | x | Run as program | Enter directory with cd |",
+      "title": "File Permissions (r, w, x)",
+      "definition": "Rules that decide who can read, modify, or execute a file.",
+      "explanation": "Every file has permissions for three groups: Owner, Group, and Others. You can see these permissions by running ls -l.",
       "commands": [
         {
           "name": "ls -l",
-          "purpose": "Display files with full permission strings, ownership, and size.",
-          "syntax": "ls -l [path]",
-          "parameters": "-l: long format. path: optional directory to inspect.",
+          "purpose": "Lists files showing permissions and owner.",
+          "syntax": "ls -l",
           "example": "ls -l",
-          "expected_output": "-rw-r--r-- 1 student student   45 Jan 12 config.env\n-rwxr-xr-x 1 student student  120 Jan 12 deploy.sh\ndrwxr-xr-x 2 student student 4096 Jan 12 secrets/",
-          "output_explanation": "config.env is readable by all but writable only by owner. deploy.sh is executable. secrets/ is a directory (d prefix).",
-          "when_to_use": "Always run ls -l before modifying permissions to see the current state.",
-          "real_world_use": "Verify .env file permissions during a security audit of a production server."
+          "expected_output": "-rw-r--r-- 1 student student 45 Jan 12 config.env",
+          "output_explanation": "Shows permissions (rw- for owner, r-- for group, r-- for others)."
         }
-      ],
-      "pro_tip": "Add `stat filename` to see even more detail including the numeric permission value.",
-      "best_practices": "Run ls -la regularly in config directories to audit access levels on sensitive files.",
-      "common_mistakes": "Confusing the owner's permissions with the file type character. The first character (- or d) is NOT a permission.",
-      "real_world_example": "A security engineer audits /etc/ssh/sshd_config and checks that it is -rw------- (owner-only read/write) to prevent other users from reading SSH configuration secrets.",
-      "remember": "d = directory, - = regular file, l = symbolic link. These are the most common file type characters.",
-      "summary": "The 10-character permission string tells you everything about file access. Read it from left to right: type, owner, group, others."
+      ]
     },
     {
-      "title": "Changing Permissions with chmod",
-      "definition": "chmod (change mode) modifies the read/write/execute permissions on files and directories.",
-      "why_important": [
-        "Scripts must be executable (+x) before you can run them.",
-        "Config files should not be world-readable if they contain passwords.",
-        "SSH private keys must be 600 or SSH will refuse to use them.",
-        "Web server directories typically need 755 for the server to serve files."
-      ],
-      "explanation": "Two ways to use chmod:\n\n**1. Symbolic Mode** (human-readable):\n```\nchmod [who][+/-/=][permission] file\n```\n\n| Symbol | Who |\n|:---|:---|\n| u | User (owner) |\n| g | Group |\n| o | Others |\n| a | All (u+g+o) |\n\n```\nchmod u+x script.sh     # Add execute for owner\nchmod go-w config.env   # Remove write from group and others\nchmod a+r readme.txt    # Add read for everyone\n```\n\n**2. Numeric (Octal) Mode** (commonly used in production):\n\nEach permission has a numeric value:\n\n| Permission | Value |\n|:---|:---|\n| Read (r) | 4 |\n| Write (w) | 2 |\n| Execute (x) | 1 |\n| None | 0 |\n\nAdd the values together for each group:\n\n| Octal | Symbolic | Meaning |\n|:---|:---|:---|\n| 7 | rwx | Read + Write + Execute |\n| 6 | rw- | Read + Write |\n| 5 | r-x | Read + Execute |\n| 4 | r-- | Read only |\n| 0 | --- | No permissions |\n\nCommon combinations:\n\n| Mode | Who | Common use |\n|:---|:---|:---|\n| 755 | rwxr-xr-x | Shell scripts, directories |\n| 644 | rw-r--r-- | Config files, web content |\n| 600 | rw------- | SSH private keys, secrets |\n| 700 | rwx------ | Private directories |",
+      "title": "chmod (Symbolic Mode)",
+      "definition": "Changes file permissions using letters to add or remove access.",
+      "explanation": "Use +x to add execute permission so a script can run. Use go-w to remove write permission from group and others to prevent modifications.",
       "commands": [
         {
           "name": "chmod +x",
-          "purpose": "Makes a file executable (runnable as a script or program).",
+          "purpose": "Makes a script runnable/executable.",
           "syntax": "chmod +x filename",
-          "parameters": "+x: adds execute permission. filename: script or binary file.",
           "example": "chmod +x deploy.sh",
-          "expected_output": "(No output — permissions updated silently)",
-          "output_explanation": "deploy.sh is now executable. You can run it with ./deploy.sh.",
-          "when_to_use": "Use after creating a new shell script to make it runnable.",
-          "real_world_use": "Every new script created in a CI/CD pipeline must be chmod +x before the runner can execute it."
+          "expected_output": "",
+          "output_explanation": "Allows deploy.sh to be run with ./deploy.sh."
         },
         {
+          "name": "chmod go-w",
+          "purpose": "Removes write permission from group and others.",
+          "syntax": "chmod go-w filename",
+          "example": "chmod go-w secrets.txt",
+          "expected_output": "",
+          "output_explanation": "Blocks anyone except the owner from writing to secrets.txt."
+        }
+      ]
+    },
+    {
+      "title": "chmod (Numeric Mode)",
+      "definition": "A quick way to set exact permissions using numbers.",
+      "explanation": "600 makes a file private (owner only, e.g. SSH keys). 700 makes a directory private. 755 makes a script runnable by all but editable only by you.",
+      "commands": [
+        {
           "name": "chmod 600",
-          "purpose": "Sets owner-only read/write, no permissions for anyone else.",
+          "purpose": "Sets file to owner read/write only.",
           "syntax": "chmod 600 filename",
-          "parameters": "600: 6=rw for owner, 0=none for group, 0=none for others.",
-          "example": "chmod 600 ~/.ssh/id_rsa",
-          "expected_output": "(No output — permissions updated silently)",
-          "output_explanation": "The SSH private key is now protected. Only the owner can read or write it.",
-          "when_to_use": "Always set SSH private keys and .env files to 600.",
-          "real_world_use": "SSH client refuses to use a private key file unless its permissions are 600 or more restrictive."
+          "example": "chmod 600 secrets.txt",
+          "expected_output": "",
+          "output_explanation": "Locks the file secrets.txt so only the owner can read or edit it."
+        },
+        {
+          "name": "chmod 700",
+          "purpose": "Sets directory to owner full access only.",
+          "syntax": "chmod 700 foldername",
+          "example": "chmod 700 private_config",
+          "expected_output": "",
+          "output_explanation": "Restricts the folder so only the owner can cd into or view it."
         },
         {
           "name": "chmod 755",
-          "purpose": "Sets owner full access, group and others read+execute only.",
+          "purpose": "Sets script to public executable but private write.",
           "syntax": "chmod 755 filename",
-          "parameters": "755: 7=rwx for owner, 5=r-x for group, 5=r-x for others.",
-          "example": "chmod 755 startup.sh",
-          "expected_output": "(No output — permissions updated silently)",
-          "output_explanation": "The script can be executed by anyone, but only the owner can modify it.",
-          "when_to_use": "Use for public-facing scripts, web directories, and shared executable files.",
-          "real_world_use": "Web server document root (/var/www/html) is typically set to 755 so nginx/apache can read and serve files."
+          "example": "chmod 755 deploy.sh",
+          "expected_output": "",
+          "output_explanation": "Lets anyone run deploy.sh, but only you can edit it."
         }
-      ],
-      "pro_tip": "Use `chmod -R 755 directory/` to apply permissions recursively to all files in a directory tree.",
-      "best_practices": "Never use chmod 777 in production. It gives everyone full read, write, and execute access — a major security risk.",
-      "common_mistakes": "Setting chmod 777 on everything to 'fix permission errors' — this is a security vulnerability, not a fix.",
-      "real_world_example": "After uploading a deployment script to a server, a DevOps engineer runs `chmod 755 deploy.sh` and `chmod 600 .env` to ensure correct access levels before running the deployment.",
-      "remember": "SSH will not use private keys with permissions looser than 600. It will display 'WARNING: UNPROTECTED PRIVATE KEY FILE!' and refuse to connect.",
-      "summary": "chmod changes who can read, write, or execute a file. Use symbolic mode (u+x) for clarity and numeric mode (755) for production scripts."
+      ]
     },
     {
-      "title": "Changing Ownership with chown and chgrp",
-      "definition": "chown changes the user and/or group that owns a file. chgrp changes only the group.",
-      "why_important": [
-        "Web servers run as www-data — web files must be owned by www-data to serve correctly.",
-        "Applications running as specific users need to own their config and data files.",
-        "Mismatched ownership prevents services from reading their own config files.",
-        "Security policies require files to be owned by the user running the process."
-      ],
-      "explanation": "Every file in Linux has an owner user and an owner group.\n\nYou can see ownership with `ls -l`:\n\n  -rw-r--r-- 1 **student** **student** 45 Jan 12 config.env\n                 ↑owner      ↑group\n\nTo change ownership:\n```\nchown user file         # Change owner only\nchown user:group file   # Change owner AND group\nchgrp group file        # Change group only\n```\n\nCommon real-world ownership patterns:\n\n| Service | User | Files |\n|:---|:---|:---|\n| Nginx/Apache | www-data | /var/www/html/ |\n| MySQL | mysql | /var/lib/mysql/ |\n| Jenkins | jenkins | /var/jenkins_home/ |\n| SSH keys | username | ~/.ssh/ |",
+      "title": "chown (Ownership)",
+      "definition": "Changes the user or group who owns a file or folder.",
+      "explanation": "Every file is owned by a user. Use chown to change who owns a file or folder so services have correct access.",
       "commands": [
         {
           "name": "chown",
-          "purpose": "Changes the owner (and optionally group) of a file.",
-          "syntax": "chown user[:group] filename",
-          "parameters": "user: new owner username. group: optional new group. filename: target file.",
-          "example": "chown www-data:www-data /var/www/html/index.html",
-          "expected_output": "(No output — ownership changed silently)",
-          "output_explanation": "The web server (www-data) now owns index.html and can read/write it.",
-          "when_to_use": "Use when deploying application files to ensure the service user owns them.",
-          "real_world_use": "After deploying a PHP app to /var/www, run chown -R www-data:www-data /var/www/myapp to let Apache serve the files."
-        },
-        {
-          "name": "chown -R",
-          "purpose": "Recursively changes ownership of a directory and all its contents.",
-          "syntax": "chown -R user:group directory/",
-          "parameters": "-R: recursive. user:group: new owner and group. directory: target folder.",
-          "example": "chown -R student:student ~/projects/",
-          "expected_output": "(No output — all files updated silently)",
-          "output_explanation": "Every file and subdirectory inside ~/projects/ now belongs to the student user.",
-          "when_to_use": "Use after copying files as root — the copies inherit root ownership and must be reassigned.",
-          "real_world_use": "After extracting an application archive as root, run chown -R appuser:appuser /opt/myapp to reassign ownership to the app service account."
+          "purpose": "Changes the file owner.",
+          "syntax": "chown user filename",
+          "example": "chown student deploy.sh",
+          "expected_output": "",
+          "output_explanation": "Sets the owner of deploy.sh to the user 'student'."
         }
-      ],
-      "pro_tip": "You can use `chown user: file` (colon with no group) to change owner and also set group to the user's primary group.",
-      "best_practices": "Run application processes as dedicated non-root service users (e.g., www-data, jenkins, postgres) and ensure files are owned by those users.",
-      "common_mistakes": "Forgetting -R when changing ownership of a directory — only the directory itself changes, not its contents.",
-      "real_world_example": "A Jenkins CI pipeline deploys a Java application to /opt/myapp. After deployment, the team runs `chown -R jenkins:jenkins /opt/myapp` to ensure the Jenkins service account can access all deployed files.",
-      "remember": "Only root can change file ownership. Regular users can only change permissions on files they own.",
-      "summary": "chown and chgrp assign files to the right users and groups. Critical for web servers, databases, and any service running as a non-root user."
+      ]
     }
   ],
   "interactive_examples": [
@@ -408,7 +369,12 @@
     {
       "question": "What numeric permission is required for an SSH private key file?",
       "type": "MCQ",
-      "options": ["777", "755", "644", "600"],
+      "options": [
+        "777",
+        "755",
+        "644",
+        "600"
+      ],
       "answer": "600",
       "explanation": "SSH private keys must be 600 (rw-------). SSH client will refuse to use a key with looser permissions.",
       "incorrect_explanations": {
@@ -420,7 +386,12 @@
     {
       "question": "Which command makes a script executable?",
       "type": "MCQ",
-      "options": ["chmod 600 script.sh", "chmod +x script.sh", "chmod -w script.sh", "chmod 400 script.sh"],
+      "options": [
+        "chmod 600 script.sh",
+        "chmod +x script.sh",
+        "chmod -w script.sh",
+        "chmod 400 script.sh"
+      ],
       "answer": "chmod +x script.sh",
       "explanation": "+x adds execute permission. Without it, trying to run the script gives 'Permission denied'.",
       "incorrect_explanations": {
@@ -432,7 +403,12 @@
     {
       "question": "What is 644 in symbolic notation?",
       "type": "MCQ",
-      "options": ["rwxrwxrwx", "rw-r--r--", "rwxr-xr-x", "rw-------"],
+      "options": [
+        "rwxrwxrwx",
+        "rw-r--r--",
+        "rwxr-xr-x",
+        "rw-------"
+      ],
       "answer": "rw-r--r--",
       "explanation": "6 = rw- (read+write), 4 = r-- (read only), 4 = r-- (read only). Owner can write, group and others can only read.",
       "incorrect_explanations": {
@@ -444,7 +420,12 @@
     {
       "question": "You need group members to write to a shared directory, but others should have no access. What permission do you set?",
       "type": "Scenario",
-      "options": ["chmod 775", "chmod 770", "chmod 744", "chmod 700"],
+      "options": [
+        "chmod 775",
+        "chmod 770",
+        "chmod 744",
+        "chmod 700"
+      ],
       "answer": "chmod 770",
       "explanation": "770 = rwxrwx--- — owner and group have full access, others have no access at all.",
       "incorrect_explanations": {
@@ -456,7 +437,12 @@
     {
       "question": "Which command changes the owner of a file to 'deploy_user'?",
       "type": "MCQ",
-      "options": ["chmod deploy_user file", "chown deploy_user file", "chgrp deploy_user file", "usermod deploy_user file"],
+      "options": [
+        "chmod deploy_user file",
+        "chown deploy_user file",
+        "chgrp deploy_user file",
+        "usermod deploy_user file"
+      ],
       "answer": "chown deploy_user file",
       "explanation": "chown (change owner) changes the file's owner. chgrp changes only the group.",
       "incorrect_explanations": {
@@ -468,7 +454,12 @@
     {
       "question": "What does the first character of a permission string tell you?",
       "type": "MCQ",
-      "options": ["The owner's read permission", "Whether the file is executable", "The file type (file, directory, symlink)", "The file's group"],
+      "options": [
+        "The owner's read permission",
+        "Whether the file is executable",
+        "The file type (file, directory, symlink)",
+        "The file's group"
+      ],
       "answer": "The file type (file, directory, symlink)",
       "explanation": "The first character is the file type: - = regular file, d = directory, l = symbolic link.",
       "incorrect_explanations": {
@@ -514,7 +505,12 @@
     {
       "question": "Output prediction: After `chmod 750 mydir`, what is the ls -l output for mydir?",
       "type": "Output Prediction",
-      "options": ["drwxr-xr-x", "drwxr-x---", "drwx------", "drwxrwxr-x"],
+      "options": [
+        "drwxr-xr-x",
+        "drwxr-x---",
+        "drwx------",
+        "drwxrwxr-x"
+      ],
       "answer": "drwxr-x---",
       "explanation": "750 = 7(rwx) owner, 5(r-x) group, 0(---) others. It's a directory so it starts with d.",
       "incorrect_explanations": {
@@ -526,7 +522,12 @@
     {
       "question": "Which directory permission is required for `cd mydir` to work?",
       "type": "MCQ",
-      "options": ["Read (r)", "Write (w)", "Execute (x)", "Both read and write (rw)"],
+      "options": [
+        "Read (r)",
+        "Write (w)",
+        "Execute (x)",
+        "Both read and write (rw)"
+      ],
       "answer": "Execute (x)",
       "explanation": "The execute bit on a directory means 'can enter'. Without x, cd gives 'Permission denied' even if you have read access.",
       "incorrect_explanations": {
@@ -584,14 +585,46 @@
     ],
     "cheat_sheet": "# Linux Permissions Cheat Sheet\n\n## Reading Permission Strings\n-rwxr-xr--\n│ │││ │││ └── Others: r-- = read only\n│ │││ └────── Group:  r-x = read + execute\n│ └────────── Owner:  rwx = full access\n└──────────── Type:   - = file, d = directory\n\n## chmod Symbolic Mode\nchmod u+x file          # Add execute for owner\nchmod go-w file         # Remove write from group+others\nchmod a+r file          # Add read for all\nchmod u=rwx,go=r file   # Set exact permissions\n\n## chmod Numeric Mode\nchmod 777 file          # rwxrwxrwx — NEVER in production\nchmod 755 file          # rwxr-xr-x — scripts, directories\nchmod 644 file          # rw-r--r-- — config files, web content\nchmod 600 file          # rw------- — private keys, .env files\nchmod 700 dir/          # rwx------ — private directories\n\n## Common Permission Scenarios\n.env files, private keys:     chmod 600\nShell scripts (public):       chmod 755\nShell scripts (private):      chmod 700\nWeb content files:            chmod 644\nWeb content directories:      chmod 755\nSSH directory (~/.ssh):       chmod 700\n\n## chown / chgrp\nchown user file           # Change owner\nchown user:group file     # Change owner and group\nchown -R user:group dir/  # Recursive ownership change\nchgrp group file          # Change group only\n\n## Octal Reference\n0 = ---   4 = r--\n1 = --x   5 = r-x\n2 = -w-   6 = rw-\n3 = -wx   7 = rwx",
     "commands_table": [
-      { "name": "ls -l", "syntax": "ls -l [path]", "description": "Show files with permissions, owner, and size." },
-      { "name": "chmod +x", "syntax": "chmod +x file", "description": "Add execute permission to a file." },
-      { "name": "chmod NNN", "syntax": "chmod 755 file", "description": "Set permissions using numeric (octal) mode." },
-      { "name": "chmod -R", "syntax": "chmod -R 755 dir/", "description": "Recursively apply permissions to directory." },
-      { "name": "chown", "syntax": "chown user[:group] file", "description": "Change file owner and optionally group." },
-      { "name": "chown -R", "syntax": "chown -R user:group dir/", "description": "Recursively change ownership of directory." },
-      { "name": "chgrp", "syntax": "chgrp group file", "description": "Change only the group of a file." },
-      { "name": "stat", "syntax": "stat file", "description": "Show detailed file info including numeric permissions." }
+      {
+        "name": "ls -l",
+        "syntax": "ls -l [path]",
+        "description": "Show files with permissions, owner, and size."
+      },
+      {
+        "name": "chmod +x",
+        "syntax": "chmod +x file",
+        "description": "Add execute permission to a file."
+      },
+      {
+        "name": "chmod NNN",
+        "syntax": "chmod 755 file",
+        "description": "Set permissions using numeric (octal) mode."
+      },
+      {
+        "name": "chmod -R",
+        "syntax": "chmod -R 755 dir/",
+        "description": "Recursively apply permissions to directory."
+      },
+      {
+        "name": "chown",
+        "syntax": "chown user[:group] file",
+        "description": "Change file owner and optionally group."
+      },
+      {
+        "name": "chown -R",
+        "syntax": "chown -R user:group dir/",
+        "description": "Recursively change ownership of directory."
+      },
+      {
+        "name": "chgrp",
+        "syntax": "chgrp group file",
+        "description": "Change only the group of a file."
+      },
+      {
+        "name": "stat",
+        "syntax": "stat file",
+        "description": "Show detailed file info including numeric permissions."
+      }
     ],
     "revision_notes": [
       "Permission string format: [type][owner][group][others] — 10 characters total.",

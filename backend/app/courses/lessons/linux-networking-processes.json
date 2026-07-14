@@ -20,179 +20,81 @@
   },
   "key_concepts": [
     {
-      "title": "Understanding Linux Processes",
-      "definition": "A process is a running instance of a program. Every command you run, every application that starts — each becomes a process with a unique Process ID (PID).",
-      "why_important": [
-        "Identify what is consuming CPU or memory on an overloaded server.",
-        "Find and stop hung processes that are blocking resources.",
-        "Understand parent-child relationships — killing a parent kills its children.",
-        "Monitor daemon processes (web servers, databases) to confirm they are running."
-      ],
-      "explanation": "Every process has:\n- **PID**: Unique Process ID number\n- **PPID**: Parent Process ID (who started it)\n- **User**: Which user account owns it\n- **State**: Running, Sleeping, Stopped, Zombie\n- **CPU/Memory**: Resource usage\n\nProcess hierarchy example:\n```\nPID 1 (systemd/init)\n└── PID 1234 (nginx)\n    └── PID 1235 (nginx worker)\n    └── PID 1236 (nginx worker)\n```\n\nCommon process states:\n\n| State | Code | Meaning |\n|:---|:---|:---|\n| Running | R | Actively executing on CPU |\n| Sleeping | S | Waiting for I/O or event |\n| Stopped | T | Paused (Ctrl+Z) |\n| Zombie | Z | Exited but parent hasn't read exit code |",
+      "title": "Processes (ps aux & top)",
+      "definition": "A process is a program or command that is currently running on the server.",
+      "explanation": "Every running app is assigned a Process ID (PID). You can view all active processes using the ps aux command.",
       "commands": [
         {
           "name": "ps aux",
-          "purpose": "Shows a snapshot of all currently running processes with details.",
+          "purpose": "Lists all running processes.",
           "syntax": "ps aux",
-          "parameters": "a: all users, u: user-oriented format, x: include processes without terminal.",
-          "example": "ps aux | grep nginx",
-          "expected_output": "www-data  1234  0.0  0.1  12345  4567 ?  S  10:30  0:00 nginx: master process\nwww-data  1235  0.0  0.0   9876  2345 ?  S  10:30  0:00 nginx: worker process",
-          "output_explanation": "Shows nginx master and worker processes: user (www-data), PID, CPU%, memory%, and command.",
-          "when_to_use": "Use to check if a service is running or to find the PID of a specific process.",
-          "real_world_use": "Run ps aux | grep java to confirm a Java application server is running and see its PID."
-        },
-        {
-          "name": "top",
-          "purpose": "Shows real-time, continuously updated process resource usage.",
-          "syntax": "top",
-          "parameters": "Press q to quit. Press k to kill a process by PID. Press M to sort by memory.",
-          "example": "top",
-          "expected_output": "top - 10:35:01 up 5 days, 2 users, load average: 0.12, 0.08, 0.05\nPID   USER  PR NI  VIRT RES SHR S %CPU %MEM COMMAND\n1234  root  20  0 12456 456  123 S  0.3  0.1  nginx",
-          "output_explanation": "Shows live CPU/memory usage per process. Load average: system workload over 1, 5, 15 minutes.",
-          "when_to_use": "Use during performance issues to find which process is consuming the most resources.",
-          "real_world_use": "An SRE opens top during a high CPU alert to identify which process is spiking and causing the issue."
+          "example": "ps aux | grep bash",
+          "expected_output": "student   1234  0.0  0.1  12345 4567 pts/0  S  10:30  0:00 -bash",
+          "output_explanation": "Shows the running bash process details including PID 1234."
         }
-      ],
-      "pro_tip": "Use `htop` if available — it's a colorized, interactive version of top with much better UX.",
-      "best_practices": "Check ps aux before assuming a service has failed — it may be running under a different name or user.",
-      "common_mistakes": "Grepping ps output and seeing your grep command itself in results: `ps aux | grep nginx` might show the grep process too. Filter with `grep -v grep`.",
-      "real_world_example": "An SRE gets paged that the web app is down. They run ps aux | grep nginx to confirm nginx is running, then check the logs for errors.",
-      "remember": "PID 1 is always the init system (systemd on modern Linux). Everything else is a child or descendant of PID 1.",
-      "summary": "ps aux gives a full snapshot of processes. top shows live resource usage. Both are essential for diagnosing server health."
+      ]
     },
     {
-      "title": "Killing Processes",
-      "definition": "The kill command sends a signal to a process. Signals tell a process to stop, restart, reload config, or perform other actions.",
-      "why_important": [
-        "Stop a hung or zombie process that is consuming resources.",
-        "Gracefully reload application config without full restart.",
-        "Clean up runaway processes before they exhaust memory or CPU.",
-        "Stop services before performing maintenance or upgrades."
-      ],
-      "explanation": "Linux uses signals to communicate with processes:\n\n| Signal | Number | Name | Effect |\n|:---|:---|:---|:---|\n| SIGTERM | 15 | Terminate | Ask process to stop gracefully |\n| SIGKILL | 9 | Kill | Force stop immediately (cannot be caught) |\n| SIGHUP | 1 | Hangup | Reload configuration |\n| SIGINT | 2 | Interrupt | Same as Ctrl+C |\n\n**Golden rule**: Always try SIGTERM (15) first. Only use SIGKILL (9) if the process won't respond.\n\nWhy does this matter?\n- SIGTERM allows the app to save state, close connections, flush buffers.\n- SIGKILL immediately kills the process — data may be lost or connections left open.",
-      "commands": [
-        {
-          "name": "kill PID",
-          "purpose": "Sends SIGTERM (graceful stop request) to a process by PID.",
-          "syntax": "kill PID",
-          "parameters": "PID: the numeric process ID. Get it from ps aux or pgrep.",
-          "example": "kill 1234",
-          "expected_output": "(No output if successful — process stops gracefully)",
-          "output_explanation": "SIGTERM sent to PID 1234. The process can finish current work and clean up before exiting.",
-          "when_to_use": "Always try this first before SIGKILL.",
-          "real_world_use": "Gracefully stop a web server before a rolling deployment update."
-        },
-        {
-          "name": "kill -9 PID",
-          "purpose": "Sends SIGKILL — immediately and forcefully terminates a process.",
-          "syntax": "kill -9 PID",
-          "parameters": "-9: SIGKILL signal. PID: process to terminate.",
-          "example": "kill -9 1234",
-          "expected_output": "(No output — process is immediately terminated)",
-          "output_explanation": "The OS kills PID 1234 immediately without giving it a chance to clean up.",
-          "when_to_use": "Only when kill PID fails and the process is truly stuck.",
-          "real_world_use": "A Jenkins build agent is stuck for 2 hours. After kill fails, kill -9 forces it to terminate."
-        },
-        {
-          "name": "pkill",
-          "purpose": "Kills processes by name instead of PID.",
-          "syntax": "pkill process_name",
-          "parameters": "process_name: name or pattern to match against running processes.",
-          "example": "pkill nginx",
-          "expected_output": "(No output if successful)",
-          "output_explanation": "All processes matching the name 'nginx' receive SIGTERM.",
-          "when_to_use": "Use when you know the process name but don't want to look up the PID first.",
-          "real_world_use": "pkill -9 java to forcefully stop all Java processes during an emergency restart."
-        }
-      ],
-      "pro_tip": "Use `pgrep -l processname` to list matching process names and PIDs before killing — confirm you are killing the right process.",
-      "best_practices": "Never use kill -9 as your first action. Always try SIGTERM first and give the process 5-10 seconds to stop.",
-      "common_mistakes": "Killing a parent process without knowing it will also kill all its children — verify the process tree with pstree or ps first.",
-      "real_world_example": "During a Kubernetes node drain, kubelet sends SIGTERM to pods and waits 30 seconds (grace period) before SIGKILL. This is the same pattern applied at container scale.",
-      "remember": "Signal 15 (SIGTERM) = 'please stop'. Signal 9 (SIGKILL) = 'stop now, no choice'. Always try 15 first.",
-      "summary": "kill sends SIGTERM for graceful stop. kill -9 forces immediate termination. pkill matches by name."
-    },
-    {
-      "title": "Network Ports and Connections",
-      "definition": "Network ports are numbered channels (0-65535) through which applications communicate. Checking which ports are open tells you which services are running and accessible.",
-      "why_important": [
-        "Confirm a web server is listening on port 80/443 before testing in a browser.",
-        "Identify port conflicts when two services try to bind to the same port.",
-        "Audit open ports for security — unexpected open ports indicate misconfiguration.",
-        "Diagnose firewall rules blocking expected service connections."
-      ],
-      "explanation": "Common well-known ports:\n\n| Port | Service |\n|:---|:---|\n| 22 | SSH |\n| 80 | HTTP |\n| 443 | HTTPS |\n| 3306 | MySQL |\n| 5432 | PostgreSQL |\n| 6379 | Redis |\n| 8080 | Common app port |\n| 27017 | MongoDB |\n\nConnection states:\n\n| State | Meaning |\n|:---|:---|\n| LISTEN | Port is open, waiting for connections |\n| ESTABLISHED | Active connection |\n| TIME_WAIT | Connection closing (waiting for late packets) |\n| CLOSE_WAIT | Remote end closed — local app should close too |",
+      "title": "Ports & Connections (ss, curl, ping)",
+      "definition": "Tools to check open ports and test network connections.",
+      "explanation": "Use ss to see which ports are listening for connections, ping to check if a server is online, and curl to test web endpoints.",
       "commands": [
         {
           "name": "ss -lntp",
-          "purpose": "Lists all TCP ports that are listening for incoming connections.",
+          "purpose": "Lists open listening TCP ports.",
           "syntax": "ss -lntp",
-          "parameters": "-l: listening sockets, -n: show numeric ports (no name resolution), -t: TCP, -p: show process name.",
           "example": "ss -lntp",
-          "expected_output": "State  Recv-Q Send-Q  Local Address:Port  Peer Address:Port  Process\nLISTEN 0      128     0.0.0.0:80          0.0.0.0:*          users:((\"nginx\",pid=1234,fd=6))\nLISTEN 0      128     0.0.0.0:22          0.0.0.0:*          users:((\"sshd\",pid=890,fd=3))",
-          "output_explanation": "nginx is listening on port 80 (HTTP), sshd on port 22 (SSH). Both are ready to accept connections.",
-          "when_to_use": "Use immediately when an app isn't responding to verify it's actually listening on the expected port.",
-          "real_world_use": "After deploying a Node.js app, run ss -lntp to confirm it's bound to port 3000 before testing."
+          "expected_output": "LISTEN 0 128 0.0.0.0:22 ... users:((\"sshd\",pid=890,fd=3))",
+          "output_explanation": "Shows that port 22 (SSH) is listening for connections."
         },
         {
           "name": "curl",
-          "purpose": "Makes HTTP requests from the command line to test web endpoints.",
-          "syntax": "curl [options] URL",
-          "parameters": "-I: headers only, -s: silent, -o: output to file, -v: verbose.",
-          "example": "curl -I http://localhost:80",
-          "expected_output": "HTTP/1.1 200 OK\nServer: nginx/1.18.0\nContent-Type: text/html",
-          "output_explanation": "HTTP 200 OK means the web server responded successfully. Headers show server type and content type.",
-          "when_to_use": "Test if a web server or API endpoint is responding correctly from the command line.",
-          "real_world_use": "CI health check: curl -f http://localhost:8080/health || exit 1 — fails the build if the app doesn't respond."
+          "purpose": "Fetches a URL over HTTP.",
+          "syntax": "curl URL",
+          "example": "curl http://example.com",
+          "expected_output": "<!doctype html>...",
+          "output_explanation": "Prints the HTML source code of the requested page."
+        },
+        {
+          "name": "ping",
+          "purpose": "Tests connection to a host.",
+          "syntax": "ping -c COUNT host",
+          "example": "ping -c 3 localhost",
+          "expected_output": "64 bytes from 127.0.0.1...",
+          "output_explanation": "Sends 3 packets to verify that localhost is reachable."
         }
-      ],
-      "pro_tip": "Use `lsof -i :PORT` to see exactly which process is using a specific port: `lsof -i :8080`",
-      "best_practices": "Always check ss -lntp after deploying an application to confirm it bound to the correct port.",
-      "common_mistakes": "Confusing LISTEN (waiting for connections) with ESTABLISHED (connected). A service must be in LISTEN state to accept new connections.",
-      "real_world_example": "A DevOps engineer deploys a microservice and discovers it's listening on port 8081 instead of 8080. ss -lntp reveals the issue immediately — wrong port in the config file.",
-      "remember": "LISTEN = service is ready to accept connections. If ss shows no LISTEN on your expected port, the service didn't start or is using a different port.",
-      "summary": "ss -lntp shows listening ports. curl tests HTTP connectivity. These are your first tools when debugging 'why can't I reach my app?'"
+      ]
     },
     {
-      "title": "Background Processes and Job Control",
-      "definition": "Linux lets you run processes in the background so your terminal stays available for other commands. Job control allows you to pause, resume, and manage these background tasks.",
-      "why_important": [
-        "Run long-running scripts without tying up your terminal.",
-        "Continue working in the same terminal while a task runs in background.",
-        "Bring background jobs to foreground when you need to interact with them.",
-        "Keep processes running after you log out using nohup."
-      ],
-      "explanation": "Running processes in background:\n\n```bash\ncommand &          # Start in background\nCtrl+Z             # Pause (stop) foreground process\nbg                 # Resume paused process in background\nfg                 # Bring background process to foreground\njobs               # List all background jobs\n```\n\nJob management:\n\n| Command | Action |\n|:---|:---|\n| `command &` | Start directly in background |\n| `Ctrl+Z` | Suspend current foreground job |\n| `bg %1` | Resume job 1 in background |\n| `fg %1` | Bring job 1 to foreground |\n| `jobs` | List all jobs with status |\n| `nohup cmd &` | Run command that survives logout |",
+      "title": "Background Jobs & kill",
+      "definition": "Commands to run tasks in the background and stop them when needed.",
+      "explanation": "Add & at the end of a command to run it in the background. Use jobs to list them, and kill to stop a process by its PID or job number.",
       "commands": [
         {
           "name": "command &",
-          "purpose": "Runs a command in the background, freeing the terminal for other use.",
+          "purpose": "Runs a command in the background.",
           "syntax": "command &",
-          "parameters": "&: the ampersand at the end sends the process to background.",
-          "example": "sleep 60 &",
+          "example": "sleep 30 &",
           "expected_output": "[1] 5678",
-          "output_explanation": "[1] is the job number. 5678 is the PID of the background process.",
-          "when_to_use": "Use for long-running tasks (builds, backups, log processing) that don't need terminal interaction.",
-          "real_world_use": "Start a database backup script in the background: ./backup.sh & — then continue other work."
+          "output_explanation": "Starts sleep 30 in the background as job 1 with PID 5678."
         },
         {
           "name": "jobs",
-          "purpose": "Lists all background jobs and their current status.",
+          "purpose": "Lists background jobs.",
           "syntax": "jobs",
-          "parameters": "None required. -l shows PID in addition to job number.",
           "example": "jobs",
-          "expected_output": "[1]-  Running    sleep 60 &\n[2]+  Stopped    vim config.txt",
-          "output_explanation": "Job 1 is running in the background. Job 2 is stopped (suspended with Ctrl+Z).",
-          "when_to_use": "Use to check what background processes are running in your current terminal session.",
-          "real_world_use": "Check jobs after running multiple scripts in background to confirm they are still running."
+          "expected_output": "[1]+  Running                  sleep 30 &",
+          "output_explanation": "Shows that job 1 is currently running in the background."
+        },
+        {
+          "name": "kill",
+          "purpose": "Stops a process.",
+          "syntax": "kill PID or kill %job",
+          "example": "kill %1",
+          "expected_output": "[1]+  Terminated              sleep 30",
+          "output_explanation": "Terminates background job 1 gracefully."
         }
-      ],
-      "pro_tip": "Use `nohup ./script.sh > output.log 2>&1 &` to run a script that continues after you log out, with all output saved to a log file.",
-      "best_practices": "Always redirect background process output to a log file so you can review it later: `./script.sh > script.log 2>&1 &`",
-      "common_mistakes": "Running a process in background without redirecting output — it still prints to your terminal, mixing with other commands.",
-      "real_world_example": "A DevOps engineer starts a long database migration in the background with nohup, logs out, then checks the log file the next morning to confirm it completed successfully.",
-      "remember": "Background jobs only survive as long as your terminal session — unless you use nohup or a process manager like systemd or supervisor.",
-      "summary": "Use & to start in background, jobs to list, fg/bg to move between foreground and background. Use nohup to survive logout."
+      ]
     }
   ],
   "interactive_examples": [
@@ -444,7 +346,12 @@
     {
       "question": "Which command shows all running processes with CPU and memory details?",
       "type": "MCQ",
-      "options": ["ls -la", "ps aux", "top -all", "jobs -v"],
+      "options": [
+        "ls -la",
+        "ps aux",
+        "top -all",
+        "jobs -v"
+      ],
       "answer": "ps aux",
       "explanation": "ps aux shows all processes (a), user format (u), including those without a terminal (x). It's the standard command for a full process snapshot.",
       "incorrect_explanations": {
@@ -473,7 +380,12 @@
     {
       "question": "Which command checks which process is listening on a specific port?",
       "type": "MCQ",
-      "options": ["ps -p PORT", "ss -lntp", "kill -PORT", "jobs PORT"],
+      "options": [
+        "ps -p PORT",
+        "ss -lntp",
+        "kill -PORT",
+        "jobs PORT"
+      ],
       "answer": "ss -lntp",
       "explanation": "ss -lntp (socket statistics, listening, numeric, TCP, processes) shows which processes are listening on which ports.",
       "incorrect_explanations": {
@@ -519,7 +431,12 @@
     {
       "question": "Which command brings a background job (job number 2) to the foreground?",
       "type": "MCQ",
-      "options": ["jobs %2", "bg %2", "fg %2", "front %2"],
+      "options": [
+        "jobs %2",
+        "bg %2",
+        "fg %2",
+        "front %2"
+      ],
       "answer": "fg %2",
       "explanation": "fg (foreground) brings a specified job to the foreground. %2 specifies job number 2.",
       "incorrect_explanations": {
@@ -548,7 +465,12 @@
     {
       "question": "What signal number is SIGKILL?",
       "type": "MCQ",
-      "options": ["1", "9", "15", "19"],
+      "options": [
+        "1",
+        "9",
+        "15",
+        "19"
+      ],
       "answer": "9",
       "explanation": "SIGKILL is signal 9. It cannot be caught, blocked, or ignored by the receiving process — the OS always terminates it.",
       "incorrect_explanations": {
@@ -594,7 +516,12 @@
     {
       "question": "What state does a process enter when you press Ctrl+Z?",
       "type": "MCQ",
-      "options": ["Terminated", "Running in background", "Stopped (suspended)", "Zombie"],
+      "options": [
+        "Terminated",
+        "Running in background",
+        "Stopped (suspended)",
+        "Zombie"
+      ],
       "answer": "Stopped (suspended)",
       "explanation": "Ctrl+Z sends SIGSTOP to the foreground process, suspending it. It shows as 'Stopped' in jobs output. Use fg to resume or bg to continue in background.",
       "incorrect_explanations": {
@@ -652,17 +579,61 @@
     ],
     "cheat_sheet": "# Linux Networking & Process Management Cheat Sheet\n\n## Process Management\nps aux               # List all processes\nps aux | grep NAME   # Find process by name\ntop                  # Real-time process viewer\nhtop                 # Interactive top (if installed)\npgrep NAME           # Get PID by process name\npkill NAME           # Kill process by name\n\n## Killing Processes\nkill PID             # Send SIGTERM (graceful)\nkill -9 PID          # Send SIGKILL (force)\nkill -15 PID         # Explicit SIGTERM\nkill -1 PID          # Send SIGHUP (reload config)\n\n## Signal Numbers\n1  = SIGHUP   (reload)\n2  = SIGINT   (Ctrl+C)\n9  = SIGKILL  (force stop)\n15 = SIGTERM  (graceful stop)\n19 = SIGSTOP  (Ctrl+Z)\n18 = SIGCONT  (resume)\n\n## Network & Ports\nss -lntp             # List listening TCP ports\nss -lntp | grep :80  # Check specific port\nlsof -i :8080        # Which process uses port\nping -c 4 host       # Test connectivity\ncurl URL             # HTTP request\ncurl -I URL          # Headers only (HEAD)\ncurl -s -o /dev/null -w \"%{http_code}\" URL  # Status code only\n\n## Background Jobs\ncommand &            # Run in background\njobs                 # List background jobs\nfg %1                # Bring job 1 to foreground\nbg %1                # Resume job 1 in background\nnohup cmd &          # Survive terminal logout\nCtrl+Z               # Suspend foreground process\nCtrl+C               # Terminate foreground process",
     "commands_table": [
-      { "name": "ps aux", "syntax": "ps aux [| grep name]", "description": "List all running processes with details." },
-      { "name": "top", "syntax": "top", "description": "Real-time interactive process viewer." },
-      { "name": "kill", "syntax": "kill [-SIGNAL] PID", "description": "Send signal to process (default: SIGTERM)." },
-      { "name": "pkill", "syntax": "pkill name", "description": "Kill process by name." },
-      { "name": "pgrep", "syntax": "pgrep [-l] name", "description": "Get PID of process by name." },
-      { "name": "ss", "syntax": "ss -lntp", "description": "Show listening TCP ports and processes." },
-      { "name": "curl", "syntax": "curl [-I] URL", "description": "Make HTTP requests from command line." },
-      { "name": "ping", "syntax": "ping -c N host", "description": "Test network connectivity with ICMP packets." },
-      { "name": "jobs", "syntax": "jobs", "description": "List background jobs in current session." },
-      { "name": "fg", "syntax": "fg %N", "description": "Bring background job to foreground." },
-      { "name": "nohup", "syntax": "nohup cmd &", "description": "Run command that survives terminal logout." }
+      {
+        "name": "ps aux",
+        "syntax": "ps aux [| grep name]",
+        "description": "List all running processes with details."
+      },
+      {
+        "name": "top",
+        "syntax": "top",
+        "description": "Real-time interactive process viewer."
+      },
+      {
+        "name": "kill",
+        "syntax": "kill [-SIGNAL] PID",
+        "description": "Send signal to process (default: SIGTERM)."
+      },
+      {
+        "name": "pkill",
+        "syntax": "pkill name",
+        "description": "Kill process by name."
+      },
+      {
+        "name": "pgrep",
+        "syntax": "pgrep [-l] name",
+        "description": "Get PID of process by name."
+      },
+      {
+        "name": "ss",
+        "syntax": "ss -lntp",
+        "description": "Show listening TCP ports and processes."
+      },
+      {
+        "name": "curl",
+        "syntax": "curl [-I] URL",
+        "description": "Make HTTP requests from command line."
+      },
+      {
+        "name": "ping",
+        "syntax": "ping -c N host",
+        "description": "Test network connectivity with ICMP packets."
+      },
+      {
+        "name": "jobs",
+        "syntax": "jobs",
+        "description": "List background jobs in current session."
+      },
+      {
+        "name": "fg",
+        "syntax": "fg %N",
+        "description": "Bring background job to foreground."
+      },
+      {
+        "name": "nohup",
+        "syntax": "nohup cmd &",
+        "description": "Run command that survives terminal logout."
+      }
     ],
     "revision_notes": [
       "ps aux gives a snapshot. top gives live updates. Use both for different scenarios.",

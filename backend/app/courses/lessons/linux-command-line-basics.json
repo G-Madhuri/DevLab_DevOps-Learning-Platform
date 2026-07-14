@@ -19,201 +19,187 @@
   },
   "key_concepts": [
     {
-      "title": "The Linux Terminal & CLI",
-      "definition": "The terminal is a text interface where you type commands to control the operating system. No mouse. No buttons. Just text.",
-      "why_important": [
-        "Cloud servers (AWS, Azure, GCP) have no graphical interface — you manage them via terminal.",
-        "The CLI is faster than any GUI for repetitive tasks.",
-        "Scripts automate dozens of terminal commands without human input.",
-        "Containers (Docker) and orchestration (Kubernetes) are CLI-native."
-      ],
-      "explanation": "When you open a terminal, you see a prompt like:\n\n  student@devlab:~$\n\nThis tells you:\n- `student` — your username\n- `devlab` — the machine hostname\n- `~` — you are in your home directory\n- `$` — you are a regular user (not root)\n\nYou type a command, press Enter, and the shell executes it.\n\nCLI vs GUI comparison:\n\n| Feature | GUI | CLI |\n|:---|:---|:---|\n| Speed | Slow (mouse clicks) | Fast (one command) |\n| Automation | Hard | Easy (scripts) |\n| Remote access | Limited | Full (SSH) |\n| Resource usage | High | Minimal |",
+      "title": "whoami (Identity)",
+      "definition": "A command that tells you the username of the account you are currently logged into.",
+      "explanation": "In a text-only interface, whoami is like checking your profile badge to see who you are.",
       "commands": [
         {
           "name": "whoami",
           "purpose": "Shows the username of your current session.",
           "syntax": "whoami",
-          "parameters": "None.",
           "example": "whoami",
           "expected_output": "student",
-          "output_explanation": "You are logged in as the 'student' user.",
-          "when_to_use": "Use in scripts to check if running as root before applying system changes.",
-          "real_world_use": "A CI/CD pipeline script runs whoami to confirm it has the correct permissions before deploying."
+          "output_explanation": "This shows you are logged in as the user named 'student'."
         }
-      ],
-      "pro_tip": "Press Tab to auto-complete file and directory names. Double-Tab shows all matching options.",
-      "best_practices": "Never run commands as root unless absolutely necessary. Working as a regular user protects system files.",
-      "common_mistakes": "Forgetting spaces between a command and its flags: `ls-la` fails. Correct is `ls -la`.",
-      "real_world_example": "A DevOps engineer SSHes into an AWS EC2 instance and uses the terminal to check running processes, tail logs, and restart a failed web server — all in under 2 minutes.",
-      "remember": "Linux is case-sensitive. `File.txt` and `file.txt` are two completely different files.",
-      "summary": "The terminal gives you direct control over Linux systems. Every DevOps workflow starts here."
+      ]
     },
     {
-      "title": "Navigating the File System",
-      "definition": "Linux organizes everything into a single directory tree starting at `/` (root). You move through this tree using navigation commands.",
-      "why_important": [
-        "You must know where you are before running file operations.",
-        "Log files, configs, and binaries are in specific system directories.",
-        "Mistyping a path when deleting can remove critical files.",
-        "Automation scripts rely on correct path navigation."
-      ],
-      "explanation": "The Linux file system tree looks like this:\n\n  /\n  ├── home/\n  │   └── student/      ← your home (~)\n  ├── etc/              ← system configuration files\n  ├── var/log/          ← system logs\n  └── usr/bin/          ← user programs\n\nTwo types of paths:\n- **Absolute path**: starts from `/` → `/home/student/projects`\n- **Relative path**: starts from where you are → `projects` or `../other`\n\nSpecial shortcuts:\n- `.` means current directory\n- `..` means parent directory\n- `~` means your home directory",
+      "title": "pwd (Location)",
+      "definition": "Stands for 'Print Working Directory'. It tells you the exact folder path you are currently looking at.",
+      "explanation": "Since there are no visual folders in a terminal, pwd acts as your GPS to show your current location.",
       "commands": [
         {
           "name": "pwd",
-          "purpose": "Prints your current directory path (Print Working Directory).",
+          "purpose": "Prints your current directory path.",
           "syntax": "pwd",
-          "parameters": "None.",
           "example": "pwd",
           "expected_output": "/home/student",
-          "output_explanation": "You are currently inside the /home/student directory.",
-          "when_to_use": "Run before any destructive command (like rm) to confirm your location.",
-          "real_world_use": "Scripts run pwd to log which directory they are operating in for debugging."
-        },
-        {
-          "name": "cd",
-          "purpose": "Changes your current directory (Change Directory).",
-          "syntax": "cd [path]",
-          "parameters": "path: destination directory. Omit to go home (~).",
-          "example": "cd drafts",
-          "expected_output": "(No output — shell prompt changes to show new directory)",
-          "output_explanation": "You have moved into the drafts folder inside your current directory.",
-          "when_to_use": "Use to move between directories before running file commands.",
-          "real_world_use": "cd /var/log then tail -f app.log to monitor real-time application logs."
+          "output_explanation": "This means you are inside the 'student' folder, which is inside 'home'."
         }
-      ],
-      "pro_tip": "Run `cd -` to jump back to the previous directory you were in. Great for switching between two directories quickly.",
-      "best_practices": "Always run pwd first when you SSH into a server to confirm your starting location.",
-      "common_mistakes": "Using backslashes: `cd home\\student` — Linux uses forward slashes `/` only.",
-      "real_world_example": "A developer navigates to /etc/nginx/sites-available to edit the web server configuration before reloading nginx.",
-      "remember": "`cd` with no arguments takes you home. `cd /` goes to the root of the entire filesystem.",
-      "summary": "pwd shows where you are. cd moves you. These two commands are used dozens of times every day."
+      ]
     },
     {
-      "title": "Listing Directory Contents",
-      "definition": "The `ls` command lists files and directories inside a folder. Flags modify what information is shown.",
-      "why_important": [
-        "You need to see what files exist before working with them.",
-        "File permissions (rwx) are visible with ls -l.",
-        "Hidden config files (starting with .) are revealed with ls -a.",
-        "File sizes and ownership help audit disk usage and security."
-      ],
-      "explanation": "Basic ls shows only visible file names. Flags add more detail:\n\n| Flag | Effect |\n|:---|:---|\n| `-l` | Long format: permissions, owner, size, date |\n| `-a` | Show all files including hidden (dotfiles) |\n| `-h` | Human-readable file sizes (KB, MB) |\n| `-la` | Long format + hidden files (combined) |\n\nReading `ls -l` output:\n\n  -rw-r--r-- 1 student student 45 Jan 12 welcome.txt\n   ↑          ↑         ↑      ↑       ↑\n  permissions owner     group  size   filename",
+      "title": "ls, ls -a, & ls -l (Listing Files)",
+      "definition": "Commands to list the files and folders inside your current location.",
+      "explanation": "Use ls to see visible files. Add -a to see hidden files (starting with a dot). Add -l to see detailed information like file sizes and permissions.",
       "commands": [
         {
           "name": "ls",
-          "purpose": "Lists visible files and directories in current folder.",
-          "syntax": "ls [flags] [path]",
-          "parameters": "path (optional): directory to list. Defaults to current directory.",
+          "purpose": "Lists visible files and folders.",
+          "syntax": "ls [path]",
           "example": "ls",
           "expected_output": "drafts  welcome.txt",
-          "output_explanation": "Two items exist: a folder called drafts and a file called welcome.txt.",
-          "when_to_use": "Use anytime you navigate to a new directory to see its contents.",
-          "real_world_use": "Check what files are in /etc/nginx before editing the web server config."
+          "output_explanation": "Shows the folder drafts and file welcome.txt in your current folder."
         },
         {
-          "name": "ls -la",
-          "purpose": "Lists all files (including hidden) in detailed format.",
-          "syntax": "ls -la",
-          "parameters": "-l: long format, -a: show hidden files.",
-          "example": "ls -la",
-          "expected_output": "total 20\ndrwxr-xr-x 3 student student 4096 Jan 12 .\ndrwxr-xr-x 5 root    root    4096 Jan 12 ..\n-rw-r--r-- 1 student student  220 Jan 12 .bashrc\ndrwxr-xr-x 2 student student 4096 Jan 12 drafts\n-rw-r--r-- 1 student student   45 Jan 12 welcome.txt",
-          "output_explanation": "Shows `.` (current dir), `..` (parent dir), hidden `.bashrc`, folder `drafts`, and file `welcome.txt` with full permission and ownership details.",
-          "when_to_use": "Use to audit file permissions and check for hidden config files.",
-          "real_world_use": "Run ls -la on a project directory to verify file ownership before deploying to production."
+          "name": "ls -a",
+          "purpose": "Lists all files including hidden ones (starting with a dot).",
+          "syntax": "ls -a",
+          "example": "ls -a",
+          "expected_output": ".  ..  .bashrc  drafts  welcome.txt",
+          "output_explanation": "Shows hidden files like .bashrc along with visible files."
+        },
+        {
+          "name": "ls -l",
+          "purpose": "Lists files with details like permissions, size, and owner.",
+          "syntax": "ls -l",
+          "example": "ls -l",
+          "expected_output": "-rw-r--r-- 1 student student 45 Jan 12 welcome.txt",
+          "output_explanation": "Shows permissions (-rw-r--r--), owner (student), size (45 bytes), and name."
         }
-      ],
-      "pro_tip": "Combine with grep to find specific files: `ls -la | grep .log` lists only log files.",
-      "best_practices": "Use `ls -lh` in production to check file sizes in human-readable format before archiving.",
-      "common_mistakes": "Confusing lowercase `-l` (long format) with the number `1`. They look similar in some fonts.",
-      "real_world_example": "Before deploying an app, a DevOps engineer runs `ls -la /var/www/html` to verify the deployment files are owned by the correct web server user.",
-      "remember": "In Linux, files starting with `.` are hidden. Use `ls -a` to reveal them.",
-      "summary": "ls is your eyes in the terminal. Use ls -la to see everything with full details."
+      ]
     },
     {
-      "title": "Creating and Managing Files",
-      "definition": "Linux provides specific commands to create, write, read, copy, move, and delete files — all from the terminal.",
-      "why_important": [
-        "You create config files, scripts, and logs directly from the terminal.",
-        "Copying files creates safe backups before editing.",
-        "Moving files renames or reorganizes project structures.",
-        "rm instantly and permanently deletes — no recycle bin."
-      ],
-      "explanation": "Core file operations:\n\n| Command | What it does |\n|:---|:---|\n| `touch file` | Create an empty file |\n| `mkdir folder` | Create a new directory |\n| `echo 'text' > file` | Write text (overwrites existing) |\n| `echo 'text' >> file` | Append text to end of file |\n| `cat file` | Display file contents |\n| `cp src dest` | Copy file to new location |\n| `mv src dest` | Move or rename file |\n| `rm file` | Delete file permanently |\n\n**Redirection operators:**\n- `>` overwrites the file completely\n- `>>` appends to the end without deleting existing content",
+      "title": "cd & cd ~ (Moving Around)",
+      "definition": "Stands for 'Change Directory'. It lets you move from one folder to another.",
+      "explanation": "cd followed by a folder name moves you into that folder. Typing cd with a tilde (cd ~) or cd alone takes you straight back to your home folder.",
+      "commands": [
+        {
+          "name": "cd",
+          "purpose": "Changes your current directory folder.",
+          "syntax": "cd [folder]",
+          "example": "cd drafts",
+          "expected_output": "",
+          "output_explanation": "Moves your active terminal view into the drafts folder."
+        },
+        {
+          "name": "cd ~",
+          "purpose": "Instantly takes you back to your home folder.",
+          "syntax": "cd ~",
+          "example": "cd ~",
+          "expected_output": "",
+          "output_explanation": "Returns you directly to /home/student from anywhere."
+        }
+      ]
+    },
+    {
+      "title": "touch & mkdir (Creating Files & Folders)",
+      "definition": "touch creates a new empty file. mkdir creates a new empty folder.",
+      "explanation": "These commands let you start new files or organize your work by setting up folder structures.",
       "commands": [
         {
           "name": "touch",
-          "purpose": "Creates a new empty file or updates an existing file's timestamp.",
+          "purpose": "Creates a new empty file.",
           "syntax": "touch filename",
-          "parameters": "filename: name of file to create.",
-          "example": "touch config.env",
-          "expected_output": "(No output — file is created silently)",
-          "output_explanation": "An empty file named config.env has been created in the current directory.",
-          "when_to_use": "Use to quickly create placeholder files before writing content into them.",
-          "real_world_use": "Create an empty .env file for environment variables before populating it."
+          "example": "touch draft.txt",
+          "expected_output": "",
+          "output_explanation": "Creates an empty file named draft.txt."
         },
+        {
+          "name": "mkdir",
+          "purpose": "Creates a new empty directory folder.",
+          "syntax": "mkdir foldername",
+          "example": "mkdir projects",
+          "expected_output": "",
+          "output_explanation": "Creates a new folder named projects."
+        }
+      ]
+    },
+    {
+      "title": "echo, >, & >> (Writing Content)",
+      "definition": "echo prints text to the screen. > and >> redirect that text to write it into a file.",
+      "explanation": "Using > writes text to a file and erases whatever was in it before. Using >> appends the text to the end of the file without erasing anything.",
+      "commands": [
         {
           "name": "echo with >",
-          "purpose": "Writes text into a file, overwriting any existing content.",
+          "purpose": "Writes text to a file, overwriting existing content.",
           "syntax": "echo 'text' > filename",
-          "parameters": "text: string to write. filename: destination file.",
-          "example": "echo 'PORT=8080' > config.env",
-          "expected_output": "(No output — text written silently)",
-          "output_explanation": "The text PORT=8080 is written into config.env. If the file existed, previous content is erased.",
-          "when_to_use": "Use to set or reset a configuration value in a file.",
-          "real_world_use": "Write database connection strings into a .env config file during server setup."
+          "example": "echo 'Hello' > draft.txt",
+          "expected_output": "",
+          "output_explanation": "Writes 'Hello' into draft.txt, replacing any old content."
         },
+        {
+          "name": "echo with >>",
+          "purpose": "Appends text to the end of a file.",
+          "syntax": "echo 'text' >> filename",
+          "example": "echo 'World' >> draft.txt",
+          "expected_output": "",
+          "output_explanation": "Adds 'World' to the end of draft.txt on a new line."
+        }
+      ]
+    },
+    {
+      "title": "cat (Viewing Files)",
+      "definition": "Displays all the text content inside a file on your terminal screen.",
+      "explanation": "It is a quick way to read the contents of a text file or configuration file without opening a text editor.",
+      "commands": [
         {
           "name": "cat",
-          "purpose": "Displays the full contents of a file on the terminal screen.",
+          "purpose": "Displays file contents.",
           "syntax": "cat filename",
-          "parameters": "filename: file to read and display.",
-          "example": "cat config.env",
-          "expected_output": "PORT=8080",
-          "output_explanation": "The entire contents of config.env is printed to the terminal.",
-          "when_to_use": "Use to quickly view small configuration or log files.",
-          "real_world_use": "cat /etc/hosts to view DNS host mappings on a server."
-        },
+          "example": "cat draft.txt",
+          "expected_output": "Hello\nWorld",
+          "output_explanation": "Prints the content of draft.txt directly to the screen."
+        }
+      ]
+    },
+    {
+      "title": "cp & mv (Copy & Move)",
+      "definition": "cp copies a file to a new location. mv moves or renames a file.",
+      "explanation": "cp leaves the original file where it was. mv shifts the original file to a new place or renames it in place.",
+      "commands": [
         {
           "name": "cp",
-          "purpose": "Copies a file from one location to another.",
+          "purpose": "Copies a file to a new path.",
           "syntax": "cp source destination",
-          "parameters": "source: file to copy. destination: where to place the copy.",
-          "example": "cp config.env config.env.backup",
-          "expected_output": "(No output — copy created silently)",
-          "output_explanation": "A duplicate of config.env named config.env.backup is created in the same directory.",
-          "when_to_use": "Always back up config files before modifying them.",
-          "real_world_use": "cp nginx.conf nginx.conf.bak before editing web server configuration."
+          "example": "cp draft.txt draft_backup.txt",
+          "expected_output": "",
+          "output_explanation": "Creates a duplicate copy of draft.txt named draft_backup.txt."
         },
         {
           "name": "mv",
-          "purpose": "Moves a file to a new location, or renames it in place.",
+          "purpose": "Moves or renames a file.",
           "syntax": "mv source destination",
-          "parameters": "source: original file. destination: new name or path.",
-          "example": "mv config.env .env",
-          "expected_output": "(No output — file renamed silently)",
-          "output_explanation": "config.env has been renamed to .env in the same directory.",
-          "when_to_use": "Use to rename files or reorganize them into folders.",
-          "real_world_use": "mv deployment.sh /usr/local/bin/deploy to make a script globally available."
-        },
+          "example": "mv draft.txt projects/draft.txt",
+          "expected_output": "",
+          "output_explanation": "Moves draft.txt inside the projects folder."
+        }
+      ]
+    },
+    {
+      "title": "rm (Deleting Files)",
+      "definition": "Stands for 'remove'. It permanently deletes files.",
+      "explanation": "Warning: rm deletes files immediately and permanently. There is no recycle bin or trash folder in the terminal.",
+      "commands": [
         {
           "name": "rm",
-          "purpose": "Permanently deletes a file. This CANNOT be undone.",
+          "purpose": "Deletes a file permanently.",
           "syntax": "rm filename",
-          "parameters": "filename: file to delete. Use -r to delete directories recursively.",
-          "example": "rm config.env.backup",
-          "expected_output": "(No output — file deleted silently)",
-          "output_explanation": "config.env.backup is permanently removed. There is no recycle bin in Linux.",
-          "when_to_use": "Use to clean up temporary files, logs, or old backups.",
-          "real_world_use": "rm -rf /tmp/build_cache to clean up CI/CD pipeline temp files."
+          "example": "rm draft_backup.txt",
+          "expected_output": "",
+          "output_explanation": "Permanently deletes draft_backup.txt."
         }
-      ],
-      "pro_tip": "Use `mkdir -p path/to/nested/folder` to create deeply nested directories in a single command.",
-      "best_practices": "Always double-check the filename before running rm. Run `ls` first to confirm the exact name.",
-      "common_mistakes": "Running `rm -rf /` or `rm -rf *` in the wrong directory. Always verify your path with pwd first.",
-      "real_world_example": "A developer creates a project structure: mkdir -p app/src/components, then touches placeholder files, and copies a template config into place.",
-      "remember": "`rm` is permanent. Linux has no Recycle Bin. Once deleted, the file is gone.",
-      "summary": "touch/mkdir create. echo/cat read and write. cp/mv organize. rm deletes. These are your daily file management tools."
+      ]
     }
   ],
   "interactive_examples": [
@@ -556,7 +542,12 @@
     {
       "question": "Which command shows your current directory path?",
       "type": "MCQ",
-      "options": ["ls", "cd", "pwd", "whoami"],
+      "options": [
+        "ls",
+        "cd",
+        "pwd",
+        "whoami"
+      ],
       "answer": "pwd",
       "explanation": "pwd (Print Working Directory) outputs the absolute path from root / to your current location.",
       "incorrect_explanations": {
@@ -568,7 +559,12 @@
     {
       "question": "Which flag shows hidden files (starting with a dot) when using ls?",
       "type": "MCQ",
-      "options": ["ls -l", "ls -a", "ls -h", "ls -r"],
+      "options": [
+        "ls -l",
+        "ls -a",
+        "ls -h",
+        "ls -r"
+      ],
       "answer": "ls -a",
       "explanation": "The -a flag means 'all' — it includes hidden files that start with a dot like .bashrc.",
       "incorrect_explanations": {
@@ -580,7 +576,12 @@
     {
       "question": "What does `cd` with no arguments do?",
       "type": "MCQ",
-      "options": ["Goes to root /", "Shows an error", "Goes to home directory (~)", "Shows help manual"],
+      "options": [
+        "Goes to root /",
+        "Shows an error",
+        "Goes to home directory (~)",
+        "Shows help manual"
+      ],
       "answer": "Goes to home directory (~)",
       "explanation": "cd with no arguments defaults to the user's home directory, same as cd ~.",
       "incorrect_explanations": {
@@ -609,7 +610,12 @@
     {
       "question": "Which command copies a file?",
       "type": "MCQ",
-      "options": ["mv", "cp", "rm", "touch"],
+      "options": [
+        "mv",
+        "cp",
+        "rm",
+        "touch"
+      ],
       "answer": "cp",
       "explanation": "cp (copy) duplicates a file from a source path to a destination path.",
       "incorrect_explanations": {
@@ -621,7 +627,12 @@
     {
       "question": "What does the `~` (tilde) symbol represent in Linux?",
       "type": "MCQ",
-      "options": ["The root directory /", "The current directory", "The user's home directory", "A hidden file marker"],
+      "options": [
+        "The root directory /",
+        "The current directory",
+        "The user's home directory",
+        "A hidden file marker"
+      ],
       "answer": "The user's home directory",
       "explanation": "~ is a shorthand for the current user's home directory, e.g., /home/student.",
       "incorrect_explanations": {
@@ -633,7 +644,12 @@
     {
       "question": "Which command permanently deletes a file in Linux?",
       "type": "MCQ",
-      "options": ["del", "rm", "remove", "trash"],
+      "options": [
+        "del",
+        "rm",
+        "remove",
+        "trash"
+      ],
       "answer": "rm",
       "explanation": "rm (remove) permanently deletes files. There is no recycle bin in the Linux terminal.",
       "incorrect_explanations": {
@@ -662,7 +678,12 @@
     {
       "question": "What is the output of `pwd` if you are in /home/student/projects?",
       "type": "Output Prediction",
-      "options": ["/home", "/home/student", "/home/student/projects", "~/projects"],
+      "options": [
+        "/home",
+        "/home/student",
+        "/home/student/projects",
+        "~/projects"
+      ],
       "answer": "/home/student/projects",
       "explanation": "pwd always prints the full absolute path starting from /.",
       "incorrect_explanations": {
@@ -691,7 +712,12 @@
     {
       "question": "Which command creates a directory called `projects`?",
       "type": "MCQ",
-      "options": ["touch projects", "mkdir projects", "cd projects", "create projects"],
+      "options": [
+        "touch projects",
+        "mkdir projects",
+        "cd projects",
+        "create projects"
+      ],
       "answer": "mkdir projects",
       "explanation": "mkdir (make directory) creates a new folder. touch creates files, not directories.",
       "incorrect_explanations": {
@@ -749,17 +775,61 @@
     ],
     "cheat_sheet": "# Linux Command Line Basics Cheat Sheet\n\n## Navigation\npwd                    # Show current directory\ncd [folder]            # Go to folder\ncd ~                   # Go to home\ncd ..                  # Go up one level\ncd -                   # Go to previous directory\n\n## Listing Files\nls                     # List visible files\nls -a                  # Show hidden files\nls -l                  # Long format (permissions, owner, size)\nls -la                 # Long format + hidden files\nls -lah                # Long format + hidden + human-readable sizes\n\n## File Operations\ntouch file             # Create empty file\nmkdir folder           # Create directory\nmkdir -p a/b/c         # Create nested directories\necho 'text' > file     # Write text to file (overwrites)\necho 'text' >> file    # Append text to file\ncat file               # Display file contents\ncp src dest            # Copy file\nmv src dest            # Move or rename file\nrm file                # Delete file\nrm -rf folder          # Delete directory recursively\n\n## Shortcuts\n~                      # Home directory\n.                      # Current directory\n..                     # Parent directory\nTab                    # Auto-complete filenames",
     "commands_table": [
-      { "name": "pwd", "syntax": "pwd", "description": "Print current working directory path." },
-      { "name": "cd", "syntax": "cd [path]", "description": "Change to specified directory. No args = home." },
-      { "name": "ls", "syntax": "ls [flags] [path]", "description": "List directory contents." },
-      { "name": "ls -la", "syntax": "ls -la [path]", "description": "List all files with full details including hidden." },
-      { "name": "touch", "syntax": "touch filename", "description": "Create empty file or update timestamp." },
-      { "name": "mkdir", "syntax": "mkdir [-p] folder", "description": "Create directory. -p for nested." },
-      { "name": "echo", "syntax": "echo 'text' > file", "description": "Write or append text to a file." },
-      { "name": "cat", "syntax": "cat filename", "description": "Display file contents." },
-      { "name": "cp", "syntax": "cp src dest", "description": "Copy file or directory." },
-      { "name": "mv", "syntax": "mv src dest", "description": "Move or rename file." },
-      { "name": "rm", "syntax": "rm [-rf] file", "description": "Delete file. -rf for directories." }
+      {
+        "name": "pwd",
+        "syntax": "pwd",
+        "description": "Print current working directory path."
+      },
+      {
+        "name": "cd",
+        "syntax": "cd [path]",
+        "description": "Change to specified directory. No args = home."
+      },
+      {
+        "name": "ls",
+        "syntax": "ls [flags] [path]",
+        "description": "List directory contents."
+      },
+      {
+        "name": "ls -la",
+        "syntax": "ls -la [path]",
+        "description": "List all files with full details including hidden."
+      },
+      {
+        "name": "touch",
+        "syntax": "touch filename",
+        "description": "Create empty file or update timestamp."
+      },
+      {
+        "name": "mkdir",
+        "syntax": "mkdir [-p] folder",
+        "description": "Create directory. -p for nested."
+      },
+      {
+        "name": "echo",
+        "syntax": "echo 'text' > file",
+        "description": "Write or append text to a file."
+      },
+      {
+        "name": "cat",
+        "syntax": "cat filename",
+        "description": "Display file contents."
+      },
+      {
+        "name": "cp",
+        "syntax": "cp src dest",
+        "description": "Copy file or directory."
+      },
+      {
+        "name": "mv",
+        "syntax": "mv src dest",
+        "description": "Move or rename file."
+      },
+      {
+        "name": "rm",
+        "syntax": "rm [-rf] file",
+        "description": "Delete file. -rf for directories."
+      }
     ],
     "revision_notes": [
       "The root directory / is the parent of ALL files in Linux.",

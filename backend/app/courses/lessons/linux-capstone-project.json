@@ -19,64 +19,34 @@
   },
   "key_concepts": [
     {
-      "title": "Combining Commands: The Unix Philosophy",
-      "definition": "Linux commands are designed to be combined using pipes (|) and redirection (>, >>) to perform complex tasks. This is the Unix Philosophy: small tools that do one thing well, chained together.",
-      "why_important": [
-        "Complex tasks are solved by combining simple commands — not writing new programs.",
-        "Pipes let you process data through multiple steps in a single command line.",
-        "Redirection saves command output to files for logging and reporting.",
-        "Command substitution $() captures output to use as input for another step."
-      ],
-      "explanation": "Pipes pass the output of one command to the input of the next:\n\n```bash\nps aux | grep nginx | awk '{print $2}'\n```\nStep 1: ps aux — list all processes\nStep 2: grep nginx — filter for nginx lines\nStep 3: awk '{print $2}' — extract just the PID column\n\nChaining commands conditionally:\n\n| Operator | Meaning | Example |\n|:---|:---|:---|\n| `\\|` | Pipe stdout to next cmd | `ls \\| grep .log` |\n| `>` | Redirect stdout to file | `ls > files.txt` |\n| `>>` | Append stdout to file | `ls >> files.txt` |\n| `&&` | Run next only if first succeeds | `mkdir dir && cd dir` |\n| `\\|\\|` | Run next only if first fails | `mkdir dir \\|\\| echo 'exists'` |\n| `;` | Run both regardless of exit code | `cmd1; cmd2` |",
+      "title": "Pipes and Redirection (|, >, >>)",
+      "definition": "Ways to connect commands together or save their output to files.",
+      "explanation": "Use > to overwrite a file, >> to append text, and | (pipe) to send one command's output directly into the next command.",
       "commands": [
         {
           "name": "Pipe (|)",
-          "purpose": "Connects the output of one command to the input of the next.",
-          "syntax": "command1 | command2 | command3",
-          "parameters": "Each command in the chain processes the output of the previous one.",
-          "example": "ps aux | grep -v grep | grep nginx | wc -l",
-          "expected_output": "2",
-          "output_explanation": "This pipeline counts how many nginx processes are running. ps aux → filter out the grep process itself → filter for nginx → count lines.",
-          "when_to_use": "Use pipes whenever you need to filter, transform, or count command output.",
-          "real_world_use": "count running docker containers: docker ps | wc -l"
+          "purpose": "Passes output of one command as input to another.",
+          "syntax": "cmd1 | cmd2",
+          "example": "ps aux | grep nginx",
+          "expected_output": "root      1234  0.0  0.1  nginx",
+          "output_explanation": "Pipes process list to grep to filter only nginx processes."
         }
-      ],
-      "pro_tip": "Use `tee` to both display output AND save it to a file simultaneously: `command | tee output.log`",
-      "best_practices": "Build complex pipelines step by step — test each stage before adding the next pipe.",
-      "common_mistakes": "Using ; instead of && for dependent steps — if mkdir fails with ;, cd runs anyway and succeeds incorrectly.",
-      "real_world_example": "A DevOps engineer runs a single pipeline: `ps aux | grep java | grep -v grep | awk '{print $2}' | xargs kill` to kill all java processes in one command.",
-      "remember": "Each command in a pipeline runs in its own subshell. Variable assignments in a pipeline don't persist after the pipe.",
-      "summary": "The pipe | chains commands. && chains dependent steps. || provides fallback. These are the building blocks of automation."
+      ]
     },
     {
-      "title": "Capstone Project Architecture",
-      "definition": "The capstone simulates a real server provisioning task — creating the structure, securing it, scripting it, and verifying it.",
-      "why_important": [
-        "Reinforces every concept from all four modules in one connected workflow.",
-        "Demonstrates competency to employers — this is a real-world DevOps task.",
-        "Builds the muscle memory of the correct order: structure → permissions → script → verify.",
-        "Creates a reference project you can explain in interviews."
-      ],
-      "explanation": "Project structure you will build:\n\n```\n~/devops-project/\n├── app/\n│   ├── src/             # Application source\n│   └── config/\n│       └── app.env      # Protected (600)\n├── scripts/\n│   ├── deploy.sh        # Executable (755)\n│   ├── healthcheck.sh   # Executable (755)\n│   └── setup.sh         # Executable (755)\n├── logs/\n│   └── deploy.log       # Log output\n└── backups/             # Config backups\n```\n\n**Workflow:**\n1. Create the directory structure (mkdir -p)\n2. Write config files and set 600 permissions\n3. Write and test bash scripts\n4. Set correct script permissions (755)\n5. Run health checks and save output to logs\n6. Verify everything with ls -la",
+      "title": "mkdir -p & Idempotency",
+      "definition": "Creating directory folders safely without causing errors if they already exist.",
+      "explanation": "Use mkdir -p to create nested folders in one step. It is safe to run multiple times because it won't crash if the folders exist.",
       "commands": [
         {
-          "name": "mkdir -p (nested directories)",
-          "purpose": "Creates an entire nested directory tree in a single command.",
-          "syntax": "mkdir -p parent/child/grandchild",
-          "parameters": "-p: create parent directories as needed, no error if already exists.",
-          "example": "mkdir -p ~/devops-project/app/config ~/devops-project/scripts ~/devops-project/logs ~/devops-project/backups",
-          "expected_output": "(No output — all directories created silently)",
-          "output_explanation": "The entire project directory tree is created. Use ls -la ~/devops-project/ to verify.",
-          "when_to_use": "Always use -p when creating nested structures. Without it, mkdir fails if the parent doesn't exist.",
-          "real_world_use": "Provisioning scripts use mkdir -p to create the complete directory layout for an application in one step."
+          "name": "mkdir -p",
+          "purpose": "Creates nested directories safely.",
+          "syntax": "mkdir -p path/to/folder",
+          "example": "mkdir -p ~/devops-project/app",
+          "expected_output": "",
+          "output_explanation": "Creates app folder and any missing parent folders safely."
         }
-      ],
-      "pro_tip": "Use `tree` command (if available) to visualize the entire directory structure: `tree ~/devops-project/`",
-      "best_practices": "Always create directory structures before writing files into them. Start with the full tree before any content.",
-      "common_mistakes": "Creating directories one at a time — mkdir -p handles the entire tree in one command.",
-      "real_world_example": "A Terraform null_resource provisioner runs a script that creates the entire application directory structure with mkdir -p before copying binaries.",
-      "remember": "mkdir -p never fails if the directory already exists. This makes it safe to re-run provisioning scripts.",
-      "summary": "Plan your directory structure first, then create it all with mkdir -p. Build depth before breadth."
+      ]
     }
   ],
   "interactive_examples": [
@@ -371,7 +341,12 @@
     {
       "question": "Which command creates nested directories in a single operation?",
       "type": "MCQ",
-      "options": ["mkdir dir", "mkdir -p a/b/c", "touch a/b/c", "mkdir -r a/b/c"],
+      "options": [
+        "mkdir dir",
+        "mkdir -p a/b/c",
+        "touch a/b/c",
+        "mkdir -r a/b/c"
+      ],
       "answer": "mkdir -p a/b/c",
       "explanation": "-p (parents) creates parent directories as needed. Without -p, mkdir fails if parent doesn't exist.",
       "incorrect_explanations": {
@@ -400,7 +375,12 @@
     {
       "question": "Which operator appends command output to a log file without overwriting existing content?",
       "type": "MCQ",
-      "options": [">", ">>", "|", "&"],
+      "options": [
+        ">",
+        ">>",
+        "|",
+        "&"
+      ],
       "answer": ">>",
       "explanation": ">> appends to the end of the file. > truncates (overwrites) the file completely. This is critical for log files where history must be preserved.",
       "incorrect_explanations": {
@@ -577,14 +557,46 @@
     ],
     "cheat_sheet": "# Linux Capstone Quick Reference\n\n## Project Setup\nmkdir -p project/{app/config,scripts,logs,backups}\nchmod 600 project/app/config/app.env\nchmod 755 project/scripts/*.sh\n\n## Pipe Chaining Operators\ncmd1 | cmd2     # Pipe stdout to cmd2\ncmd1 && cmd2    # Run cmd2 only if cmd1 succeeds\ncmd1 || cmd2    # Run cmd2 only if cmd1 fails\ncmd1 ; cmd2     # Always run both\n> file          # Redirect (overwrite)\n>> file         # Append to file\n2>&1            # Merge stderr into stdout\n\n## Logging Pattern\necho \"[$(date '+%Y-%m-%d %H:%M:%S')] Event by $(whoami)\" >> app.log\n\n## Timestamped Backup\ncp config.env backups/config.env.$(date +%Y%m%d_%H%M)\n\n## Health Check Pattern\n[ -f config.env ] && echo 'Config: OK' || echo 'Config: MISSING'\nss -lntp | grep :PORT && echo 'Port OPEN' || echo 'Port CLOSED'\n\n## Background with Logging\n./script.sh > output.log 2>&1 &\ntail -f output.log   # Monitor in real-time\n\n## Idempotent Directory Creation\nmkdir -p dir    # Safe to run multiple times\n[ -d dir ] || mkdir dir   # Only create if missing\n[ -f file ] || touch file # Only create file if missing",
     "commands_table": [
-      { "name": "mkdir -p", "syntax": "mkdir -p path/to/nested/dir", "description": "Create nested directories safely." },
-      { "name": "|", "syntax": "cmd1 | cmd2", "description": "Pipe output of cmd1 to input of cmd2." },
-      { "name": "&&", "syntax": "cmd1 && cmd2", "description": "Run cmd2 only if cmd1 succeeds." },
-      { "name": ">>", "syntax": "cmd >> file", "description": "Append command output to a file." },
-      { "name": "2>&1", "syntax": "cmd > file 2>&1", "description": "Redirect both stdout and stderr to file." },
-      { "name": "tee", "syntax": "cmd | tee file", "description": "Print output AND save to file simultaneously." },
-      { "name": "tail -f", "syntax": "tail -f logfile", "description": "Follow a log file in real-time." },
-      { "name": "wc -l", "syntax": "cmd | wc -l", "description": "Count the number of lines in output." }
+      {
+        "name": "mkdir -p",
+        "syntax": "mkdir -p path/to/nested/dir",
+        "description": "Create nested directories safely."
+      },
+      {
+        "name": "|",
+        "syntax": "cmd1 | cmd2",
+        "description": "Pipe output of cmd1 to input of cmd2."
+      },
+      {
+        "name": "&&",
+        "syntax": "cmd1 && cmd2",
+        "description": "Run cmd2 only if cmd1 succeeds."
+      },
+      {
+        "name": ">>",
+        "syntax": "cmd >> file",
+        "description": "Append command output to a file."
+      },
+      {
+        "name": "2>&1",
+        "syntax": "cmd > file 2>&1",
+        "description": "Redirect both stdout and stderr to file."
+      },
+      {
+        "name": "tee",
+        "syntax": "cmd | tee file",
+        "description": "Print output AND save to file simultaneously."
+      },
+      {
+        "name": "tail -f",
+        "syntax": "tail -f logfile",
+        "description": "Follow a log file in real-time."
+      },
+      {
+        "name": "wc -l",
+        "syntax": "cmd | wc -l",
+        "description": "Count the number of lines in output."
+      }
     ],
     "revision_notes": [
       "The project setup order: directories first → files second → permissions third → scripts fourth → verification last.",
