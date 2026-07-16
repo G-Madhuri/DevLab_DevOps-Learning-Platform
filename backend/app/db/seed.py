@@ -88,7 +88,7 @@ def seed_labs():
                 "icon": "network",
                 "estimated_time": "60m",
                 "status": "Active",
-                "coming_soon": True,
+                "coming_soon": False,
             },
             {
                 "title": "Optimizing Dockerfiles",
@@ -100,19 +100,19 @@ def seed_labs():
                 "icon": "zap",
                 "estimated_time": "60m",
                 "status": "Active",
-                "coming_soon": True,
+                "coming_soon": False,
             },
             {
                 "title": "Docker Networking Deep Dive",
                 "slug": "docker-networking-deep-dive",
                 "description": "Configure overlay networks, bridge adapter bindings, and investigate custom iptables routing.",
-                "difficulty": "Advanced",
+                "difficulty": "Intermediate",
                 "duration": "60 minutes",
                 "category": "Docker",
                 "icon": "network",
                 "estimated_time": "60m",
-                "status": "Beta",
-                "coming_soon": True,
+                "status": "Active",
+                "coming_soon": False,
             },
             # Kubernetes
             {

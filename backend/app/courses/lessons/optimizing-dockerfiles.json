@@ -1,0 +1,295 @@
+{
+  "slug": "optimizing-dockerfiles",
+  "title": "Optimizing Dockerfiles",
+  "overview": {
+    "introduction": "Optimizing Dockerfiles speeds up image builds, reduces security vulnerabilities, and minimizes image storage sizes. You will master multi-stage builds, target minimal Alpine/distroless bases, and harness build cache reuse.",
+    "why_it_matters": "Including compilers, test libraries, and package managers inside production containers introduces security vulnerabilities and bloats image sizes (often over 1GB). Using slim base layers and separating build environments reduces microservice footprints to under 50MB.",
+    "industry_usage": "Used by advanced release engineers and DevSecOps practitioners to lock down deployment layers, accelerate build runners, and keep production clusters lightweight and fast.",
+    "what_you_will_build": "An unoptimized development image, optimize its layer structures to maximize cache hits, write a multi-stage build separating compilation from runtime, and prune system cache parameters.",
+    "prerequisites": "Docker Fundamentals.",
+    "estimated_time": "75 mins",
+    "difficulty": "Advanced",
+    "learning_outcomes": [
+      "Identify bloat and dependencies inside dockerfiles.",
+      "Analyze image histories and layers metadata sizes.",
+      "Optimize COPY placement to leverage caching engines.",
+      "Write multi-stage Dockerfiles utilizing build targets.",
+      "Prune dangling builders and reclaim storage volumes."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "Layer Caching & Ordering",
+      "definition": "Docker builds images in layers. Each instruction in your Dockerfile (FROM, RUN, COPY, ADD) creates a read-only filesystem layer. Docker reuses cached layers if no changes are detected.",
+      "explanation": "If a step changes (e.g. source files are edited), Docker must rebuild that layer and ALL subsequent layers. Copying package lockfiles first and source code last ensures package installs are cached.",
+      "commands": [
+        {
+          "name": "docker history",
+          "purpose": "Show the build history layers of an image.",
+          "syntax": "docker history [image]",
+          "example": "docker history custom_app:v1",
+          "expected_output": "IMAGE          CREATED        CREATED BY              SIZE\n1f2113ea1a0c   Just now       RUN npm install...      24.5MB\n05455a08881e   2 hours ago    COPY . .                12.1MB",
+          "output_explanation": "Shows step instructions, sizes, and layers hashes compiling the image."
+        }
+      ]
+    },
+    {
+      "title": "Multi-stage Builds",
+      "definition": "Multi-stage builds allow using multiple FROM statements in a single Dockerfile. Each FROM block starts a new stage with a different base.",
+      "explanation": "You can compile applications in a 'builder' stage loaded with build tools, and then copy only the compiled binary file to a lightweight final runtime image.",
+      "commands": [
+        {
+          "name": "docker system prune",
+          "purpose": "Clean dangling build caches, stopped containers, and unused networks.",
+          "syntax": "docker system prune [options]",
+          "example": "docker system prune -f",
+          "expected_output": "Deleted Containers: 2\nTotal reclaimed space: 142MB",
+          "output_explanation": "Purges unused cache files, cleaning local storage disks."
+        }
+      ]
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Write Unoptimized Dockerfile",
+      "definition": "Creating a standard configuration file where code copy overrides cache paths.",
+      "explanation": "Write a basic Dockerfile that copies all application source code before installing packages.",
+      "instruction": "Create a file named Dockerfile containing node base, COPY, and npm install instructions.",
+      "example": "echo -e \"FROM node:18\\nWORKDIR /app\\nCOPY . .\\nRUN npm install\" > Dockerfile",
+      "expected": "Dockerfile",
+      "hint": "Type: echo -e \"FROM node:18\\nWORKDIR /app\\nCOPY . .\\nRUN npm install\" > Dockerfile",
+      "solution": "echo -e \"FROM node:18\\nWORKDIR /app\\nCOPY . .\\nRUN npm install\" > Dockerfile",
+      "difficulty": "Advanced",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 2,
+      "title": "2. Build Unoptimized Image",
+      "definition": "Compiling basic Dockerfiles into tagged development images.",
+      "instruction": "Build a custom image tagged node_app:v1 using the local Dockerfile.",
+      "example": "docker build -t node_app:v1 .",
+      "expected": "Successfully built",
+      "hint": "Type: docker build -t node_app:v1 .",
+      "solution": "docker build -t node_app:v1 .",
+      "difficulty": "Advanced",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 3,
+      "title": "3. Inspect Custom Image Metadata",
+      "definition": "Analyzing compiler tags and configuration properties of images.",
+      "instruction": "Inspect the node_app:v1 image configurations using docker image inspect.",
+      "example": "docker image inspect node_app:v1",
+      "expected": "Architecture",
+      "hint": "Type: docker image inspect node_app:v1",
+      "solution": "docker image inspect node_app:v1",
+      "difficulty": "Advanced",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 4,
+      "title": "4. Optimize Layer Cache Ordering",
+      "definition": "Structuring COPY blocks to prevent unnecessary layer updates.",
+      "instruction": "Rewrite the Dockerfile using node:18-alpine, copying package.json and running npm install before copying source files.",
+      "example": "echo -e \"FROM node:18-alpine\\nWORKDIR /app\\nCOPY package.json .\\nRUN npm install\\nCOPY . .\" > Dockerfile",
+      "expected": "Dockerfile",
+      "hint": "Type: echo -e \"FROM node:18-alpine\\nWORKDIR /app\\nCOPY package.json .\\nRUN npm install\\nCOPY . .\" > Dockerfile",
+      "solution": "echo -e \"FROM node:18-alpine\\nWORKDIR /app\\nCOPY package.json .\\nRUN npm install\\nCOPY . .\" > Dockerfile",
+      "difficulty": "Advanced",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 5,
+      "title": "5. Build Cache-Optimized Image",
+      "definition": "Re-running compilation checks to trigger cache reuse.",
+      "instruction": "Build the optimized image tagged node_app:v2.",
+      "example": "docker build -t node_app:v2 .",
+      "expected": "Successfully tagged node_app:v2",
+      "hint": "Type: docker build -t node_app:v2 .",
+      "solution": "docker build -t node_app:v2 .",
+      "difficulty": "Advanced",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 6,
+      "title": "6. Write Multi-Stage configuration",
+      "definition": "Splitting building environments from minimal deployable runtimes.",
+      "instruction": "Create Dockerfile.multi using AS builder, copying build outputs into a minimal nginx base.",
+      "example": "echo -e \"FROM node:18 AS builder\\nWORKDIR /app\\nCOPY . .\\nRUN npm run build\\n\\nFROM nginx:alpine\\nCOPY --from=builder /app/build /usr/share/nginx/html\" > Dockerfile.multi",
+      "expected": "Dockerfile.multi",
+      "hint": "Type: echo -e \"FROM node:18 AS builder\\nWORKDIR /app\\nCOPY . .\\nRUN npm run build\\n\\nFROM nginx:alpine\\nCOPY --from=builder /app/build /usr/share/nginx/html\" > Dockerfile.multi",
+      "solution": "echo -e \"FROM node:18 AS builder\\nWORKDIR /app\\nCOPY . .\\nRUN npm run build\\n\\nFROM nginx:alpine\\nCOPY --from=builder /app/build /usr/share/nginx/html\" > Dockerfile.multi",
+      "difficulty": "Advanced",
+      "estimated_duration": "6m"
+    },
+    {
+      "id": 7,
+      "title": "7. Build Production Image",
+      "definition": "Compiling multi-stage specifications targeting minimal tags.",
+      "instruction": "Build image tagged node_app:prod using Dockerfile.multi.",
+      "example": "docker build -f Dockerfile.multi -t node_app:prod .",
+      "expected": "node_app:prod",
+      "hint": "Type: docker build -f Dockerfile.multi -t node_app:prod .",
+      "solution": "docker build -f Dockerfile.multi -t node_app:prod .",
+      "difficulty": "Advanced",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 8,
+      "title": "8. Prune System Build Cache",
+      "definition": "Clearing all intermediate build residues and reclaim storage space.",
+      "instruction": "Force prune build cache assets using docker system prune -f.",
+      "example": "docker system prune -f",
+      "expected": "reclaimed",
+      "hint": "Type: docker system prune -f",
+      "solution": "docker system prune -f",
+      "difficulty": "Advanced",
+      "estimated_duration": "4m"
+    }
+  ],
+  "exercises": [
+    {
+      "title": "Run as Non-Root User",
+      "problem": "Modify your Dockerfile to use a custom user instead of default root, improving sandbox security.",
+      "difficulty": "hard",
+      "hint": "Add USER node inside the Dockerfile configuration lines.",
+      "expected_result": "inspecting the build shows User: node configurators.",
+      "objective": "Design container secure execution settings."
+    },
+    {
+      "title": "Implement HEALTHCHECK",
+      "problem": "Incorporate a HEALTHCHECK instruction checking service ping status inside your final nginx stage.",
+      "difficulty": "hard",
+      "hint": "Use HEALTHCHECK --interval=5m CMD curl -f http://localhost/ || exit 1.",
+      "expected_result": "docker inspect lists container health check blocks.",
+      "objective": "Enable automated daemon monitoring hooks."
+    }
+  ],
+  "quiz": [
+    {
+      "question": "What is the primary benefit of multi-stage builds?",
+      "options": [
+        "They allow running multiple containers on different hosts.",
+        "They separate compiler tools from runtime files, producing small secure images.",
+        "They speed up download pulls from registry directories.",
+        "They combine multiple ports into single host endpoints."
+      ],
+      "answer": "They separate compiler tools from runtime files, producing small secure images.",
+      "explanation": "Multi-stage builds use intermediate containers to compile binaries and copy only final outputs to the tiny production image."
+    },
+    {
+      "question": "Why should 'COPY package.json .' be done before 'COPY . .' when building Node apps?",
+      "options": [
+        "It prevents file permission issues.",
+        "It ensures package cache is reused unless dependencies change.",
+        "NPM requires lockfiles to be copied first.",
+        "It reduces the physical size of source code."
+      ],
+      "answer": "It ensures package cache is reused unless dependencies change.",
+      "explanation": "If source code changes but package.json does not, Docker reuses cached 'npm install' layers, saving minutes of install time."
+    },
+    {
+      "question": "Which command removes unused images, stopped containers, and build cache?",
+      "options": [
+        "docker clean",
+        "docker system prune",
+        "docker container purge",
+        "docker image rm --all"
+      ],
+      "answer": "docker system prune",
+      "explanation": "'docker system prune' purges stopped container instances, dangling images, network definitions, and builders caches."
+    },
+    {
+      "question": "Which Dockerfile instruction specifies the base image?",
+      "options": [
+        "FROM",
+        "BASE",
+        "SOURCE",
+        "ROOT"
+      ],
+      "answer": "FROM",
+      "explanation": "The 'FROM' instruction sets the initial base template (e.g. ubuntu, alpine) for subsequent instructions."
+    },
+    {
+      "question": "What does a FROM instruction containing 'node:18-alpine' use as its base?",
+      "options": [
+        "Node 18 running on lightweight Alpine Linux distribution.",
+        "Node 18 compiled on virtualized Alpine servers.",
+        "A customized cloud virtualization hypervisor.",
+        "None of the above."
+      ],
+      "answer": "Node 18 running on lightweight Alpine Linux distribution.",
+      "explanation": "'alpine' tags point to ultra-lightweight Linux distribution base images (typically under 5MB)."
+    },
+    {
+      "question": "Which command allows specifying a custom filename (e.g. Dockerfile.multi) during build?",
+      "options": [
+        "docker build -f Dockerfile.multi",
+        "docker build --file=Dockerfile.multi",
+        "Both are correct.",
+        "Neither is correct."
+      ],
+      "answer": "Both are correct.",
+      "explanation": "The '-f' or '--file' flag routes the build command to compile custom file paths."
+    },
+    {
+      "question": "What is the consequence of adding many RUN instructions in a Dockerfile?",
+      "options": [
+        "Builds compile faster.",
+        "Each RUN instruction creates a new image layer, potentially bloating the size.",
+        "Docker daemon merges them into single files automatically.",
+        "The compiler throws memory allocation warnings."
+      ],
+      "answer": "Each RUN instruction creates a new image layer, potentially bloating the size.",
+      "explanation": "Each instruction generates a persistent filesystem layer. Chaining shell tasks (e.g. RUN apt update && apt install) keeps layers unified and small."
+    },
+    {
+      "question": "How do you copy a file from a build stage named 'builder' inside a multi-stage Dockerfile?",
+      "options": [
+        "COPY --from=builder /app/dist /dist",
+        "COPY builder:/app/dist /dist",
+        "COPY /app/dist /dist --stage=builder",
+        "GET /app/dist FROM builder"
+      ],
+      "answer": "COPY --from=builder /app/dist /dist",
+      "explanation": "The '--from=stage_name' parameter copies compilation outputs directly from intermediate builds."
+    },
+    {
+      "question": "Which Dockerfile instruction sets the default running process executable command?",
+      "options": [
+        "CMD",
+        "RUN",
+        "START",
+        "PROCESS"
+      ],
+      "answer": "CMD",
+      "explanation": "The 'CMD' instruction specifies the default executable argument array to run when starting the container."
+    },
+    {
+      "question": "Why is running a container as a non-root USER considered a best practice?",
+      "options": [
+        "It uses less host RAM.",
+        "It minimizes security risks by blocking host breakout exploits.",
+        "Containers run faster as regular users.",
+        "It blocks external network calls."
+      ],
+      "answer": "It minimizes security risks by blocking host breakout exploits.",
+      "explanation": "If a hacker breaks out of an application process, a non-root container blocks access to host kernel resources."
+    }
+  ],
+  "resources": [
+    {
+      "title": "Optimizing Dockerfiles Reference Guide",
+      "url": "https://docs.docker.com/develop/develop-images/dockerfile_best-practices/",
+      "type": "documentation",
+      "description": "Best practices for writing efficient, small, and secure Dockerfiles."
+    },
+    {
+      "title": "Multi-stage Builds Manual",
+      "url": "https://docs.docker.com/build/building/multi-stage/",
+      "type": "documentation",
+      "description": "Guides and references explaining multi-stage builds structures."
+    }
+  ]
+}

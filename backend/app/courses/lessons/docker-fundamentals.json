@@ -1,0 +1,335 @@
+{
+  "slug": "docker-fundamentals",
+  "title": "Docker Fundamentals",
+  "overview": {
+    "introduction": "Docker is the industry-standard containerization platform. It packages applications and their dependencies into a single lightweight container, ensuring it runs identically on any environment.",
+    "why_it_matters": "Before Docker, deploying software was plagued by the 'works on my machine' problem. Different OS versions, libraries, and configurations caused production failures. Docker eliminates this entirely.",
+    "industry_usage": "Used daily by software and DevOps engineers to orchestrate microservices, accelerate CI/CD builds, isolate development environments, and run cloud-native scale workloads.",
+    "what_you_will_build": "A series of running containers including Nginx and interactive shells, configure environment variables, list container registries, and audit service logs.",
+    "prerequisites": "Linux command-line basics.",
+    "estimated_time": "45 mins",
+    "difficulty": "Beginner",
+    "learning_outcomes": [
+      "Confirm Docker daemon client installation.",
+      "Pull public images from Docker Hub.",
+      "Manage container lifecycles (run, stop, list, inspect, remove).",
+      "Configure environment variables in running container runtime.",
+      "Diagnose container state issues using log outputs."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "Docker Client & Daemon",
+      "definition": "Docker uses a client-server architecture. The Client is the CLI tool you type commands into. The Daemon (dockerd) is the background service that does the heavy lifting of building and running containers.",
+      "explanation": "When you run 'docker run', the client sends a REST API request to the daemon, which pulls the image and launches the container.",
+      "commands": [
+        {
+          "name": "docker version",
+          "purpose": "Verify client and daemon versions.",
+          "syntax": "docker version",
+          "example": "docker version",
+          "expected_output": "Client: Docker Engine...\nServer: Engine...",
+          "output_explanation": "Confirming both client and background daemon are active."
+        },
+        {
+          "name": "docker info",
+          "purpose": "Display system-wide configuration options.",
+          "syntax": "docker info",
+          "example": "docker info",
+          "expected_output": "Containers: 2\nImages: 4...",
+          "output_explanation": "Shows count of running, paused, and stopped containers, alongside storage drivers."
+        }
+      ]
+    },
+    {
+      "title": "Docker Images & Registries",
+      "definition": "An Image is a read-only blueprint template with instructions for creating a Docker container. Registries (like Docker Hub) are online catalogs where images are uploaded and shared.",
+      "explanation": "Think of an image as an installer package (like .msi or .dmg). You download it once, and can install it multiple times to create running containers.",
+      "commands": [
+        {
+          "name": "docker pull",
+          "purpose": "Download an image from a registry.",
+          "syntax": "docker pull [image]:[tag]",
+          "example": "docker pull alpine:latest",
+          "expected_output": "Status: Downloaded newer image for alpine:latest",
+          "output_explanation": "alpine is a ultra-lightweight Linux distribution image (under 8MB)."
+        },
+        {
+          "name": "docker images",
+          "purpose": "List all images locally downloaded.",
+          "syntax": "docker images",
+          "example": "docker images",
+          "expected_output": "REPOSITORY    TAG       IMAGE ID       SIZE\nalpine        latest    05455a08881e   7.38MB",
+          "output_explanation": "Shows repository name, tag version, image ID hash, and disk size."
+        }
+      ]
+    },
+    {
+      "title": "Docker Container Lifecycle",
+      "definition": "A Container is a runnable instance of an image. You can start, stop, pause, and delete containers using the Docker CLI.",
+      "explanation": "Containers run in isolated sandboxes. When stopped, the process halts but container state is kept. When removed, all internal data changes are lost unless volumes are mounted.",
+      "commands": [
+        {
+          "name": "docker run",
+          "purpose": "Create and start a container from an image.",
+          "syntax": "docker run [options] image [command]",
+          "example": "docker run -d --name web_server nginx",
+          "expected_output": "a1b2c3d4e5f6...",
+          "output_explanation": "Starts nginx web server in background (-d) naming it web_server, outputting the container ID."
+        },
+        {
+          "name": "docker ps",
+          "purpose": "List active running containers.",
+          "syntax": "docker ps [options]",
+          "example": "docker ps",
+          "expected_output": "CONTAINER ID   IMAGE     COMMAND                  NAMES\na1b2c3d4e5f6   nginx     \"/docker-entrypoint…\"   web_server",
+          "output_explanation": "Shows container ID, image, command, status, ports, and name."
+        }
+      ]
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Check Docker Version",
+      "definition": "Confirming the Docker client is active and communicating with the host daemon.",
+      "explanation": "Always verify tool status before deploying containers. Use --version flag to test connection.",
+      "instruction": "Print the installed Docker version using 'docker --version'.",
+      "example": "docker --version",
+      "expected": "Docker version",
+      "hint": "Type: docker --version",
+      "solution": "docker --version",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 2,
+      "title": "2. Inspect System Configuration",
+      "definition": "Querying system-wide setup options from the background Docker daemon.",
+      "explanation": "docker info lists driver info, operating system, cpu counts, and storage allocations.",
+      "instruction": "Query daemon system details using docker info.",
+      "example": "docker info",
+      "expected": "Kernel Version",
+      "hint": "Type: docker info",
+      "solution": "docker info",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 3,
+      "title": "3. Pull Alpine Image",
+      "definition": "Downloading a light Linux base image from Docker Hub.",
+      "instruction": "Pull the latest alpine image from Docker Hub registry.",
+      "example": "docker pull alpine",
+      "expected": "alpine",
+      "hint": "Type: docker pull alpine",
+      "solution": "docker pull alpine",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 4,
+      "title": "4. List Cached Images",
+      "definition": "Viewing locally available images in your machine storage.",
+      "instruction": "List all images locally downloaded in this terminal.",
+      "example": "docker images",
+      "expected": "REPOSITORY",
+      "hint": "Type: docker images",
+      "solution": "docker images",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 5,
+      "title": "5. Run Hello-World Test",
+      "definition": "Deploying a simple container to confirm sandboxing is functional.",
+      "instruction": "Run a test hello-world container to test execution pipelines.",
+      "example": "docker run hello-world",
+      "expected": "Hello from Docker!",
+      "hint": "Type: docker run hello-world",
+      "solution": "docker run hello-world",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 6,
+      "title": "6. Run Background Web Server",
+      "definition": "Running web servers in detached state keeps the console active.",
+      "instruction": "Run a detached Nginx container named 'my_web' in the background.",
+      "example": "docker run -d --name my_web nginx",
+      "expected": "my_web",
+      "hint": "Type: docker run -d --name my_web nginx",
+      "solution": "docker run -d --name my_web nginx",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 7,
+      "title": "7. List Active Containers",
+      "definition": "Inspecting current container processes executing on the machine.",
+      "instruction": "List running containers to verify 'my_web' status.",
+      "example": "docker ps",
+      "expected": "my_web",
+      "hint": "Type: docker ps",
+      "solution": "docker ps",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 8,
+      "title": "8. Inspect Container Configuration",
+      "definition": "Accessing metadata configurations of a container in JSON format.",
+      "instruction": "Inspect the my_web container configuration detail using docker inspect.",
+      "example": "docker inspect my_web",
+      "expected": "IPAddress",
+      "hint": "Type: docker inspect my_web",
+      "solution": "docker inspect my_web",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    }
+  ],
+  "exercises": [
+    {
+      "title": "Examine Stopped Containers",
+      "problem": "Run a container using `docker run alpine echo 'hello'`, then run `docker ps` and `docker ps -a`. Explain the difference in output.",
+      "difficulty": "easy",
+      "hint": "The alpine container finishes its echo command immediately and exits. docker ps only lists running containers; docker ps -a lists both running and stopped ones.",
+      "expected_result": "alpine is not listed in `docker ps` but is visible in `docker ps -a` with Status 'Exited (0)'.",
+      "objective": "Understand the difference between active processes and exited container states."
+    },
+    {
+      "title": "Forcefully Stop a Web Service",
+      "problem": "Launch an nginx container in detached mode, verify its status, stop it using `docker stop`, and verify it is no longer running.",
+      "difficulty": "easy",
+      "hint": "Use docker run -d --name temp_web nginx, then docker stop temp_web, then docker ps.",
+      "expected_result": "temp_web appears in first list but is gone after running the stop command.",
+      "objective": "Practice halting background operations gracefully."
+    }
+  ],
+  "quiz": [
+    {
+      "question": "What is a Docker image?",
+      "options": [
+        "A running instance of an isolated application.",
+        "A read-only blueprint containing code, libraries, and runtime dependencies.",
+        "A virtual machine disk file (.vmdk).",
+        "A configuration file specifying environment ports."
+      ],
+      "answer": "A read-only blueprint containing code, libraries, and runtime dependencies.",
+      "explanation": "Images are read-only templates used to launch containers. Once instantiated, they become running containers."
+    },
+    {
+      "question": "Which Docker CLI command builds an image from a Dockerfile?",
+      "options": [
+        "docker run",
+        "docker compile",
+        "docker build",
+        "docker create"
+      ],
+      "answer": "docker build",
+      "explanation": "'docker build' reads instructions inside a Dockerfile to package layers into a runnable image."
+    },
+    {
+      "question": "What does the -d flag represent in 'docker run -d nginx'?",
+      "options": [
+        "Delete the container on exit.",
+        "Directory search path.",
+        "Run the container in detached mode (background).",
+        "Driver allocation mode."
+      ],
+      "answer": "Run the container in detached mode (background).",
+      "explanation": "Detached mode runs container execution in the background, freeing your active shell console."
+    },
+    {
+      "question": "How do you view both running and stopped containers?",
+      "options": [
+        "docker ps",
+        "docker ps -a",
+        "docker status",
+        "docker list --all"
+      ],
+      "answer": "docker ps -a",
+      "explanation": "The -a (or --all) flag lists all containers in the system registry database, stopped or running."
+    },
+    {
+      "question": "Which command downloads an image from Docker Hub without running it?",
+      "options": [
+        "docker get",
+        "docker download",
+        "docker pull",
+        "docker run"
+      ],
+      "answer": "docker pull",
+      "explanation": "'docker pull' downloads the image tags from registries to local cache, saving build start times."
+    },
+    {
+      "question": "What is the difference between a container and an image?",
+      "options": [
+        "A container is a virtual machine; an image is a script.",
+        "An image is a read-only template; a container is a live, writeable instance of that template.",
+        "Images run in background; containers run in foreground.",
+        "There is no difference."
+      ],
+      "answer": "An image is a read-only template; a container is a live, writeable instance of that template.",
+      "explanation": "An image is the static blueprint package. The container is the running process context instantiated from it."
+    },
+    {
+      "question": "Which command removes a stopped container from disk?",
+      "options": [
+        "docker rm",
+        "docker rmi",
+        "docker delete",
+        "docker prune"
+      ],
+      "answer": "docker rm",
+      "explanation": "'docker rm' deletes container configurations. To delete images, use 'docker rmi'."
+    },
+    {
+      "question": "What happens to data inside a container when the container is deleted?",
+      "options": [
+        "The data is archived in host log backups.",
+        "The data remains safe in cached image layers.",
+        "The data is permanently lost unless a volume was mounted.",
+        "The daemon prompts to save changes."
+      ],
+      "answer": "The data is permanently lost unless a volume was mounted.",
+      "explanation": "Containers are ephemeral; their write layers are destroyed on removal. Volumes are required to persist data."
+    },
+    {
+      "question": "Which command inspects metadata configurations of a container?",
+      "options": [
+        "docker logs",
+        "docker ps -l",
+        "docker inspect",
+        "docker show"
+      ],
+      "answer": "docker inspect",
+      "explanation": "'docker inspect' returns low-level system configuration arrays for Docker objects in JSON layout."
+    },
+    {
+      "question": "How do you specify a custom name for a container during startup?",
+      "options": [
+        "--id [name]",
+        "--name [name]",
+        "-t [name]",
+        "-n [name]"
+      ],
+      "answer": "--name [name]",
+      "explanation": "Use the '--name' parameter option during docker run to assign a custom label."
+    }
+  ],
+  "resources": [
+    {
+      "title": "Official Docker Documentation",
+      "url": "https://docs.docker.com",
+      "type": "documentation",
+      "description": "Guides and references for all core Docker configurations."
+    },
+    {
+      "title": "Docker Hub Registry Catalog",
+      "url": "https://hub.docker.com",
+      "type": "playground",
+      "description": "Explore and search official base images for databases, runtimes, and services."
+    }
+  ]
+}

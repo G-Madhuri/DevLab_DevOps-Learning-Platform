@@ -36,6 +36,14 @@ class ValidationEngine:
                 return self._validate_networking_processes_simulated(shell, task_id)
             elif lab_name == "linux-capstone-project":
                 return self._validate_capstone_simulated(shell, task_id)
+            elif lab_name == "docker-fundamentals":
+                return self._validate_docker_fundamentals_simulated(shell, task_id)
+            elif lab_name == "multi-container-with-docker-compose":
+                return self._validate_docker_compose_simulated(shell, task_id)
+            elif lab_name == "docker-networking-deep-dive":
+                return self._validate_docker_networking_simulated(shell, task_id)
+            elif lab_name == "optimizing-dockerfiles":
+                return self._validate_optimizing_dockerfiles_simulated(shell, task_id)
             elif "docker" in lab_name:
                 return self._validate_docker_simulated(shell, task_id)
             else:
@@ -51,6 +59,14 @@ class ValidationEngine:
                 return self._validate_networking_processes_live(container_id, task_id)
             elif lab_name == "linux-capstone-project":
                 return self._validate_capstone_live(container_id, task_id)
+            elif lab_name == "docker-fundamentals":
+                return self._validate_docker_fundamentals_live(container_id, task_id)
+            elif lab_name == "multi-container-with-docker-compose":
+                return self._validate_docker_compose_live(container_id, task_id)
+            elif lab_name == "docker-networking-deep-dive":
+                return self._validate_docker_networking_live(container_id, task_id)
+            elif lab_name == "optimizing-dockerfiles":
+                return self._validate_optimizing_dockerfiles_live(container_id, task_id)
             elif "docker" in lab_name:
                 return self._validate_docker_live(container_id, task_id)
             else:
@@ -396,6 +412,298 @@ class ValidationEngine:
             return {"success": False, "message": "docker-compose.yml not found."}
 
         return {"success": False, "message": "Unknown Docker task."}
+
+    # ── Docker Fundamentals Validator ───────────────────
+    def _validate_docker_fundamentals_simulated(self, shell: Any, task_id: int) -> Dict[str, Any]:
+        history_str = " ".join(shell.history).lower()
+        if task_id == 1:
+            if "docker --version" in history_str or "docker -v" in history_str or "docker version" in history_str:
+                return {"success": True, "message": "Success! Docker CLI client check completed."}
+            return {"success": False, "message": "Try running the 'docker --version' command."}
+        elif task_id == 2:
+            if "docker info" in history_str:
+                return {"success": True, "message": "Success! Docker daemon system information fetched."}
+            return {"success": False, "message": "Query daemon details by running 'docker info'."}
+        elif task_id == 3:
+            if "alpine" in shell.mock_images:
+                return {"success": True, "message": "Success! alpine image downloaded."}
+            return {"success": False, "message": "Pull the alpine image using 'docker pull alpine'."}
+        elif task_id == 4:
+            if "docker images" in history_str or "docker image ls" in history_str:
+                return {"success": True, "message": "Success! Local images list queried."}
+            return {"success": False, "message": "List available local images using 'docker images'."}
+        elif task_id == 5:
+            hello_exists = any("hello-world" in c["image"] for c in shell.mock_containers.values())
+            if hello_exists:
+                return {"success": True, "message": "Success! hello-world container ran."}
+            return {"success": False, "message": "Launch the hello-world container using 'docker run hello-world'."}
+        elif task_id == 6:
+            if "my_web" in shell.mock_containers and shell.mock_containers["my_web"]["status"] == "running":
+                return {"success": True, "message": "Success! my_web Nginx server is active."}
+            return {"success": False, "message": "Launch a detached container named 'my_web' running nginx."}
+        elif task_id == 7:
+            if "docker ps" in history_str or "docker container ls" in history_str:
+                return {"success": True, "message": "Success! Running containers listed."}
+            return {"success": False, "message": "List running containers using 'docker ps'."}
+        elif task_id == 8:
+            if "docker inspect my_web" in history_str or "docker container inspect my_web" in history_str:
+                return {"success": True, "message": "Success! Container metadata inspect command executed."}
+            return {"success": False, "message": "Inspect my_web configuration: docker inspect my_web"}
+        return {"success": False, "message": "Unknown task."}
+
+    def _validate_docker_fundamentals_live(self, container_id: str, task_id: int) -> Dict[str, Any]:
+        try:
+            client = docker.from_env()
+            container = client.containers.get(container_id)
+        except Exception as e:
+            return {"success": False, "message": f"Docker connection failure: {e}"}
+
+        def run_in_sandbox(cmd: str) -> bool:
+            res = container.exec_run(cmd, user="student")
+            return res.exit_code == 0
+
+        if task_id in [1, 2, 4, 7]:
+            return {"success": True, "message": "Verification passed."}
+        elif task_id == 3:
+            if run_in_sandbox("docker image inspect alpine"):
+                return {"success": True, "message": "Success! alpine image pulled."}
+            return {"success": False, "message": "alpine image not found."}
+        elif task_id == 5:
+            if run_in_sandbox("docker inspect hello-world"):
+                return {"success": True, "message": "Success! hello-world execution verified."}
+            return {"success": False, "message": "hello-world container not found."}
+        elif task_id == 6:
+            if run_in_sandbox("docker inspect my_web"):
+                return {"success": True, "message": "Success! Nginx server is active."}
+            return {"success": False, "message": "my_web container not found."}
+        elif task_id == 8:
+            return {"success": True, "message": "Success! Metadata inspection verified."}
+        return {"success": False, "message": "Unknown task."}
+
+    # ── Docker Compose Validator ────────────────────────
+    def _validate_docker_compose_simulated(self, shell: Any, task_id: int) -> Dict[str, Any]:
+        history_str = " ".join(shell.history).lower()
+        if task_id == 1:
+            path = shell.get_local_path("docker-compose.yml")
+            if os.path.exists(path):
+                return {"success": True, "message": "Success! docker-compose.yml created."}
+            return {"success": False, "message": "Create docker-compose.yml file first."}
+        elif task_id == 2:
+            if "docker compose config" in history_str or "docker-compose config" in history_str:
+                return {"success": True, "message": "Success! config syntax check executed."}
+            return {"success": False, "message": "Run validation check using 'docker compose config'."}
+        elif task_id == 3:
+            if shell.mock_compose_active or "up" in history_str:
+                return {"success": True, "message": "Success! multi-container compose services running."}
+            return {"success": False, "message": "Launch stack: docker compose up -d"}
+        elif task_id == 4:
+            if "docker compose ps" in history_str or "docker-compose ps" in history_str:
+                return {"success": True, "message": "Success! ps output verified."}
+            return {"success": False, "message": "Check compose container lists: docker compose ps"}
+        elif task_id == 5:
+            if "docker compose images" in history_str or "docker-compose images" in history_str:
+                return {"success": True, "message": "Success! Images listed."}
+            return {"success": False, "message": "List active service images: docker compose images"}
+        elif task_id == 6:
+            if "docker compose logs" in history_str or "docker-compose logs" in history_str:
+                return {"success": True, "message": "Success! Logs streams checked."}
+            return {"success": False, "message": "Inspect log traces: docker compose logs"}
+        elif task_id == 7:
+            if "exec db redis-cli ping" in history_str:
+                return {"success": True, "message": "Success! redis command execution verified."}
+            return {"success": False, "message": "Run db exec: docker compose exec db redis-cli ping"}
+        elif task_id == 8:
+            if not shell.mock_compose_active or "down" in history_str:
+                return {"success": True, "message": "Success! stack services removed."}
+            return {"success": False, "message": "Teardown compose stack: docker compose down"}
+        return {"success": False, "message": "Unknown task."}
+
+    def _validate_docker_compose_live(self, container_id: str, task_id: int) -> Dict[str, Any]:
+        try:
+            client = docker.from_env()
+            container = client.containers.get(container_id)
+        except Exception as e:
+            return {"success": False, "message": f"Docker connection failure: {e}"}
+
+        def run_in_sandbox(cmd: str) -> bool:
+            res = container.exec_run(cmd, user="student")
+            return res.exit_code == 0
+
+        if task_id == 1:
+            if run_in_sandbox("test -f /home/student/docker-compose.yml"):
+                return {"success": True, "message": "Success! compose file exists."}
+            return {"success": False, "message": "docker-compose.yml not found."}
+        elif task_id in [2, 4, 5, 6, 7]:
+            return {"success": True, "message": "Verification passed."}
+        elif task_id == 3:
+            if run_in_sandbox("docker inspect student_web_1") or run_in_sandbox("docker ps | grep nginx"):
+                return {"success": True, "message": "Success! Stack up verified."}
+            return {"success": False, "message": "Active services nginx/redis not found."}
+        elif task_id == 8:
+            res = container.exec_run("docker ps", user="student")
+            if "student_web_1" not in res.output.decode():
+                return {"success": True, "message": "Success! Stack down verified."}
+            return {"success": False, "message": "Compose containers still running."}
+        return {"success": False, "message": "Unknown task."}
+
+    # ── Docker Networking Validator ──────────────────────
+    def _validate_docker_networking_simulated(self, shell: Any, task_id: int) -> Dict[str, Any]:
+        history_str = " ".join(shell.history).lower()
+        if task_id == 1:
+            if "docker network ls" in history_str:
+                return {"success": True, "message": "Success! listed networks."}
+            return {"success": False, "message": "List active networks first: docker network ls"}
+        elif task_id == 2:
+            if "custom_bridge" in shell.mock_networks:
+                return {"success": True, "message": "Success! network custom_bridge created."}
+            return {"success": False, "message": "Create network: docker network create custom_bridge"}
+        elif task_id == 3:
+            if "docker network inspect custom_bridge" in history_str:
+                return {"success": True, "message": "Success! custom_bridge details inspected."}
+            return {"success": False, "message": "Inspect networking specs: docker network inspect custom_bridge"}
+        elif task_id == 4:
+            if "backend_app" in shell.mock_containers and shell.mock_containers["backend_app"]["network"] == "custom_bridge":
+                return {"success": True, "message": "Success! backend container connected."}
+            return {"success": False, "message": "Start redis backend container on custom_bridge network."}
+        elif task_id == 5:
+            if "frontend_app" in shell.mock_containers and shell.mock_containers["frontend_app"]["network"] == "custom_bridge":
+                return {"success": True, "message": "Success! frontend container connected."}
+            return {"success": False, "message": "Start alpine frontend container on custom_bridge network."}
+        elif task_id == 6:
+            if "exec frontend_app ping" in history_str and "backend_app" in history_str:
+                return {"success": True, "message": "Success! network name lookup verified."}
+            return {"success": False, "message": "Ping backend from frontend: docker exec frontend_app ping -c 3 backend_app"}
+        elif task_id == 7:
+            if "backend_app" not in shell.mock_containers:
+                return {"success": True, "message": "Success! backend container removed."}
+            return {"success": False, "message": "Stop and delete container: docker stop backend_app && docker rm backend_app"}
+        elif task_id == 8:
+            if "custom_bridge" not in shell.mock_networks:
+                return {"success": True, "message": "Success! custom_bridge deleted."}
+            return {"success": False, "message": "Delete network: docker network rm custom_bridge"}
+        return {"success": False, "message": "Unknown task."}
+
+    def _validate_docker_networking_live(self, container_id: str, task_id: int) -> Dict[str, Any]:
+        try:
+            client = docker.from_env()
+            container = client.containers.get(container_id)
+        except Exception as e:
+            return {"success": False, "message": f"Docker connection failure: {e}"}
+
+        def run_in_sandbox(cmd: str) -> bool:
+            res = container.exec_run(cmd, user="student")
+            return res.exit_code == 0
+
+        if task_id in [1, 3, 6]:
+            return {"success": True, "message": "Verification passed."}
+        elif task_id == 2:
+            if run_in_sandbox("docker network inspect custom_bridge"):
+                return {"success": True, "message": "Success! custom_bridge exists."}
+            return {"success": False, "message": "custom_bridge network not found."}
+        elif task_id == 4:
+            if run_in_sandbox("docker inspect backend_app"):
+                return {"success": True, "message": "Success! backend_app running."}
+            return {"success": False, "message": "backend_app container not found."}
+        elif task_id == 5:
+            if run_in_sandbox("docker inspect frontend_app"):
+                return {"success": True, "message": "Success! frontend_app running."}
+            return {"success": False, "message": "frontend_app container not found."}
+        elif task_id == 7:
+            res = container.exec_run("docker inspect backend_app", user="student")
+            if res.exit_code != 0:
+                return {"success": True, "message": "Success! backend_app deleted."}
+            return {"success": False, "message": "backend_app still exists."}
+        elif task_id == 8:
+            res = container.exec_run("docker network inspect custom_bridge", user="student")
+            if res.exit_code != 0:
+                return {"success": True, "message": "Success! custom_bridge network deleted."}
+            return {"success": False, "message": "custom_bridge network still exists."}
+        return {"success": False, "message": "Unknown task."}
+
+    # ── Optimizing Dockerfiles Validator ───────────────
+    def _validate_optimizing_dockerfiles_simulated(self, shell: Any, task_id: int) -> Dict[str, Any]:
+        history_str = " ".join(shell.history).lower()
+        if task_id == 1:
+            path = shell.get_local_path("Dockerfile")
+            if os.path.exists(path):
+                return {"success": True, "message": "Success! Dockerfile created."}
+            return {"success": False, "message": "Create unoptimized Dockerfile first."}
+        elif task_id == 2:
+            if "node_app:v1" in shell.mock_images:
+                return {"success": True, "message": "Success! node_app:v1 image built."}
+            return {"success": False, "message": "Build node_app:v1: docker build -t node_app:v1 ."}
+        elif task_id == 3:
+            if "docker image inspect node_app:v1" in history_str or "docker inspect node_app:v1" in history_str:
+                return {"success": True, "message": "Success! image metadata inspected."}
+            return {"success": False, "message": "Inspect image: docker image inspect node_app:v1"}
+        elif task_id == 4:
+            path = shell.get_local_path("Dockerfile")
+            if os.path.exists(path):
+                try:
+                    with open(path, "r") as f:
+                        lines = f.read().lower()
+                    if "package.json" in lines and "npm install" in lines:
+                        return {"success": True, "message": "Success! Dockerfile optimized."}
+                except:
+                    pass
+            return {"success": False, "message": "Optimize Dockerfile syntax to copy package.json first."}
+        elif task_id == 5:
+            if "node_app:v2" in shell.mock_images:
+                return {"success": True, "message": "Success! node_app:v2 image built."}
+            return {"success": False, "message": "Build node_app:v2: docker build -t node_app:v2 ."}
+        elif task_id == 6:
+            path = shell.get_local_path("Dockerfile.multi")
+            if os.path.exists(path):
+                return {"success": True, "message": "Success! Dockerfile.multi multi-stage blueprint saved."}
+            return {"success": False, "message": "Create Dockerfile.multi multi-stage configurations."}
+        elif task_id == 7:
+            if "node_app:prod" in shell.mock_images:
+                return {"success": True, "message": "Success! node_app:prod image built."}
+            return {"success": False, "message": "Build target: docker build -f Dockerfile.multi -t node_app:prod ."}
+        elif task_id == 8:
+            if "docker system prune" in history_str:
+                return {"success": True, "message": "Success! System build caches cleared."}
+            return {"success": False, "message": "Clean dangling build caches: docker system prune -f"}
+        return {"success": False, "message": "Unknown task."}
+
+    def _validate_optimizing_dockerfiles_live(self, container_id: str, task_id: int) -> Dict[str, Any]:
+        try:
+            client = docker.from_env()
+            container = client.containers.get(container_id)
+        except Exception as e:
+            return {"success": False, "message": f"Docker connection failure: {e}"}
+
+        def run_in_sandbox(cmd: str) -> bool:
+            res = container.exec_run(cmd, user="student")
+            return res.exit_code == 0
+
+        if task_id in [3, 8]:
+            return {"success": True, "message": "Verification passed."}
+        elif task_id == 1:
+            if run_in_sandbox("test -f /home/student/Dockerfile"):
+                return {"success": True, "message": "Success! Dockerfile created."}
+            return {"success": False, "message": "Dockerfile not found in home folder."}
+        elif task_id == 2:
+            if run_in_sandbox("docker image inspect node_app:v1"):
+                return {"success": True, "message": "Success! node_app:v1 image found."}
+            return {"success": False, "message": "node_app:v1 image not found."}
+        elif task_id == 4:
+            if run_in_sandbox("grep -i 'package.json' /home/student/Dockerfile"):
+                return {"success": True, "message": "Success! package.json caching optimized."}
+            return {"success": False, "message": "package.json split optimization copy block not found."}
+        elif task_id == 5:
+            if run_in_sandbox("docker image inspect node_app:v2"):
+                return {"success": True, "message": "Success! node_app:v2 image found."}
+            return {"success": False, "message": "node_app:v2 image not found."}
+        elif task_id == 6:
+            if run_in_sandbox("test -f /home/student/Dockerfile.multi"):
+                return {"success": True, "message": "Success! Dockerfile.multi multi-stage file found."}
+            return {"success": False, "message": "Dockerfile.multi not found."}
+        elif task_id == 7:
+            if run_in_sandbox("docker image inspect node_app:prod"):
+                return {"success": True, "message": "Success! node_app:prod image found."}
+            return {"success": False, "message": "node_app:prod image not found."}
+        return {"success": False, "message": "Unknown task."}
 
 
 

@@ -523,13 +523,18 @@ class SimulatedDockerShell(SimulatedShell):
         super().__init__(session_id)
         self.mock_containers: Dict[str, Any] = {}
         self.mock_volumes = []
-        self.mock_networks = []
+        self.mock_networks = ["bridge", "host", "none"]
         self.mock_images = ["alpine", "hello-world", "nginx", "redis"]
+        self.mock_compose_active = False
 
     def execute_command(self, cmd_line: str) -> str:
         cmd_line = cmd_line.strip()
         if not cmd_line:
             return ""
+
+        # Normalize docker-compose script execution to docker compose
+        if cmd_line.startswith("docker-compose"):
+            cmd_line = cmd_line.replace("docker-compose", "docker compose", 1)
 
         self.history.append(cmd_line)
         parts = cmd_line.split()
@@ -546,87 +551,93 @@ class SimulatedDockerShell(SimulatedShell):
                 return make_prompt("Usage: docker [OPTIONS] COMMAND")
             sub = args[0]
             
-            if sub == "--version":
+            if sub == "--version" or sub == "-v" or sub == "version":
                 return make_prompt("Docker version 24.0.7, build afdd53b")
             elif sub == "info":
-                return make_prompt("Kernel Version: 6.8.0-1002-aws\r\nOperating System: Ubuntu 24.04 LTS\r\nContainers: 1")
+                return make_prompt(
+                    f"Kernel Version: 6.8.0-1002-aws\r\n"
+                    f"Operating System: Ubuntu 24.04 LTS\r\n"
+                    f"Containers: {len(self.mock_containers)}\r\n"
+                    f"Images: {len(self.mock_images)}"
+                )
             elif sub == "run":
                 name = "mock_container_" + secrets.token_hex(4)
-                if "--name" in args:
-                    idx = args.index("--name")
-                    if idx + 1 < len(args):
-                        name = args[idx+1]
-                image = args[-1]
-                self.mock_containers[name] = {"image": image, "status": "running", "id": secrets.token_hex(16)}
+                env_dict = {}
+                volumes_list = []
+                network_val = "bridge"
+                ports_list = []
+                
+                run_args = args[1:]
+                i = 0
+                image = None
+                cmd_args = []
+                while i < len(run_args):
+                    a = run_args[i]
+                    if a == "--name" and i + 1 < len(run_args):
+                        name = run_args[i+1]
+                        i += 2
+                    elif (a == "-e" or a == "--env") and i + 1 < len(run_args):
+                        eq_part = run_args[i+1].split("=")
+                        if len(eq_part) == 2:
+                            env_dict[eq_part[0]] = eq_part[1].strip('"\'')
+                        i += 2
+                    elif (a == "-v" or a == "--volume") and i + 1 < len(run_args):
+                        volumes_list.append(run_args[i+1])
+                        i += 2
+                    elif a == "--network" and i + 1 < len(run_args):
+                        network_val = run_args[i+1]
+                        i += 2
+                    elif (a == "-p" or a == "--publish") and i + 1 < len(run_args):
+                        ports_list.append(run_args[i+1])
+                        i += 2
+                    elif a.startswith("-"):
+                        i += 1
+                    else:
+                        image = a
+                        cmd_args = run_args[i+1:]
+                        break
+
+                if not image:
+                    return make_prompt("docker run requires at least an image name.")
+
+                c_id = secrets.token_hex(16)
+                self.mock_containers[name] = {
+                    "id": c_id,
+                    "image": image,
+                    "status": "exited" if "hello-world" in image else "running",
+                    "env": env_dict,
+                    "network": network_val,
+                    "volumes": volumes_list,
+                    "ports": ports_list
+                }
                 if "hello-world" in image:
-                    self.mock_containers[name]["status"] = "exited"
-                    return make_prompt("Hello from Docker!\r\nThis message shows that your installation appears to be working correctly.")
-                return make_prompt(self.mock_containers[name]["id"])
-            elif sub == "ps":
-                show_all = "-a" in args
+                    return make_prompt(
+                        "Hello from Docker!\r\n"
+                        "This message shows that your installation appears to be working correctly.\r\n"
+                        "To generate this message, Docker took the following steps:\r\n"
+                        " 1. The Docker client contacted the Docker daemon.\r\n"
+                        " 2. The Docker daemon pulled the \"hello-world\" image from the Docker Hub."
+                    )
+                return make_prompt(c_id)
+            elif sub == "ps" or (sub == "container" and len(args) > 1 and args[1] == "ls"):
+                show_all = "-a" in args or (len(args) > 2 and args[2] == "-a")
                 lines = ["CONTAINER ID   IMAGE         COMMAND                  CREATED         STATUS         PORTS     NAMES"]
                 for c_name, c_info in self.mock_containers.items():
                     if show_all or c_info["status"] == "running":
-                        lines.append(f"{c_info['id'][:12]}   {c_info['image'][:11]:<12} \"/entrypoint.sh\"        10 seconds ago  Up 10 seconds            {c_name}")
+                        ports_str = " ".join(c_info["ports"]) if c_info["ports"] else "80/tcp"
+                        status_str = "Up 10 seconds" if c_info["status"] == "running" else "Exited (0) Just now"
+                        lines.append(f"{c_info['id'][:12]}   {c_info['image'][:12]:<12} \"/entrypoint.sh\"        10 seconds ago  {status_str:<15} {ports_str:<9} {c_name}")
                 return make_prompt("\r\n".join(lines))
-            elif sub == "images":
-                lines = [
-                    "REPOSITORY      TAG       IMAGE ID       CREATED        SIZE",
-                    "alpine          latest    05455a08881e   2 hours ago    7.38MB",
-                    "nginx           latest    605c77e624dd   3 days ago     142MB",
-                    "redis           latest    39005c77e62d   5 days ago     113MB",
-                    "hello-world     latest    feb5d9ad7470   3 months ago   13kB",
-                ]
-                # Append user-built images from mock_images list
+            elif sub == "images" or (sub == "image" and len(args) > 1 and args[1] == "ls"):
+                lines = ["REPOSITORY      TAG       IMAGE ID       CREATED        SIZE"]
                 for img in self.mock_images:
-                    if ":" in img and img not in ["alpine", "hello-world", "nginx", "redis"]:
-                        repo, tag_part = img.split(":", 1)
-                        lines.append(f"{repo:<16}{tag_part:<10}1f2113ea1a0c   just now       12.1MB")
+                    tag = "latest"
+                    repo = img
+                    if ":" in img:
+                        repo, tag = img.split(":", 1)
+                    img_id = secrets.token_hex(6)
+                    lines.append(f"{repo:<16}{tag:<10}{img_id:<15}2 hours ago    12.1MB")
                 return make_prompt("\r\n".join(lines))
-            elif sub == "build":
-                # Check if Dockerfile exists in current directory
-                local_df = self.get_local_path(os.path.join(self.cwd, "Dockerfile"))
-                if not os.path.exists(local_df):
-                    return make_prompt(
-                        "Error: failed to solve: failed to read dockerfile: "
-                        "open Dockerfile: no such file or directory\r\n"
-                        "Hint: Create a Dockerfile first using: echo \"FROM alpine\" > Dockerfile"
-                    )
-                # Parse the -t tag argument
-                tag = "unnamed_image:latest"
-                if "-t" in args:
-                    idx = args.index("-t")
-                    if idx + 1 < len(args):
-                        tag = args[idx + 1]
-                # Read Dockerfile contents for step count
-                try:
-                    with open(local_df, "r", encoding="utf-8", errors="ignore") as f:
-                        df_lines = [l.strip() for l in f.readlines() if l.strip() and not l.strip().startswith("#")]
-                except Exception:
-                    df_lines = ["FROM alpine"]
-
-                is_cached = tag in self.mock_images
-                if not is_cached:
-                    self.mock_images.append(tag)
-
-                # Build realistic step-by-step output
-                build_steps = []
-                build_steps.append("Sending build context to Docker daemon  2.048kB")
-                for i, step in enumerate(df_lines, start=1):
-                    build_steps.append(f"Step {i}/{len(df_lines)} : {step}")
-                    if is_cached:
-                        build_steps.append(" ---> Using cache")
-                        build_steps.append(" ---> 05455a08881e")
-                    else:
-                        if step.upper().startswith("FROM"):
-                            build_steps.append(" ---> 05455a08881e")
-                        else:
-                            build_steps.append(" ---> Running in 9481ad12415d")
-                            build_steps.append("Removing intermediate container 9481ad12415d")
-                            build_steps.append(" ---> 1f2113ea1a0c")
-                build_steps.append("Successfully built 1f2113ea1a0c")
-                build_steps.append(f"Successfully tagged {tag}")
-                return make_prompt("\r\n".join(build_steps))
             elif sub == "pull":
                 image = args[1] if len(args) > 1 else "alpine"
                 if image not in self.mock_images:
@@ -638,6 +649,49 @@ class SimulatedDockerShell(SimulatedShell):
                     f"Status: Downloaded newer image for {image}:latest"
                 ]
                 return make_prompt("\r\n".join(pull_lines))
+            elif sub == "build":
+                local_df = self.get_local_path(os.path.join(self.cwd, "Dockerfile"))
+                local_df_multi = self.get_local_path(os.path.join(self.cwd, "Dockerfile.multi"))
+                
+                # Check for -f custom dockerfile
+                df_to_use = local_df
+                if "-f" in args:
+                    f_idx = args.index("-f")
+                    if f_idx + 1 < len(args):
+                        df_to_use = self.get_local_path(os.path.join(self.cwd, args[f_idx+1]))
+
+                if not os.path.exists(df_to_use):
+                    return make_prompt(
+                        "Error: failed to solve: failed to read dockerfile: "
+                        "open Dockerfile: no such file or directory"
+                    )
+
+                tag = "unnamed_image:latest"
+                if "-t" in args:
+                    idx = args.index("-t")
+                    if idx + 1 < len(args):
+                        tag = args[idx + 1]
+
+                try:
+                    with open(df_to_use, "r", encoding="utf-8", errors="ignore") as f:
+                        df_lines = [l.strip() for l in f.readlines() if l.strip() and not l.strip().startswith("#")]
+                except Exception:
+                    df_lines = ["FROM alpine"]
+
+                is_cached = tag in self.mock_images
+                if not is_cached:
+                    self.mock_images.append(tag)
+
+                build_steps = ["Sending build context to Docker daemon  2.048kB"]
+                for i, step in enumerate(df_lines, start=1):
+                    build_steps.append(f"Step {i}/{len(df_lines)} : {step}")
+                    if is_cached:
+                        build_steps.append(" ---> Using cache")
+                    else:
+                        build_steps.append(" ---> Running in intermediate container")
+                build_steps.append("Successfully built 1f2113ea1a0c")
+                build_steps.append(f"Successfully tagged {tag}")
+                return make_prompt("\r\n".join(build_steps))
             elif sub == "volume":
                 if len(args) > 1 and args[1] == "create":
                     v_name = args[2] if len(args) > 2 else "volume1"
@@ -648,6 +702,11 @@ class SimulatedDockerShell(SimulatedShell):
                     for v in self.mock_volumes:
                         lines.append(f"local     {v}")
                     return make_prompt("\r\n".join(lines))
+                elif len(args) > 1 and args[1] == "rm":
+                    v_name = args[2] if len(args) > 2 else ""
+                    if v_name in self.mock_volumes:
+                        self.mock_volumes.remove(v_name)
+                    return make_prompt(v_name)
                 return make_prompt("Usage: docker volume COMMAND")
             elif sub == "network":
                 if len(args) > 1 and args[1] == "create":
@@ -655,18 +714,20 @@ class SimulatedDockerShell(SimulatedShell):
                     self.mock_networks.append(n_name)
                     return make_prompt(n_name)
                 elif len(args) > 1 and args[1] == "ls":
-                    lines = [
-                        "NETWORK ID     NAME          DRIVER         SCOPE",
-                        "112233445566   bridge        bridge         local"
-                    ]
+                    lines = ["NETWORK ID     NAME          DRIVER         SCOPE"]
                     for n in self.mock_networks:
                         lines.append(f"a1b2c3d4e5f6   {n:<13} bridge         local")
                     return make_prompt("\r\n".join(lines))
+                elif len(args) > 1 and args[1] == "rm":
+                    n_name = args[2] if len(args) > 2 else ""
+                    if n_name in self.mock_networks:
+                        self.mock_networks.remove(n_name)
+                    return make_prompt(n_name)
                 return make_prompt("Usage: docker network COMMAND")
             elif sub == "logs":
                 c_name = args[1] if len(args) > 1 else ""
                 if c_name in self.mock_containers:
-                    return make_prompt("Starting nginx process...\r\nReady for HTTP requests on port 80.")
+                    return make_prompt("Starting process logs stream...\r\nReady for HTTP requests on port 80.")
                 return make_prompt(f"Error: No such container: {c_name}")
             elif sub == "exec":
                 c_name = args[1] if len(args) > 1 else ""
@@ -674,21 +735,55 @@ class SimulatedDockerShell(SimulatedShell):
                 if c_name in self.mock_containers:
                     if "date" in exec_cmd:
                         return make_prompt(datetime.now().strftime("%a %b %d %H:%M:%S UTC %Y"))
+                    elif "ping" in exec_cmd:
+                        target = args[-1]
+                        c_net = self.mock_containers[c_name]["network"]
+                        target_container = self.mock_containers.get(target)
+                        if target_container and target_container["network"] == c_net:
+                            return make_prompt(
+                                f"PING {target} (172.18.0.3) 56(84) bytes of data.\r\n"
+                                f"64 bytes from {target} (172.18.0.3): icmp_seq=1 ttl=64 time=0.045 ms\r\n"
+                                f"--- {target} ping statistics ---\r\n"
+                                f"3 packets transmitted, 3 received, 0% packet loss"
+                            )
+                        return make_prompt("ping: unknown host " + target)
                     return make_prompt("exec command completed.")
                 return make_prompt(f"Error: No such container: {c_name}")
-            elif sub == "inspect":
+            elif sub == "inspect" or (sub == "image" and len(args) > 1 and args[1] == "inspect"):
                 resource = args[1] if len(args) > 1 else ""
-                mock_id = "d3adb33f1a2c"
-                mock_ip = "172.17.0.2"
+                if sub == "image":
+                    resource = args[2] if len(args) > 2 else ""
+                
+                mock_id = secrets.token_hex(16)
+                mock_status = "running"
+                mock_env = []
+                mock_mounts = []
+                mock_net = "bridge"
+
+                if resource in self.mock_containers:
+                    c = self.mock_containers[resource]
+                    mock_id = c["id"]
+                    mock_status = c["status"]
+                    mock_env = [f"{k}={v}" for k, v in c["env"].items()]
+                    mock_net = c["network"]
+                    mock_mounts = [
+                        {
+                            "Type": "volume",
+                            "Name": v.split(":")[0],
+                            "Destination": v.split(":")[1],
+                            "Driver": "local"
+                        } for v in c["volumes"] if ":" in v
+                    ]
+                
                 return make_prompt(
                     f'[\n'
                     f'  {{\n'
                     f'    "Id": "{mock_id}",\n'
                     f'    "Name": "/{resource}",\n'
-                    f'    "State": {{"Status": "running", "Running": true}},\n'
-                    f'    "NetworkSettings": {{"IPAddress": "{mock_ip}", "Gateway": "172.17.0.1"}},\n'
-                    f'    "Mounts": [],\n'
-                    f'    "Config": {{"Hostname": "{resource}", "Env": []}}\n'
+                    f'    "State": {{"Status": "{mock_status}", "Running": {str(mock_status == "running").lower()}}},\n'
+                    f'    "NetworkSettings": {{"Networks": {{"{mock_net}": {{"IPAddress": "172.18.0.3"}}}}}},\n'
+                    f'    "Mounts": {json.dumps(mock_mounts)},\n'
+                    f'    "Config": {{"Env": {json.dumps(mock_env)}}}\n'
                     f'  }}\n'
                     f']'
                 )
@@ -698,30 +793,117 @@ class SimulatedDockerShell(SimulatedShell):
                     self.mock_containers[c_name]["status"] = "exited"
                     return make_prompt(c_name)
                 return make_prompt(f"Error: No such container: {c_name}")
-            elif sub == "rm":
+            elif sub == "restart":
                 c_name = args[1] if len(args) > 1 else ""
-                # Allow removing exited containers
+                if c_name in self.mock_containers:
+                    self.mock_containers[c_name]["status"] = "running"
+                    return make_prompt(c_name)
+                return make_prompt(f"Error: No such container: {c_name}")
+            elif sub == "rm" or (sub == "container" and len(args) > 1 and args[1] == "rm"):
+                c_name = args[-1]
                 if c_name in self.mock_containers:
                     self.mock_containers.pop(c_name)
-                    return make_prompt(c_name)
-                # If not found but was already removed, confirm silently
                 return make_prompt(c_name)
+            elif sub == "rmi" or (sub == "image" and len(args) > 1 and args[1] == "rm"):
+                img_name = args[-1]
+                if img_name in self.mock_images:
+                    self.mock_images.remove(img_name)
+                return make_prompt(img_name)
             elif sub == "system":
                 action = args[1] if len(args) > 1 else ""
                 if action == "prune":
-                    # Remove all exited containers
                     to_remove = [k for k, v in self.mock_containers.items() if v.get("status") == "exited"]
                     for k in to_remove:
                         self.mock_containers.pop(k)
-                    freed = len(to_remove) * 142
-                    return make_prompt(
-                        f"WARNING! This will remove all stopped containers, unused networks, dangling images, and build cache.\r\n"
-                        f"Deleted Containers: {len(to_remove)}\r\n"
-                        f"Total reclaimed space: {freed}MB"
-                    )
+                    return make_prompt("Deleted Containers: " + str(len(to_remove)) + "\r\nTotal reclaimed space: 142MB")
                 return make_prompt(f"docker system: '{action}' is not a docker system command.")
+            elif sub == "tag":
+                if len(args) >= 3:
+                    src, target = args[1], args[2]
+                    if src in self.mock_images and target not in self.mock_images:
+                        self.mock_images.append(target)
+                return make_prompt()
+            elif sub == "stats":
+                lines = [
+                    "CONTAINER ID   NAME             CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O         PIDS",
+                ]
+                for c_name, c_info in self.mock_containers.items():
+                    if c_info["status"] == "running":
+                        lines.append(f"{c_info['id'][:12]}   {c_name:<16} 0.15%     4.23MiB / 512MiB      0.82%     1.02kB / 2.31kB   0B / 0B           2")
+                return make_prompt("\r\n".join(lines))
+            elif sub == "top":
+                c_name = args[1] if len(args) > 1 else ""
+                if c_name in self.mock_containers and self.mock_containers[c_name]["status"] == "running":
+                    return make_prompt("UID        PID  PPID  C STIME TTY          TIME CMD\r\nroot         1     0  0 09:15 ?        00:00:00 nginx: master process")
+                return make_prompt(f"Error: No such container: {c_name}")
+            elif sub == "save":
+                return make_prompt("Saving image layers archive... done")
+            elif sub == "load":
+                return make_prompt("Loaded image: custom_app:latest")
+            elif sub == "export":
+                return make_prompt("Exporting container filesystem... done")
+            elif sub == "import":
+                return make_prompt("sha256:" + secrets.token_hex(32))
             elif sub == "compose":
-                return make_prompt("Creating network \"student_default\" with the default driver\r\nCreating student_web_1 ... done\r\nCreating student_db_1  ... done")
+                compose_action = args[1] if len(args) > 1 else ""
+                if compose_action == "config":
+                    local_compose = self.get_local_path(os.path.join(self.cwd, "docker-compose.yml"))
+                    if not os.path.exists(local_compose):
+                        return make_prompt("Error: docker-compose.yml file not found.")
+                    try:
+                        with open(local_compose, "r") as f:
+                            return make_prompt(f.read())
+                    except:
+                        return make_prompt("Error reading docker-compose.yml")
+                elif compose_action == "up":
+                    local_compose = self.get_local_path(os.path.join(self.cwd, "docker-compose.yml"))
+                    if not os.path.exists(local_compose):
+                        return make_prompt("Error: docker-compose.yml file not found.")
+                    
+                    self.mock_compose_active = True
+                    self.mock_containers["student_web_1"] = {
+                        "id": secrets.token_hex(16), "image": "nginx", "status": "running",
+                        "env": {}, "network": "student_default", "volumes": [], "ports": ["80:80"]
+                    }
+                    self.mock_containers["student_db_1"] = {
+                        "id": secrets.token_hex(16), "image": "redis", "status": "running",
+                        "env": {}, "network": "student_default", "volumes": [], "ports": ["6379"]
+                    }
+                    if "student_default" not in self.mock_networks:
+                        self.mock_networks.append("student_default")
+                    return make_prompt("Creating network \"student_default\" with the default driver\r\nCreating student_web_1 ... done\r\nCreating student_db_1  ... done")
+                elif compose_action == "down":
+                    self.mock_compose_active = False
+                    self.mock_containers.pop("student_web_1", None)
+                    self.mock_containers.pop("student_db_1", None)
+                    return make_prompt("Stopping student_web_1 ... done\r\nStopping student_db_1 ... done\r\nRemoving network student_default ... done")
+                elif compose_action == "ps":
+                    lines = ["   Name                 Command               State     Ports"]
+                    if self.mock_compose_active:
+                        lines.append("student_db_1    docker-entrypoint.sh redis...   Up      6379/tcp")
+                        lines.append("student_web_1   /docker-entrypoint.sh ngin...   Up      0.0.0.0:80->80/tcp")
+                    return make_prompt("\r\n".join(lines))
+                elif compose_action == "images":
+                    lines = ["Container      Repository    Tag       Image Id       Size"]
+                    if self.mock_compose_active:
+                        lines.append("student_db_1   redis         latest    39005c77e62d   113MB")
+                        lines.append("student_web_1  nginx         latest    605c77e624dd   142MB")
+                    return make_prompt("\r\n".join(lines))
+                elif compose_action == "logs":
+                    return make_prompt("student_db_1  | Redis server starting...\r\nstudent_web_1 | Ready for HTTP requests on port 80.")
+                elif compose_action == "exec":
+                    service = args[2] if len(args) > 2 else ""
+                    exec_cmd = args[3] if len(args) > 3 else ""
+                    if service == "db" and "ping" in exec_cmd:
+                        return make_prompt("PONG")
+                    return make_prompt("exec command completed.")
+                elif compose_action == "pull":
+                    return make_prompt("Pulling web ... done\r\nPulling db ... done")
+                elif compose_action == "build":
+                    return make_prompt("Building services... done")
+                elif compose_action == "restart":
+                    return make_prompt("Restarting compose stack services... done")
+                return make_prompt(f"docker compose: '{compose_action}' is not a compose command.")
             else:
                 return make_prompt(f"docker: '{sub}' is not a docker command.\r\nSee 'docker --help' for a list of available commands.")
 

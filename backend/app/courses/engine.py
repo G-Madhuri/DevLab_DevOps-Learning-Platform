@@ -68,6 +68,8 @@ class CourseEngine:
             with open(json_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 if isinstance(data, dict):
+                    if "theory" not in data:
+                        data["theory"] = data.get("key_concepts", [])
                     return data
                 # For backward compatibility, wrap list:
                 return {

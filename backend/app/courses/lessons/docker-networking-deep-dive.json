@@ -1,0 +1,296 @@
+{
+  "slug": "docker-networking-deep-dive",
+  "title": "Docker Networking Deep Dive",
+  "overview": {
+    "introduction": "Docker Networking isolates, connects, and controls container network interfaces. By managing driver types, port rules, and user-defined bridge networks, you enable secure container communications.",
+    "why_it_matters": "By default, Docker places all containers on a shared bridge network. However, this default network does not support container name DNS resolutions, leaving you to hardcode IPs. Custom networks solve this by providing isolated namespaces and built-in name lookup services.",
+    "industry_usage": "Used by site reliability and DevOps teams to set up private database backends, configure reverse proxy gateways (like Nginx/Traefik), and establish strict service isolation rules.",
+    "what_you_will_build": "A custom bridge network, launch frontend and backend containers sharing the namespace, run inter-container lookup pings, and clean up active interfaces.",
+    "prerequisites": "Docker Fundamentals.",
+    "estimated_time": "60 mins",
+    "difficulty": "Intermediate",
+    "learning_outcomes": [
+      "Identify active driver networks using CLI listings.",
+      "Create custom bridge networks specifying custom drivers.",
+      "Query driver subnets and IP pools using network inspects.",
+      "Run containers explicitly assigned to custom networks.",
+      "Test DNS name lookups between container sandboxes.",
+      "Dismantle and remove active network configurations."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "Network Driver Types",
+      "definition": "Docker uses pluggable drivers to manage network topologies. Standard types include: Bridge (private network on host), Host (uses host network directly), and None (isolated network loopback).",
+      "explanation": "Bridge is default for standalone containers. Host driver eliminates routing overhead for high throughput. None blocks all outward card connectivity for absolute safety.",
+      "commands": [
+        {
+          "name": "docker network ls",
+          "purpose": "List available network adapters.",
+          "syntax": "docker network ls",
+          "example": "docker network ls",
+          "expected_output": "NETWORK ID     NAME      DRIVER    SCOPE\n112233445566   bridge    bridge    local\n223344556677   host      host      local\n334455667788   none      null      local",
+          "output_explanation": "Lists the default driver layers loaded in docker daemon."
+        }
+      ]
+    },
+    {
+      "title": "Built-in DNS Name Resolution",
+      "definition": "Containers on user-defined custom networks can communicate with each other using container names as host addresses.",
+      "explanation": "Docker runs a DNS service at address 127.0.11. When container A looks up container name 'backend_app', Docker resolves it to its actual dynamic bridge IP address automatically.",
+      "commands": [
+        {
+          "name": "docker network inspect",
+          "purpose": "View configuration details of a network.",
+          "syntax": "docker network inspect [network]",
+          "example": "docker network inspect bridge",
+          "expected_output": "\"Subnet\": \"172.17.0.0/16\",\n\"Containers\": {}",
+          "output_explanation": "Prints driver details, subnets, and connected container interfaces in JSON layout."
+        }
+      ]
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. List Existing Networks",
+      "definition": "Auditing active networking layers on the local Docker daemon.",
+      "explanation": "Inspect default adapters before adding custom routing interfaces.",
+      "instruction": "Print active network list using docker network ls.",
+      "example": "docker network ls",
+      "expected": "bridge",
+      "hint": "Type: docker network ls",
+      "solution": "docker network ls",
+      "difficulty": "Intermediate",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 2,
+      "title": "2. Create Custom Bridge Network",
+      "definition": "Initializing a user-defined isolated bridge network adapter.",
+      "instruction": "Create a custom network named 'custom_bridge' using the network command.",
+      "example": "docker network create custom_bridge",
+      "expected": "custom_bridge",
+      "hint": "Type: docker network create custom_bridge",
+      "solution": "docker network create custom_bridge",
+      "difficulty": "Intermediate",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 3,
+      "title": "3. Inspect Custom Network Details",
+      "definition": "Querying address spacing, subnets, and scopes of custom networks.",
+      "instruction": "Display structural metadata of custom_bridge using docker network inspect.",
+      "example": "docker network inspect custom_bridge",
+      "expected": "Subnet",
+      "hint": "Type: docker network inspect custom_bridge",
+      "solution": "docker network inspect custom_bridge",
+      "difficulty": "Intermediate",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 4,
+      "title": "4. Launch Redis on Custom Network",
+      "definition": "Starting database services directly inside custom networking blocks.",
+      "instruction": "Run a detached Redis container named 'backend_app' on 'custom_bridge'.",
+      "example": "docker run -d --name backend_app --network custom_bridge redis",
+      "expected": "backend_app",
+      "hint": "Type: docker run -d --name backend_app --network custom_bridge redis",
+      "solution": "docker run -d --name backend_app --network custom_bridge redis",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 5,
+      "title": "5. Launch Client Container",
+      "definition": "Running client sandboxes connected to the same communication network.",
+      "instruction": "Run a detached Alpine container named 'frontend_app' sleeping for 1 hour on 'custom_bridge'.",
+      "example": "docker run -d --name frontend_app --network custom_bridge alpine sleep 3600",
+      "expected": "frontend_app",
+      "hint": "Type: docker run -d --name frontend_app --network custom_bridge alpine sleep 3600",
+      "solution": "docker run -d --name frontend_app --network custom_bridge alpine sleep 3600",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 6,
+      "title": "6. Verify Container DNS Resolution",
+      "definition": "Testing name-based connection lookup between isolated containers.",
+      "instruction": "Run a 3-packet ping from frontend_app to backend_app using docker exec.",
+      "example": "docker exec frontend_app ping -c 3 backend_app",
+      "expected": "transmitted",
+      "hint": "Type: docker exec frontend_app ping -c 3 backend_app",
+      "solution": "docker exec frontend_app ping -c 3 backend_app",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 7,
+      "title": "7. Stop and Delete Database Service",
+      "definition": "Halting container runtime processes and clearing active definitions.",
+      "instruction": "Stop and remove the backend_app container to clean resources.",
+      "example": "docker stop backend_app && docker rm backend_app",
+      "expected": "backend_app",
+      "hint": "Type: docker stop backend_app && docker rm backend_app",
+      "solution": "docker stop backend_app && docker rm backend_app",
+      "difficulty": "Intermediate",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 8,
+      "title": "8. Remove Custom Network",
+      "definition": "Clearing unused bridge networks from system memory cache.",
+      "instruction": "Remove custom_bridge interface network configurations.",
+      "example": "docker network rm custom_bridge",
+      "expected": "custom_bridge",
+      "hint": "Type: docker network rm custom_bridge",
+      "solution": "docker network rm custom_bridge",
+      "difficulty": "Intermediate",
+      "estimated_duration": "4m"
+    }
+  ],
+  "exercises": [
+    {
+      "title": "Connect Running Container",
+      "problem": "Launch a detached container on default network, then use `docker network connect` to attach it to custom_bridge dynamically.",
+      "difficulty": "medium",
+      "hint": "docker run -d --name dynamic_runner nginx, then docker network connect custom_bridge dynamic_runner.",
+      "expected_result": "inspecting custom_bridge lists dynamic_runner as a connected container.",
+      "objective": "Practice dynamic network binding without restarting containers."
+    },
+    {
+      "title": "Inspect Host Port Bindings",
+      "problem": "Run a web server forwarding host port 9000 to port 80, and verify its binding mapping in network inspect.",
+      "difficulty": "medium",
+      "hint": "docker run -d -p 9000:80 nginx, then check Ports in docker ps.",
+      "expected_result": "docker ps shows 0.0.0.0:9000->80/tcp.",
+      "objective": "Understand public port mappings on Docker hosts."
+    }
+  ],
+  "quiz": [
+    {
+      "question": "Which network driver is the default for standalone containers?",
+      "options": [
+        "host",
+        "bridge",
+        "none",
+        "overlay"
+      ],
+      "answer": "bridge",
+      "explanation": "By default, Docker assigns standalone containers to the 'bridge' network adapter."
+    },
+    {
+      "question": "Which network driver shares the host machine's IP address directly?",
+      "options": [
+        "overlay",
+        "bridge",
+        "host",
+        "macvlan"
+      ],
+      "answer": "host",
+      "explanation": "The 'host' driver runs container interfaces directly on the host stack, avoiding NAT overhead."
+    },
+    {
+      "question": "What is the primary benefit of custom user-defined networks over default networks?",
+      "options": [
+        "They offer faster download speeds.",
+        "They support built-in DNS name resolution between containers.",
+        "They block port configuration exposures.",
+        "They don't require IP addresses."
+      ],
+      "answer": "They support built-in DNS name resolution between containers.",
+      "explanation": "Containers on user-defined networks can ping each other using container name aliases, which default bridge networks block."
+    },
+    {
+      "question": "How do you view which containers are attached to a network?",
+      "options": [
+        "docker network show",
+        "docker network list --verbose",
+        "docker network inspect",
+        "docker ps --network"
+      ],
+      "answer": "docker network inspect",
+      "explanation": "'docker network inspect [network]' displays IP allocations, routes, and connected container hashes in JSON format."
+    },
+    {
+      "question": "Which CLI command creates a network named 'frontend'?",
+      "options": [
+        "docker create network frontend",
+        "docker network create frontend",
+        "docker network add frontend",
+        "docker net frontend"
+      ],
+      "answer": "docker network create frontend",
+      "explanation": "'docker network create frontend' initiates a standard local bridge network named frontend."
+    },
+    {
+      "question": "What does network driver 'none' provide?",
+      "options": [
+        "Unrestricted access to all public networks.",
+        "No network interface for the container except local loopback.",
+        "Automatic fallback to wireless networks.",
+        "Zero-latency socket bindings."
+      ],
+      "answer": "No network interface for the container except local loopback.",
+      "explanation": "Driver 'none' isolates container namespaces completely, blocking both ingress and egress traffic."
+    },
+    {
+      "question": "How do you connect an already running container 'my_app' to a network 'my_net'?",
+      "options": [
+        "docker network connect my_net my_app",
+        "docker network attach my_app my_net",
+        "docker connect my_app my_net",
+        "docker container join my_net my_app"
+      ],
+      "answer": "docker network connect my_net my_app",
+      "explanation": "'docker network connect [network] [container]' dynamically binds container interfaces without stopping running processes."
+    },
+    {
+      "question": "Which network driver type enables multi-host container networks in Kubernetes/Swarm?",
+      "options": [
+        "bridge",
+        "overlay",
+        "macvlan",
+        "host"
+      ],
+      "answer": "overlay",
+      "explanation": "The 'overlay' driver establishes secure virtual routing spans across multiple distinct host nodes."
+    },
+    {
+      "question": "How do you remove a network from the Docker system catalog?",
+      "options": [
+        "docker network clean",
+        "docker network rm",
+        "docker network delete",
+        "docker network prune"
+      ],
+      "answer": "docker network rm",
+      "explanation": "'docker network rm [network]' deletes custom networks once all connected containers are unlinked."
+    },
+    {
+      "question": "What happens if you run two containers with the same name on the same network?",
+      "options": [
+        "Docker resolves name conflicts using suffixes.",
+        "Docker daemon blocks the second startup with a name conflict error.",
+        "Containers merge logs outputs.",
+        "The first container is terminated immediately."
+      ],
+      "answer": "Docker daemon blocks the second startup with a name conflict error.",
+      "explanation": "Container names must be globally unique per daemon socket to prevent identification conflicts."
+    }
+  ],
+  "resources": [
+    {
+      "title": "Docker Network Drivers Documentation",
+      "url": "https://docs.docker.com/network/drivers/",
+      "type": "documentation",
+      "description": "Guides detailing bridge, host, none, macvlan, and overlay driver setups."
+    },
+    {
+      "title": "Docker Port Mappings Reference",
+      "url": "https://docs.docker.com/network/",
+      "type": "documentation",
+      "description": "Guide explaining container port publication, address bindings, and iptables rules."
+    }
+  ]
+}

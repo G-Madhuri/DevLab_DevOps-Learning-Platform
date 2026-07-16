@@ -1,0 +1,303 @@
+{
+  "slug": "multi-container-with-docker-compose",
+  "title": "Multi-Container with Docker Compose",
+  "overview": {
+    "introduction": "Docker Compose is a declarative tool for defining and running multi-container Docker applications. By using a single YAML configuration file, you can manage the build, network connection, and run properties of multiple services at once.",
+    "why_it_matters": "Production web systems are almost never single-process containers. They require frontends, application API backends, cache endpoints, and persistent databases. Running separate 'docker run' commands for each is highly error-prone. Compose automates this stack entirely.",
+    "industry_usage": "Used by engineering teams to deploy replica environments instantly, run local integration testing suites, and manage standard microservices dependencies with unified parameters.",
+    "what_you_will_build": "A multi-tier service layout incorporating Nginx and Redis services defined inside a docker-compose.yml file, managed entirely using Compose CLI actions.",
+    "prerequisites": "Docker Fundamentals.",
+    "estimated_time": "60 mins",
+    "difficulty": "Intermediate",
+    "learning_outcomes": [
+      "Write multi-service specifications inside docker-compose.yml.",
+      "Verify syntax configuration layouts using config validations.",
+      "Manage group container lifecycle state transitions.",
+      "Audit logs and run exec commands within compose contexts.",
+      "Teardown compose network, volume, and service resources."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "Compose YAML Syntax",
+      "definition": "Docker Compose uses YAML files (docker-compose.yml) to define services, networks, and volumes. Services represent running container templates.",
+      "explanation": "A service definition specifies the container image, host port forwards, volume directories, networks to join, and environment keys.",
+      "commands": [
+        {
+          "name": "docker compose config",
+          "purpose": "Verify syntax configurations of the YAML file.",
+          "syntax": "docker compose config",
+          "example": "docker compose config",
+          "expected_output": "services:\n  db:\n    image: redis\n  web:\n    image: nginx",
+          "output_explanation": "Validates the structure and resolves path variable keys, printing parsed content."
+        }
+      ]
+    },
+    {
+      "title": "Compose Stack Lifecycles",
+      "definition": "Compose manages groups of containers together. The 'up' command starts all services; 'down' stops and removes all containers, networks, and volumes.",
+      "explanation": "This simplifies dev pipelines. Instead of writing five separate docker network, volume, and run commands, one command spins up everything.",
+      "commands": [
+        {
+          "name": "docker compose up",
+          "purpose": "Build, create, start, and attach services.",
+          "syntax": "docker compose up [options]",
+          "example": "docker compose up -d",
+          "expected_output": "Creating network \"student_default\"\nCreating student_db_1 ... done\nCreating student_web_1 ... done",
+          "output_explanation": "Starts Nginx and Redis in detached mode (-d), allocating a default bridge network."
+        },
+        {
+          "name": "docker compose down",
+          "purpose": "Stop and remove containers, networks, volumes, and images.",
+          "syntax": "docker compose down",
+          "example": "docker compose down",
+          "expected_output": "Stopping student_web_1 ... done\nStopping student_db_1 ... done\nRemoving network student_default ... done",
+          "output_explanation": "Shuts down running containers and tears down network configurations."
+        }
+      ]
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Write docker-compose.yml",
+      "definition": "Creating the stack description blueprint file using YAML configurations.",
+      "explanation": "Create the file listing two services: web (using nginx) and db (using redis).",
+      "instruction": "Create docker-compose.yml in the home directory defining web (nginx) and db (redis) services.",
+      "example": "echo -e \"version: '3'\\nservices:\\n  web:\\n    image: nginx\\n  db:\\n    image: redis\" > docker-compose.yml",
+      "expected": "docker-compose.yml",
+      "hint": "Type: echo -e \"version: '3'\\nservices:\\n  web:\\n    image: nginx\\n  db:\\n    image: redis\" > docker-compose.yml",
+      "solution": "echo -e \"version: '3'\\nservices:\\n  web:\\n    image: nginx\\n  db:\\n    image: redis\" > docker-compose.yml",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 2,
+      "title": "2. Verify Compose Configurations",
+      "definition": "Validating compose config file syntax format properties.",
+      "instruction": "Validate the docker-compose.yml layout using docker compose config.",
+      "example": "docker compose config",
+      "expected": "services:",
+      "hint": "Type: docker compose config",
+      "solution": "docker compose config",
+      "difficulty": "Intermediate",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 3,
+      "title": "3. Launch Compose Services",
+      "definition": "Starting all multi-container services in detached background mode.",
+      "instruction": "Launch compose services in background using docker compose up -d.",
+      "example": "docker compose up -d",
+      "expected": "Creating",
+      "hint": "Type: docker compose up -d",
+      "solution": "docker compose up -d",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 4,
+      "title": "4. List Stack Containers",
+      "definition": "Checking status metrics specifically for compose managed containers.",
+      "instruction": "Verify running compose containers using docker compose ps.",
+      "example": "docker compose ps",
+      "expected": "web",
+      "hint": "Type: docker compose ps",
+      "solution": "docker compose ps",
+      "difficulty": "Intermediate",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 5,
+      "title": "5. List Compose Service Images",
+      "definition": "Viewing images associated with the active compose services stack.",
+      "instruction": "View details of compose images using docker compose images.",
+      "example": "docker compose images",
+      "expected": "db",
+      "hint": "Type: docker compose images",
+      "solution": "docker compose images",
+      "difficulty": "Intermediate",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 6,
+      "title": "6. Stream Service Log Outputs",
+      "definition": "Auditing log records from all container services running inside the compose stack.",
+      "instruction": "Check log streams from compose services using docker compose logs.",
+      "example": "docker compose logs",
+      "expected": "redis",
+      "hint": "Type: docker compose logs",
+      "solution": "docker compose logs",
+      "difficulty": "Intermediate",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 7,
+      "title": "7. Execute Command inside Database Service",
+      "definition": "Running diagnostics processes within specific active services.",
+      "instruction": "Ping the Redis database service using docker compose exec db redis-cli ping.",
+      "example": "docker compose exec db redis-cli ping",
+      "expected": "PONG",
+      "hint": "Type: docker compose exec db redis-cli ping",
+      "solution": "docker compose exec db redis-cli ping",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 8,
+      "title": "8. Teardown Services and Clean Networks",
+      "definition": "Shutting down container runtimes and clearing associated networking channels.",
+      "instruction": "Halt and delete compose structures using docker compose down.",
+      "example": "docker compose down",
+      "expected": "Removing",
+      "hint": "Type: docker compose down",
+      "solution": "docker compose down",
+      "difficulty": "Intermediate",
+      "estimated_duration": "4m"
+    }
+  ],
+  "exercises": [
+    {
+      "title": "Map Service Ports",
+      "problem": "Modify the web service in docker-compose.yml to forward host port 8080 to container port 80. Launch the stack and test.",
+      "difficulty": "medium",
+      "hint": "In compose yaml, use ports: - '8080:80' under the web service block.",
+      "expected_result": "docker compose config shows the port mappings correctly.",
+      "objective": "Understand port forwards inside compose configurations."
+    },
+    {
+      "title": "Use Restart Policies",
+      "problem": "Set restart: always for services in compose configurations to make them resilient against service daemon restarts.",
+      "difficulty": "medium",
+      "hint": "Add restart: always key level under each service tag block.",
+      "expected_result": "restart directives visible in config outputs.",
+      "objective": "Design container high availability structures."
+    }
+  ],
+  "quiz": [
+    {
+      "question": "What is the default filename used by Docker Compose?",
+      "options": [
+        "docker-compose.json",
+        "ComposeFile.xml",
+        "docker-compose.yml",
+        "containers.conf"
+      ],
+      "answer": "docker-compose.yml",
+      "explanation": "Compose looks for docker-compose.yml (or docker-compose.yaml) in the current directory by default."
+    },
+    {
+      "question": "Which command halts compose containers and removes networks?",
+      "options": [
+        "docker compose stop",
+        "docker compose down",
+        "docker compose rm",
+        "docker compose halt"
+      ],
+      "answer": "docker compose down",
+      "explanation": "'docker compose down' stops container runtimes, deletes containers, and cleans the bridge networks."
+    },
+    {
+      "question": "How do you start compose services in detached background state?",
+      "options": [
+        "docker compose up -d",
+        "docker compose start",
+        "docker compose run --bg",
+        "docker compose launch -detached"
+      ],
+      "answer": "docker compose up -d",
+      "explanation": "The -d (or --detach) option runs all service processes in the background."
+    },
+    {
+      "question": "What command lists statuses of containers managed by the active compose file?",
+      "options": [
+        "docker compose status",
+        "docker compose ps",
+        "docker compose list",
+        "docker compose show"
+      ],
+      "answer": "docker compose ps",
+      "explanation": "'docker compose ps' lists statuses, ports, and names of stack services."
+    },
+    {
+      "question": "How do you view log stdout streams from a single compose service (e.g. 'web')?",
+      "options": [
+        "docker logs web",
+        "docker compose logs web",
+        "docker compose show logs web",
+        "docker web logs"
+      ],
+      "answer": "docker compose logs web",
+      "explanation": "Passing service name to 'docker compose logs [service]' filters logs stdout stream for that service context."
+    },
+    {
+      "question": "What does 'docker compose config' perform?",
+      "options": [
+        "Initializes compose credentials.",
+        "Verifies and displays parsed yaml configuration contents.",
+        "Builds compose containers immediately.",
+        "Configures networking proxy addresses."
+      ],
+      "answer": "Verifies and displays parsed yaml configuration contents.",
+      "explanation": "'docker compose config' parses syntax formatting errors, resolves paths, and prints final configurations."
+    },
+    {
+      "question": "Which directive specifies container dependency startup orders (e.g. web waits for db)?",
+      "options": [
+        "depends_on",
+        "links",
+        "require",
+        "wait_for"
+      ],
+      "answer": "depends_on",
+      "explanation": "The 'depends_on' key enforces service start orders, letting you start databases before API web apps."
+    },
+    {
+      "question": "How do you run a shell command inside an active compose container (e.g., 'db')?",
+      "options": [
+        "docker compose run db [cmd]",
+        "docker compose exec db [cmd]",
+        "docker compose shell db [cmd]",
+        "docker compose system db [cmd]"
+      ],
+      "answer": "docker compose exec db [cmd]",
+      "explanation": "'docker compose exec [service] [cmd]' runs a command inside the active, running container instance."
+    },
+    {
+      "question": "How does Docker Compose handle container names by default?",
+      "options": [
+        "Prefixes them with the directory name and appends service name and number.",
+        "Uses random hex strings.",
+        "Matches service name exactly.",
+        "Uses host computer name."
+      ],
+      "answer": "Prefixes them with the directory name and appends service name and number.",
+      "explanation": "To prevent name conflicts, Compose uses '[project_name]_[service_name]_[index]' formats."
+    },
+    {
+      "question": "Which section inside compose config declarations is used to define common networks?",
+      "options": [
+        "connections:",
+        "interfaces:",
+        "networks:",
+        "bridges:"
+      ],
+      "answer": "networks:",
+      "explanation": "The global 'networks:' section defines user-defined bridge or overlay topologies shared by services."
+    }
+  ],
+  "resources": [
+    {
+      "title": "Compose CLI Reference",
+      "url": "https://docs.docker.com/compose/reference/",
+      "type": "documentation",
+      "description": "Comprehensive reference guide to all docker compose commands."
+    },
+    {
+      "title": "Compose Specification Manual",
+      "url": "https://docs.docker.com/compose/compose-file/",
+      "type": "documentation",
+      "description": "Manual detailing the YAML spec directives, schemas, and configurations."
+    }
+  ]
+}

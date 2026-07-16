@@ -113,18 +113,18 @@ def test_rate_limiting_middleware_trigger():
     test_ip = "127.0.0.1"
     import time
     timestamp = int(time.time() // 60)
-    minute_key = f"ratelimit:{test_ip}:{timestamp}"
-    testclient_key = f"ratelimit:testclient:{timestamp}"
     
-    # Pre-seed the count to exceed 100 requests limit
-    redis_client.set(minute_key, 101)
-    redis_client.set(testclient_key, 101)
+    # Pre-seed the count to exceed 100 requests limit for previous, current and next minute to avoid clock race
+    for offset in [-1, 0, 1]:
+        redis_client.set(f"ratelimit:{test_ip}:{timestamp + offset}", 101)
+        redis_client.set(f"ratelimit:testclient:{timestamp + offset}", 101)
     
     # Requesting the API route should return 429
     res = client.get("/api/v1/labs")
     assert res.status_code == 429
     assert "rate limit exceeded" in res.json()["detail"].lower()
 
-    # Clean up limit counter
-    redis_client.delete(minute_key)
-    redis_client.delete(testclient_key)
+    # Clean up limit counters
+    for offset in [-1, 0, 1]:
+        redis_client.delete(f"ratelimit:{test_ip}:{timestamp + offset}")
+        redis_client.delete(f"ratelimit:testclient:{timestamp + offset}")
