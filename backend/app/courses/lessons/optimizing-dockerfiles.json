@@ -278,18 +278,83 @@
       "explanation": "If a hacker breaks out of an application process, a non-root container blocks access to host kernel resources."
     }
   ],
-  "resources": [
+  "interactive_examples": [
     {
-      "title": "Optimizing Dockerfiles Reference Guide",
-      "url": "https://docs.docker.com/develop/develop-images/dockerfile_best-practices/",
-      "type": "documentation",
-      "description": "Best practices for writing efficient, small, and secure Dockerfiles."
+      "objective": "Build from customized Dockerfile configuration.",
+      "scenario": "Build your localized application codebase container utilizing a custom tag naming scheme.",
+      "command": "docker build -t node_app:v1 .",
+      "explanation": "Instructs the daemon to build an image named 'node_app' tagged 'v1' from build context path '.' (current directory).",
+      "expected_output": "Sending build context to Docker daemon...\nStep 1/5 : FROM node:alpine\n---> a1b2c3d4...\nSuccessfully built a1b2c3...",
+      "output_explanation": "Shows the step-by-step layer generation output and final successfully built image hash.",
+      "real_world_use": "Standard method inside CI/CD compilation pipelines to generate deployment-ready images.",
+      "common_mistakes": "Forgetting the final build context dot '.' indicating the path to Dockerfile.",
+      "tips": "Always add a '.dockerignore' file to exclude node_modules or large files from build context."
     },
     {
-      "title": "Multi-stage Builds Manual",
-      "url": "https://docs.docker.com/build/building/multi-stage/",
-      "type": "documentation",
-      "description": "Guides and references explaining multi-stage builds structures."
+      "objective": "Prune system build caches.",
+      "scenario": "Clear dangling image fragments and cached files to recover system disk space.",
+      "command": "docker system prune -f",
+      "explanation": "Instructs the daemon to permanently delete all stopped containers, unused networks, and dangling image cache layers.",
+      "expected_output": "Deleted Containers\nDeleted Networks\nTotal reclaimed space: 1.45 GB",
+      "output_explanation": "Displays space savings stats after clearing stale resources.",
+      "real_world_use": "Scheduled cron job on build servers to prevent out-of-disk crashes.",
+      "common_mistakes": "Running prune without checking stopped containers, which might delete dormant but useful services.",
+      "tips": "Add the '--volumes' flag to also delete unused volumes: docker system prune -f --volumes"
     }
-  ]
+  ],
+  "resources": {
+    "summary": "Understand Dockerfile instructions, layer caching mechanics, multi-stage configurations, and system build cache optimizations.",
+    "links": [
+      {
+        "title": "Best Practices for Writing Dockerfiles",
+        "url": "https://docs.docker.com/develop/develop-images/dockerfile_best-practices/",
+        "description": "Official guides from Docker team on image design optimization."
+      }
+    ],
+    "cheat_sheet": "docker build -t <tag> .            # Build image\ndocker build -f <file> -t <tag> . # Build with custom filename\ndocker system prune -f            # Clean dangling images\ndocker image ls                   # List cached images\ndocker history <image>            # View build steps history",
+    "commands_table": [
+      {
+        "name": "docker build",
+        "syntax": "docker build -t name:tag path",
+        "description": "Generate an image template layout from a target Dockerfile config."
+      },
+      {
+        "name": "docker system prune",
+        "syntax": "docker system prune [-f] [--volumes]",
+        "description": "Wipe out unused resources and caches to reclaim space."
+      }
+    ],
+    "revision_notes": [
+      "Each Dockerfile command generates a new read-only image layer.",
+      "If a layer changes during build, all subsequent layers must rebuild (invalidated cache).",
+      "Multi-stage builds use multiple FROM blocks to discard build dependencies from final release.",
+      "Using alpine base runtimes yields smaller, more secure container packages."
+    ],
+    "best_practices": [
+      "Order instructions from least frequently changed (e.g. installs) to most frequently changed (e.g. code).",
+      "Combine RUN commands (using && and line breaks) to minimize layer overhead.",
+      "Copy package dependency definition files (package.json/requirements.txt) before copying source code."
+    ],
+    "beginner_mistakes": [
+      "Including compilation tools and test frameworks in the final production release image.",
+      "Copying unnecessary massive directory logs into build contexts.",
+      "Using broad copy blocks (COPY . .) too early, invalidating downstream cache steps."
+    ],
+    "interview_questions": [
+      {
+        "question": "How do you optimize layer caching inside Dockerfiles?",
+        "answer": "Copy package manifests (e.g. package.json) and run package installs first. Only copy application source code later. Since code changes frequently, this preserves cached package installs."
+      },
+      {
+        "question": "What is a multi-stage build?",
+        "answer": "A build method that uses multiple FROM statements. You compile binaries in a build stage, and then copy only the compiled artifacts to a final, minimal runtime stage."
+      }
+    ],
+    "books": [
+      {
+        "title": "Docker in Practice — Ian Miell",
+        "description": "Practical workflows covering caching mechanisms and builder operations."
+      }
+    ]
+  }
 }

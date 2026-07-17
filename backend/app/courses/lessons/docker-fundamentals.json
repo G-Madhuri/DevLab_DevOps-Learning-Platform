@@ -318,18 +318,99 @@
       "explanation": "Use the '--name' parameter option during docker run to assign a custom label."
     }
   ],
-  "resources": [
+  "interactive_examples": [
     {
-      "title": "Official Docker Documentation",
-      "url": "https://docs.docker.com",
-      "type": "documentation",
-      "description": "Guides and references for all core Docker configurations."
+      "objective": "Verify Docker client and daemon connectivity.",
+      "scenario": "You need to confirm that the Docker CLI tool can communicate with the background daemon.",
+      "command": "docker info",
+      "explanation": "Docker client contacts the Docker daemon to retrieve system-wide info (running containers, images, OS version).",
+      "expected_output": "Containers: 0\n Running: 0\n Paused: 0\n Stopped: 0\n Images: 0",
+      "output_explanation": "Lists system summary including container statistics and driver info.",
+      "real_world_use": "Standard health check command for scripts running inside automated container build agents.",
+      "common_mistakes": "Running without sudo/admin permissions when Docker daemon requires socket group permissions.",
+      "tips": "Use 'docker version' to inspect specific binary build details of client vs server."
     },
     {
-      "title": "Docker Hub Registry Catalog",
-      "url": "https://hub.docker.com",
-      "type": "playground",
-      "description": "Explore and search official base images for databases, runtimes, and services."
+      "objective": "Run an interactive Ubuntu shell.",
+      "scenario": "You need to debug a network issue or inspect directories inside a pristine Ubuntu environment.",
+      "command": "docker run -it alpine sh",
+      "explanation": "The -i (interactive) and -t (tty) flags attach standard input/output to launch an interactive shell terminal.",
+      "expected_output": "/ #",
+      "output_explanation": "You are placed inside an interactive shell prompt as root inside the container.",
+      "real_world_use": "Ad-hoc debugging, testing packages, or analyzing configuration environments.",
+      "common_mistakes": "Forgetting to exit (using 'exit' or Ctrl+D) leaving running/stopped container resources behind.",
+      "tips": "Add '--rm' to automatically remove the container when it exits: docker run -it --rm alpine sh"
+    },
+    {
+      "objective": "Start a background web server.",
+      "scenario": "You want to run a web server in the background and test connections locally.",
+      "command": "docker run -d -p 8080:80 --name my_nginx nginx:alpine",
+      "explanation": "-d runs detached in background, -p maps port 8080 on the host to 80 in container, --name assigns a custom name.",
+      "expected_output": "a1b2c3d4e5f6...",
+      "output_explanation": "Prints the full container ID hash indicating the container successfully launched in the background.",
+      "real_world_use": "Standard method to run web servers, APIs, and background processes in production.",
+      "common_mistakes": "Attempting to use a host port that is already in use by another application.",
+      "tips": "Run 'docker logs my_nginx' to inspect startup and request log stdout stream."
     }
-  ]
+  ],
+  "resources": {
+    "summary": "Master container runtimes, image pulls, volume configuration, port mapping, and system telemetry stats.",
+    "links": [
+      {
+        "title": "Docker Hub Official Repository",
+        "url": "https://hub.docker.com",
+        "description": "Public registry hosting official base images."
+      }
+    ],
+    "cheat_sheet": "docker pull <image>          # Download image\ndocker run -d -p 80:80 <image> # Start container detached\ndocker ps -a                 # List all containers\ndocker logs <container>      # View stdout logs\ndocker stop <container>      # Halt running container\ndocker rm <container>        # Delete container metadata",
+    "commands_table": [
+      {
+        "name": "docker run",
+        "syntax": "docker run [options] image",
+        "description": "Create and start a new container from an image."
+      },
+      {
+        "name": "docker ps",
+        "syntax": "docker ps [-a]",
+        "description": "List running or all (-a) containers."
+      },
+      {
+        "name": "docker inspect",
+        "syntax": "docker inspect name",
+        "description": "Get detailed JSON metadata of a container/image."
+      }
+    ],
+    "revision_notes": [
+      "Containers are running processes isolated by namespaces and control groups.",
+      "Images are static read-only templates. Containers are live writeable instances.",
+      "The host port is mapped first: -p host_port:container_port.",
+      "Docker Hub is the default registry for public images."
+    ],
+    "best_practices": [
+      "Always specify tag versions (e.g. nginx:alpine) instead of using 'latest'.",
+      "Add --rm for short-lived debugging tasks to prevent disk space leaks.",
+      "Isolate config parameters using environment variables rather than baking them into images."
+    ],
+    "beginner_mistakes": [
+      "Assuming data persists inside container file structures when it is deleted.",
+      "Using host ports that are already bound by local services.",
+      "Attempting to manage images using container commands (like docker rm instead of rmi)."
+    ],
+    "interview_questions": [
+      {
+        "question": "What is the difference between an image and a container?",
+        "answer": "An image is a static read-only blueprint containing binaries and code. A container is a dynamic, running runtime instance of that image."
+      },
+      {
+        "question": "How do you map host port 8080 to container port 80?",
+        "answer": "Use -p 8080:80 during container startup."
+      }
+    ],
+    "books": [
+      {
+        "title": "Docker Deep Dive — Nigel Poulton",
+        "description": "Comprehensive reference covering core architectures and CLI commands."
+      }
+    ]
+  }
 }

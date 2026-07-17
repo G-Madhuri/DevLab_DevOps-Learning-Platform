@@ -279,18 +279,83 @@
       "explanation": "Container names must be globally unique per daemon socket to prevent identification conflicts."
     }
   ],
-  "resources": [
+  "interactive_examples": [
     {
-      "title": "Docker Network Drivers Documentation",
-      "url": "https://docs.docker.com/network/drivers/",
-      "type": "documentation",
-      "description": "Guides detailing bridge, host, none, macvlan, and overlay driver setups."
+      "objective": "Create custom isolated network.",
+      "scenario": "Deploy a secure database container that must not be exposed to the general public internet.",
+      "command": "docker network create --driver bridge custom_bridge",
+      "explanation": "Instructs daemon to initialize a user-defined bridge network providing automatic DNS name resolution.",
+      "expected_output": "8b9c10a11d12...",
+      "output_explanation": "Outputs the unique hash of the newly initialized network.",
+      "real_world_use": "Standard security isolation practice for backends, APIs, and databases.",
+      "common_mistakes": "Reusing existing network names causing naming collisions.",
+      "tips": "Use user-defined bridge networks instead of default bridge for better security and built-in name lookup."
     },
     {
-      "title": "Docker Port Mappings Reference",
-      "url": "https://docs.docker.com/network/",
-      "type": "documentation",
-      "description": "Guide explaining container port publication, address bindings, and iptables rules."
+      "objective": "Verify cross-container DNS lookup.",
+      "scenario": "Ensure the web application container can reach the backend database container on a custom network.",
+      "command": "docker exec frontend_app ping -c 2 backend_app",
+      "explanation": "Executes a ping command from the frontend container targeting the hostname resolved by Docker's built-in DNS.",
+      "expected_output": "PING backend_app (172.18.0.2): 56 data bytes\n64 bytes from 172.18.0.2: seq=0 ttl=64 time=0.045 ms",
+      "output_explanation": "Shows successful ping packet response confirming hostname-to-IP resolution.",
+      "real_world_use": "Troubleshooting network connectivity and DNS mapping in container environments.",
+      "common_mistakes": "Pinging across different networks where container routes are blocked.",
+      "tips": "Docker DNS only functions in user-defined networks, not on the default 'bridge' network."
     }
-  ]
+  ],
+  "resources": {
+    "summary": "Understand host/bridge/none network drivers, configure custom bridge adapters, manage port mapping rules, and run container DNS diagnostics.",
+    "links": [
+      {
+        "title": "Docker Container Networking Reference",
+        "url": "https://docs.docker.com/network/",
+        "description": "Guides detailing network driver architectures."
+      }
+    ],
+    "cheat_sheet": "docker network ls                      # List networks\ndocker network create -d bridge <name>  # Create network\ndocker network inspect <network>        # Inspect connections\ndocker network connect <net> <container> # Connect container\ndocker network disconnect <net> <c>     # Disconnect container\ndocker network rm <network>             # Delete network",
+    "commands_table": [
+      {
+        "name": "docker network create",
+        "syntax": "docker network create --driver <driver> name",
+        "description": "Initialize a new user-defined network space."
+      },
+      {
+        "name": "docker network inspect",
+        "syntax": "docker network inspect name",
+        "description": "View connection attributes and connected container IPs."
+      }
+    ],
+    "revision_notes": [
+      "The 'bridge' driver is the default network configuration for container instances.",
+      "The 'host' driver removes routing boundaries, binding directly to host interfaces.",
+      "DNS resolution is only enabled inside user-defined networks.",
+      "Containers can be dynamically connected to multiple networks simultaneously."
+    ],
+    "best_practices": [
+      "Isolate database tiers on private custom networks separate from public-facing containers.",
+      "Avoid using host networking mode in multi-tenant environments to prevent port conflicts.",
+      "Inspect network configurations to ensure IP allocations are not exhausted."
+    ],
+    "beginner_mistakes": [
+      "Attempting name-based DNS resolution on the default bridge network (fails).",
+      "Exposing database ports globally to the host machine when only internal access is needed.",
+      "Deleting a network while active containers are still attached to it."
+    ],
+    "interview_questions": [
+      {
+        "question": "What is the difference between default bridge and user-defined bridge networks?",
+        "answer": "User-defined bridges provide automatic DNS name resolution for container communications and better security isolation. Default bridge requires manual --link commands."
+      },
+      {
+        "question": "How do you connect a running container to another network?",
+        "answer": "Run 'docker network connect [network_name] [container_name]'."
+      }
+    ],
+    "books": [
+      {
+        "title": "Docker Networking Cookbook — Ken Cochrane",
+        "description": "Advanced network engineering recipes and recipes for containers."
+      }
+    ]
+  }
 }

@@ -286,18 +286,82 @@
       "explanation": "The global 'networks:' section defines user-defined bridge or overlay topologies shared by services."
     }
   ],
-  "resources": [
+  "interactive_examples": [
     {
-      "title": "Compose CLI Reference",
-      "url": "https://docs.docker.com/compose/reference/",
-      "type": "documentation",
-      "description": "Comprehensive reference guide to all docker compose commands."
+      "objective": "Check status of service stack.",
+      "scenario": "Verify if database and server containers defined in docker-compose.yml are running correctly.",
+      "command": "docker compose ps",
+      "explanation": "Lists container states, name mappings, and exposed ports for services in the current directory.",
+      "expected_output": "NAME                IMAGE               COMMAND             SERVICE             CREATED             STATUS              PORTS\nweb-1               nginx:alpine        \"/docker-entrypoint…\"   web                 10 seconds ago      Up 9 seconds        0.0.0.0:8080->80/tcp",
+      "output_explanation": "Shows live state, mapped ports, and service definitions for the compose project.",
+      "real_world_use": "Standard developer diagnostic check when working on local microservice development stack.",
+      "common_mistakes": "Executing from a directory that does not contain docker-compose.yml.",
+      "tips": "Add --format json to parse status programmatically inside developer script flows."
     },
     {
-      "title": "Compose Specification Manual",
-      "url": "https://docs.docker.com/compose/compose-file/",
-      "type": "documentation",
-      "description": "Manual detailing the YAML spec directives, schemas, and configurations."
+      "objective": "Inspect log aggregation streams.",
+      "scenario": "Investigate connection errors between frontend and database services.",
+      "command": "docker compose logs --tail=10 web",
+      "explanation": "Pulls unified container stdout log traces specifically filtered to the 'web' service definition.",
+      "expected_output": "web-1  | [info] 12#1: *1 client 172.19.0.1 connected to 172.19.0.2:80",
+      "output_explanation": "Displays aggregate log outputs prefixed by service container name.",
+      "real_world_use": "Standard method for real-time monitoring and debugging multi-container dependencies.",
+      "common_mistakes": "Forgetting that 'logs' prints static buffer; use '-f' flag to tail logs continuously.",
+      "tips": "Use 'docker compose logs -f' to stream multi-container outputs interactively."
     }
-  ]
+  ],
+  "resources": {
+    "summary": "Deploy multi-tier stacks, configure port bindings, control startup order, inspect logs, and manage local volumes.",
+    "links": [
+      {
+        "title": "Docker Compose Specification",
+        "url": "https://docs.docker.com/compose/compose-file/",
+        "description": "Official Compose schema reference."
+      }
+    ],
+    "cheat_sheet": "docker compose up -d   # Start stack in background\ndocker compose down    # Destroy stack resources\ndocker compose ps      # List stack containers\ndocker compose logs -f # Stream logs\ndocker compose config  # Validate YAML syntax",
+    "commands_table": [
+      {
+        "name": "docker compose up",
+        "syntax": "docker compose up [-d]",
+        "description": "Build, create, start and attach containers for compose services."
+      },
+      {
+        "name": "docker compose down",
+        "syntax": "docker compose down [-v]",
+        "description": "Stop and remove containers, networks, volumes (-v) and images."
+      }
+    ],
+    "revision_notes": [
+      "docker-compose.yml defines services, networks, and volumes declaratively.",
+      "Compose automatically creates a unified bridge network for all defined services.",
+      "Service names (e.g. 'db', 'web') act as DNS hostnames for inter-container connections."
+    ],
+    "best_practices": [
+      "Specify explicit version tags for images inside compose configurations.",
+      "Use environment files (.env) to store variables instead of hardcoding values.",
+      "Configure 'depends_on' properties to organize services startup sequences."
+    ],
+    "beginner_mistakes": [
+      "Forgetting to run commands from the folder containing docker-compose.yml.",
+      "Incorrect indentation spacing in YAML (always use spaces, never tabs).",
+      "Assuming compose down preserves data in containers without volumes mapped."
+    ],
+    "interview_questions": [
+      {
+        "question": "How do containers in a Compose stack communicate with each other?",
+        "answer": "Compose automatically joins them to a shared bridge network. They resolve each other using service names as DNS hostnames."
+      },
+      {
+        "question": "What does 'docker compose down -v' do?",
+        "answer": "It stops and destroys the container stack, networks, and deletes named persistent volumes."
+      }
+    ],
+    "books": [
+      {
+        "title": "Docker Compose Reference Guide",
+        "description": "Practical patterns for local development environment design."
+      }
+    ]
+  }
 }
