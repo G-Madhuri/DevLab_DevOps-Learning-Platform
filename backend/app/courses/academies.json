@@ -259,30 +259,6 @@
     ]
   },
   {
-    "id": "git",
-    "title": "Git",
-    "description": "Master distributed version control, branching models, interactive rebases, and merge conflict resolution.",
-    "icon": "git-branch",
-    "difficulty": "Beginner",
-    "coming_soon": true,
-    "courses": [
-      {
-        "slug": "git-branching-and-merging",
-        "title": "Git Branching & Merging",
-        "description": "Understand commits, check out references, merge branches, and resolve conflicts.",
-        "difficulty": "Beginner",
-        "duration": "30 minutes"
-      },
-      {
-        "slug": "advanced-git-workflows",
-        "title": "Advanced Git Workflows",
-        "description": "Clean project histories utilizing interactive rebase, squash commits, and reflog recoveries.",
-        "difficulty": "Advanced",
-        "duration": "60 minutes"
-      }
-    ]
-  },
-  {
     "id": "terraform",
     "title": "Terraform",
     "description": "Build Infrastructure as Code using HCL declarations, state storage, variables, and reusable modules.",

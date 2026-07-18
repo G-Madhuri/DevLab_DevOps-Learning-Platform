@@ -1569,6 +1569,15 @@ class KubernetesRuntime(BaseRuntime):
             logger.warning(f"Error during namespace delete {ns_name}: {e}")
 
 
+def _remove_readonly(func, path, excinfo):
+    import stat
+    try:
+        os.chmod(path, stat.S_IWRITE)
+        func(path)
+    except Exception:
+        pass
+
+
 class GitRuntime(BaseRuntime):
     """
     Git runtime provisioner managing local session directory repositories.
@@ -1601,7 +1610,7 @@ class GitRuntime(BaseRuntime):
         )
         if os.path.exists(session_dir):
             try:
-                shutil.rmtree(session_dir)
+                shutil.rmtree(session_dir, onerror=_remove_readonly)
             except Exception as e:
                 logger.warning(f"Failed to remove Git session directory {session_dir}: {e}")
 
@@ -1659,7 +1668,7 @@ class LabRuntimeService:
             shell = self.simulated_sessions.pop(session_id)
             if os.path.exists(shell.base_dir):
                 try:
-                    shutil.rmtree(shell.base_dir)
+                    shutil.rmtree(shell.base_dir, onerror=_remove_readonly)
                 except Exception as e:
                     logger.warning(f"Failed to remove directory {shell.base_dir}: {e}")
 
