@@ -1,0 +1,352 @@
+{
+  "slug": "building-ci-pipelines",
+  "title": "Building CI Pipelines",
+  "overview": {
+    "introduction": "Continuous Integration (CI) automatically runs compilation checks, syntax audits, and code sanity tests upon every pull request or commit push.",
+    "why_it_matters": "Understanding Building CI Pipelines enables you to automate software checks and release packages directly from repository operations.",
+    "industry_usage": "Used by engineering teams globally to enforce test checks and deliver webapp packages automatically.",
+    "what_you_will_build": "A series of configured local Git repositories tracking YAML workflows, triggers, actions steps, and execution simulator logs.",
+    "prerequisites": "Git course basics.",
+    "estimated_time": "30 mins",
+    "difficulty": "Beginner",
+    "learning_outcomes": [
+      "Explain the workflow execution model of Building CI Pipelines.",
+      "Create workflows utilizing triggers and job steps.",
+      "Incorporate actions like actions/checkout and actions/upload-artifact.",
+      "Inject repository secrets variables securely inside workflow environment states.",
+      "Analyze running workflow logs outputs."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "Actions & Checkouts",
+      "definition": "Using reusable actions like actions/checkout checkout repositories in container runners. Custom steps run script commands in the terminal shell.",
+      "why_important": [
+        "Saves manual deployment efforts.",
+        "Guarantees compilation integrity before merges.",
+        "Locks sensitive secrets keys from logs displays."
+      ],
+      "explanation": "When a workflow event is triggered, GitHub Actions spawns container host runners to execute listed script steps.",
+      "commands": [
+        {
+          "name": "on",
+          "purpose": "Define workflow trigger conditions.",
+          "syntax": "on: [push, pull_request]",
+          "example": "on: [push]",
+          "expected_output": "on: [push]",
+          "output_explanation": "Triggers workflow runs when commits are pushed."
+        },
+        {
+          "name": "uses",
+          "purpose": "Import reusable workflow action files.",
+          "syntax": "uses: owner/repo@version",
+          "example": "uses: actions/checkout@v4",
+          "expected_output": "uses: actions/checkout@v4",
+          "output_explanation": "Checks out active repository files inside workspace run directories."
+        }
+      ],
+      "pro_tip": "Always specify explicit versions (e.g. @v4) for actions dependencies to lock pipeline builds states.",
+      "best_practices": "Avoid executing commands with root/admin scopes in shell steps unless strictly required for configurations.",
+      "common_mistakes": "Exposing production API keys directly in YAML files instead of using GitHub Secrets mappings.",
+      "real_world_usage": "GitHub Actions automatically executes linter checks upon receiving a new Pull Request.",
+      "summary": "Building CI Pipelines form the baseline of secure automated software pipelines."
+    }
+  ],
+  "interactive_examples": [
+    {
+      "objective": "Define trigger parameters.",
+      "scenario": "Configure workflow execution rules.",
+      "command": "echo -e 'name: CI Pipeline\\non: [push]\\njobs:\\n  ci:\\n    runs-on: ubuntu-latest\\n    steps:\\n      - name: Checkout Code\\n        uses: actions/checkout@v4' > .github/workflows/main.yml",
+      "explanation": "Create workflow directories and YAML targets.",
+      "expected_output": "Files initialized.",
+      "output_explanation": "Creates targets on disk.",
+      "real_world_use": "Automating system workflows tests.",
+      "common_mistakes": "Incorrect indentation structures in YAML workflow definitions.",
+      "tips": "Utilize 2-space indentation levels for YAML files formatting."
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Initial Check (Use Checkout Action)",
+      "definition": "Define workflow configuration file.",
+      "explanation": "Initializes workflow targets.",
+      "instruction": "Incorporate 'actions/checkout@v4' action step in your workflow job definition to check out source code files.",
+      "example": "echo -e 'name: CI Pipeline\\non: [push]\\njobs:\\n  ci:\\n    runs-on: ubuntu-latest\\n    steps:\\n      - name: Checkout Code\\n        uses: actions/checkout@v4' > .github/workflows/main.yml",
+      "expected": "",
+      "hint": "Run command: echo -e 'name: CI Pipeline\\non: [push]\\njobs:\\n  ci:\\n    runs-on: ubuntu-latest\\n    steps:\\n      - name: Checkout Code\\n        uses: actions/checkout@v4' > .github/workflows/main.yml",
+      "solution": "echo -e 'name: CI Pipeline\\non: [push]\\njobs:\\n  ci:\\n    runs-on: ubuntu-latest\\n    steps:\\n      - name: Checkout Code\\n        uses: actions/checkout@v4' > .github/workflows/main.yml",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 2,
+      "title": "2. Check status",
+      "definition": "Verify working files states.",
+      "explanation": "Inspects index files stages.",
+      "instruction": "Run git status to see modified files.",
+      "example": "git status",
+      "expected": "",
+      "hint": "Run: git status",
+      "solution": "git status",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 3,
+      "title": "3. Audit Log History",
+      "definition": "Commit history browser.",
+      "explanation": "Displays timeline log of previous commits.",
+      "instruction": "Print commit history log to console screen.",
+      "example": "git log --oneline",
+      "expected": "",
+      "hint": "Run: git log --oneline",
+      "solution": "git log --oneline",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 4,
+      "title": "4. Create configuration",
+      "definition": "Manage git attributes.",
+      "explanation": "List active configuration scopes.",
+      "instruction": "Query git configurations using --list.",
+      "example": "git config --list",
+      "expected": "",
+      "hint": "Run: git config --list",
+      "solution": "git config --list",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 5,
+      "title": "5. Show ref mappings",
+      "definition": "List commit references.",
+      "explanation": "Resolve tags and branches SHA identifiers.",
+      "instruction": "Query refs maps inside repository workspace.",
+      "example": "git show-ref",
+      "expected": "",
+      "hint": "Run: git show-ref",
+      "solution": "git show-ref",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 6,
+      "title": "6. Show active branch",
+      "definition": "Identify branch position.",
+      "explanation": "Queries branch name where checkout pointer HEAD is sitting.",
+      "instruction": "List all branches using git branch.",
+      "example": "git branch",
+      "expected": "",
+      "hint": "Run: git branch",
+      "solution": "git branch",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 7,
+      "title": "7. Audit reflog",
+      "definition": "HEAD history tracking register.",
+      "explanation": "Audits reflog containing history revisions of pointers checkout switches.",
+      "instruction": "Inspect refs movements logs.",
+      "example": "git reflog -n 5",
+      "expected": "",
+      "hint": "Run: git reflog -n 5",
+      "solution": "git reflog -n 5",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 8,
+      "title": "Mini Challenge: Multi Step CI Pipeline",
+      "definition": "No step-by-step instructions are provided here. Execute this task directly.",
+      "explanation": "Complete this task on your own.",
+      "instruction": "Extend your workflow to run 'npm install' and 'npm run build' after checking out the repository code.",
+      "example": "echo -e 'name: CI Pipeline\\non: [push]\\njobs:\\n  ci:\\n    runs-on: ubuntu-latest\\n    steps:\\n      - name: Checkout Code\\n        uses: actions/checkout@v4\\n      - name: Install dependencies\\n        run: npm install\\n      - name: Build project\\n        run: npm run build' > .github/workflows/main.yml && git add .github/workflows/main.yml && git commit -m 'feat: build CI pipeline'",
+      "expected": "",
+      "hint": "Run command: echo -e 'name: CI Pipeline\\non: [push]\\njobs:\\n  ci:\\n    runs-on: ubuntu-latest\\n    steps:\\n      - name: Checkout Code\\n        uses: actions/checkout@v4\\n      - name: Install dependencies\\n        run: npm install\\n      - name: Build project\\n        run: npm run build' > .github/workflows/main.yml && git add .github/workflows/main.yml && git commit -m 'feat: build CI pipeline'",
+      "solution": "echo -e 'name: CI Pipeline\\non: [push]\\njobs:\\n  ci:\\n    runs-on: ubuntu-latest\\n    steps:\\n      - name: Checkout Code\\n        uses: actions/checkout@v4\\n      - name: Install dependencies\\n        run: npm install\\n      - name: Build project\\n        run: npm run build' > .github/workflows/main.yml && git add .github/workflows/main.yml && git commit -m 'feat: build CI pipeline'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "8m"
+    }
+  ],
+  "exercises": [
+    {
+      "title": "Configure Git attributes",
+      "problem": "Practice git workspace command configurations by querying history logs.",
+      "difficulty": "easy",
+      "hint": "Run git status.",
+      "expected_result": "Success status.",
+      "objective": "Verify Building CI Pipelines core specifications."
+    }
+  ],
+  "quiz": [
+    {
+      "question": "What is the primary function of GitHub Actions Building CI Pipelines?",
+      "options": [
+        "To automate software development workflows.",
+        "To compile C++ desktop frameworks.",
+        "To register cloud compute networks.",
+        "To host container hypervisors."
+      ],
+      "answer": "To automate software development workflows.",
+      "explanation": "GitHub Actions automates compilation, testing, and deployment workflows directly from events."
+    },
+    {
+      "question": "Where must workflow configuration files be located in a repository?",
+      "options": [
+        ".github/workflows/",
+        ".git/hooks/",
+        "src/actions/",
+        "config/workflows/"
+      ],
+      "answer": ".github/workflows/",
+      "explanation": "GitHub Actions searches for workflow YAML files inside the '.github/workflows/' directory."
+    },
+    {
+      "question": "What is the trigger keyword in a workflow definition?",
+      "options": [
+        "on",
+        "trigger",
+        "event",
+        "when"
+      ],
+      "answer": "on",
+      "explanation": "The 'on' keyword specifies the event triggers (like push or pull_request) that run the workflow."
+    },
+    {
+      "question": "Which action checks out repository code inside a workflow?",
+      "options": [
+        "actions/checkout",
+        "actions/init",
+        "git/clone",
+        "checkout/code"
+      ],
+      "answer": "actions/checkout",
+      "explanation": "The 'actions/checkout' action is the standard utility used to check out repository code."
+    },
+    {
+      "question": "Which keyword specifies the OS environment type for a runner?",
+      "options": [
+        "runs-on",
+        "os-type",
+        "environment",
+        "platform"
+      ],
+      "answer": "runs-on",
+      "explanation": "The 'runs-on' parameter specifies the runner operating system context (e.g. ubuntu-latest)."
+    },
+    {
+      "question": "What keyword defines custom script actions to run in terminal shells?",
+      "options": [
+        "run",
+        "exec",
+        "script",
+        "shell"
+      ],
+      "answer": "run",
+      "explanation": "The 'run' keyword runs command-line scripts using the runner's shell environment."
+    },
+    {
+      "question": "What runs steps in a workflow concurrently or sequentially?",
+      "options": [
+        "Jobs",
+        "Workflows",
+        "Triggers",
+        "Events"
+      ],
+      "answer": "Jobs",
+      "explanation": "Jobs inside a workflow run in parallel by default, while steps inside a job run sequentially."
+    },
+    {
+      "question": "How do you share build files between jobs or save them after workflows finish?",
+      "options": [
+        "Build Artifacts",
+        "Git Tags",
+        "Logs Histories",
+        "Shell Environments"
+      ],
+      "answer": "Build Artifacts",
+      "explanation": "Artifacts allow you to persist and share data across workflow jobs and runs."
+    },
+    {
+      "question": "Where should encryption passwords or deployment keys be saved?",
+      "options": [
+        "Encrypted Secrets",
+        "Workflow YAML files",
+        "README documentation",
+        "Commit comments"
+      ],
+      "answer": "Encrypted Secrets",
+      "explanation": "Encrypted secrets store credentials securely within GitHub Actions without printing them in logs."
+    },
+    {
+      "question": "What action is used to save build assets in a workflow?",
+      "options": [
+        "actions/upload-artifact",
+        "actions/save-files",
+        "actions/download-artifact",
+        "actions/store"
+      ],
+      "answer": "actions/upload-artifact",
+      "explanation": "The 'actions/upload-artifact' action uploads files from your runner workspace to GitHub."
+    }
+  ],
+  "resources": {
+    "summary": "Learn more about GitHub Actions Building CI Pipelines through official documentation, guides, and cheat sheets.",
+    "links": [
+      {
+        "title": "GitHub Actions Building CI Pipelines Documentation Guide",
+        "type": "documentation",
+        "description": "Official documentation and manual for Building CI Pipelines.",
+        "url": "https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs"
+      },
+      {
+        "title": "GitHub Actions Cheat Sheet",
+        "type": "Cheat Sheet",
+        "description": "Quick reference guide for common workflow keys and triggers.",
+        "url": "https://github.com/dkhamsing/awesome-github-actions"
+      }
+    ],
+    "cheat_sheet": "on: [push]                  # Trigger on push\nruns-on: ubuntu-latest       # Use Ubuntu runner\nuses: actions/checkout@v4    # Import Checkout action\nrun: npm run test            # Execute shell test script",
+    "commands_table": [
+      {
+        "name": "on",
+        "syntax": "on: <event>",
+        "description": "Trigger events configuration."
+      },
+      {
+        "name": "uses",
+        "syntax": "uses: <action>",
+        "description": "Import action utility wrapper."
+      }
+    ],
+    "revision_notes": [
+      "Workflows are configured as YAML configurations in .github/workflows/.",
+      "Secrets are referenced utilizing ${{ secrets.KEY }} expressions.",
+      "Jobs execute inside isolated runner containers."
+    ],
+    "best_practices": [
+      "Limit runner scopes and clean up caches dynamically.",
+      "Store credentials securely inside Encrypted Secrets.",
+      "Audit logs outputs to avoid printing private tokens."
+    ],
+    "beginner_mistakes": [
+      "Using tabs instead of 2-space indentation levels inside YAML templates.",
+      "Adding hardcoded password strings in workflow files."
+    ],
+    "interview_questions": [
+      {
+        "question": "What is GitHub Actions Building CI Pipelines?",
+        "answer": "It represents the continuous integration and automation runner platform for Building CI Pipelines."
+      }
+    ],
+    "books": [
+      {
+        "title": "Automating workflows with GitHub Actions \u2014 Scott Chacon",
+        "description": "Comprehensive reference guide explaining runner internals and pipelines configuration."
+      }
+    ]
+  }
+}

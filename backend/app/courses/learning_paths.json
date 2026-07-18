@@ -201,7 +201,10 @@
       "kubernetes-production-best-practices",
       "kubernetes-capstone-project",
       "terraform",
-      "github-actions"
+      "github-actions-fundamentals",
+      "building-ci-pipelines",
+      "testing-and-artifact-management",
+      "automated-deployments"
     ]
   },
   {
@@ -309,7 +312,10 @@
       "git-branching-and-merging",
       "advanced-git",
       "team-workflows",
-      "github-actions",
+      "github-actions-fundamentals",
+      "building-ci-pipelines",
+      "testing-and-artifact-management",
+      "automated-deployments",
       "jenkins"
     ]
   },
@@ -356,7 +362,10 @@
       "kubernetes-helm-basics",
       "kubernetes-production-best-practices",
       "kubernetes-capstone-project",
-      "github-actions"
+      "github-actions-fundamentals",
+      "building-ci-pipelines",
+      "testing-and-artifact-management",
+      "automated-deployments"
     ]
   },
   {
