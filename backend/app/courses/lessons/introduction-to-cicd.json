@@ -1,0 +1,339 @@
+{
+  "slug": "introduction-to-cicd",
+  "title": "Introduction to CI/CD",
+  "overview": {
+    "introduction": "CI/CD is a software delivery paradigm that bridges development and operations using automation.",
+    "why_it_matters": "Understanding Introduction to CI/CD allows developers to deliver reliable software iterations safely and iteratively.",
+    "industry_usage": "Adopted by organizations globally to reduce manual errors and scale deployments frequencies.",
+    "what_you_will_build": "A configured local Git repository with a custom pipeline file running a local pipeline execution simulator.",
+    "prerequisites": "Git course basics.",
+    "estimated_time": "30 mins",
+    "difficulty": "Beginner",
+    "learning_outcomes": [
+      "Explain the purpose and mechanics of Introduction to CI/CD.",
+      "Write pipeline stages lists in YAML configurations.",
+      "Incorporate validation gates like linting, unit tests, and compilation checks.",
+      "Simulate manual approval gates and post-deploy rollbacks.",
+      "Analyze and debug running pipeline logs."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "Delivery Pipeline Concepts",
+      "definition": "A pipeline is a sequence of stages that compiles code, executes quality gates, and releases products.",
+      "why_important": [
+        "Guarantees build repeatabilities.",
+        "Saves engineering time via automation.",
+        "Improves software release quality states."
+      ],
+      "explanation": "A pipeline splits software delivery tasks into sequential stages, ensuring check parameters are validated.",
+      "commands": [
+        {
+          "name": "run-pipeline",
+          "purpose": "Simulate and run pipeline config stages.",
+          "syntax": "run-pipeline",
+          "example": "run-pipeline",
+          "expected_output": "Pipeline completed successfully!",
+          "output_explanation": "Executes local stages configured inside pipeline.yml."
+        }
+      ],
+      "pro_tip": "Keep pipelines modular to easily pinpoint error spots and reuse build structures.",
+      "best_practices": "Ensure test checks are executed early in the pipeline timeline to capture anomalies quickly.",
+      "common_mistakes": "Skipping compilation check dependencies when executing deploy pipeline triggers.",
+      "real_world_usage": "CI/CD checks compile code and execute test cases for every developer push command.",
+      "summary": "Introduction to CI/CD forms the foundation of devops lifecycle automation."
+    }
+  ],
+  "interactive_examples": [
+    {
+      "objective": "Define pipeline stages parameter.",
+      "scenario": "Author initial schema layout.",
+      "command": "echo -e 'stages:\\n  - checkout\\n  - test\\n  - build' > pipeline.yml",
+      "explanation": "Create standard configurations.",
+      "expected_output": "File updated.",
+      "output_explanation": "Updates pipeline.yml configuration.",
+      "real_world_use": "Standardizing automation checks.",
+      "common_mistakes": "Typing stage names incorrectly in config schemas.",
+      "tips": "Verify list parameters indentation levels."
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Create Configuration (Create initial pipeline)",
+      "definition": "Initialize configuration target.",
+      "explanation": "Create target configuration parameters file.",
+      "instruction": "Create a file named 'pipeline.yml' in the root directory to define your stages list.",
+      "example": "echo -e 'stages:\\n  - checkout\\n  - test\\n  - build' > pipeline.yml",
+      "expected": "",
+      "hint": "Run command: echo -e 'stages:\\n  - checkout\\n  - test\\n  - build' > pipeline.yml",
+      "solution": "echo -e 'stages:\\n  - checkout\\n  - test\\n  - build' > pipeline.yml",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 2,
+      "title": "2. Inspect Status",
+      "definition": "Verify working workspace status.",
+      "explanation": "Inspects git files trackings.",
+      "instruction": "Run git status to see modified files.",
+      "example": "git status",
+      "expected": "",
+      "hint": "Run: git status",
+      "solution": "git status",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 3,
+      "title": "3. Audit History Log",
+      "definition": "Inspect timeline commits.",
+      "explanation": "Displays timeline log of previous commits.",
+      "instruction": "Print commit history log to console screen.",
+      "example": "git log --oneline",
+      "expected": "",
+      "hint": "Run: git log --oneline",
+      "solution": "git log --oneline",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 4,
+      "title": "4. Verify Configuration Settings",
+      "definition": "Manage configs attributes.",
+      "explanation": "List active configuration scopes.",
+      "instruction": "Query git configurations using --list.",
+      "example": "git config --list",
+      "expected": "",
+      "hint": "Run: git config --list",
+      "solution": "git config --list",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 5,
+      "title": "5. Show pointer references",
+      "definition": "Query tracking references.",
+      "explanation": "Locates branches and tags SHA mappings.",
+      "instruction": "Query refs mapping by running git show-ref.",
+      "example": "git show-ref",
+      "expected": "",
+      "hint": "Run: git show-ref",
+      "solution": "git show-ref",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 6,
+      "title": "6. Show active branches",
+      "definition": "Identify checked out pointers.",
+      "explanation": "List current active pointers locations.",
+      "instruction": "List all branches using git branch.",
+      "example": "git branch",
+      "expected": "",
+      "hint": "Run: git branch",
+      "solution": "git branch",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 7,
+      "title": "7. Audit pointer trackings",
+      "definition": "Audit tracking register.",
+      "explanation": "Audits reflog revisions entries.",
+      "instruction": "Inspect refs movements logs.",
+      "example": "git reflog -n 5",
+      "expected": "",
+      "hint": "Run: git reflog -n 5",
+      "solution": "git reflog -n 5",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 8,
+      "title": "Mini Challenge: Pipeline Setup",
+      "definition": "No step-by-step instructions are provided here. Execute this task directly.",
+      "explanation": "Complete this task on your own.",
+      "instruction": "Construct a basic pipeline schema in 'pipeline.yml' listing the three core stages: checkout, test, and build.",
+      "example": "echo -e 'stages:\\n  - checkout\\n  - test\\n  - build' > pipeline.yml && git add pipeline.yml && git commit -m 'feat: init pipeline config'",
+      "expected": "",
+      "hint": "Run command: echo -e 'stages:\\n  - checkout\\n  - test\\n  - build' > pipeline.yml && git add pipeline.yml && git commit -m 'feat: init pipeline config'",
+      "solution": "echo -e 'stages:\\n  - checkout\\n  - test\\n  - build' > pipeline.yml && git add pipeline.yml && git commit -m 'feat: init pipeline config'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "8m"
+    }
+  ],
+  "exercises": [
+    {
+      "title": "Configure local pipeline",
+      "problem": "Practice pipeline configuration by configuring pipeline.yml.",
+      "difficulty": "easy",
+      "hint": "Run git status.",
+      "expected_result": "Success status.",
+      "objective": "Verify Introduction to CI/CD parameters."
+    }
+  ],
+  "quiz": [
+    {
+      "question": "What is the primary function of CI/CD Introduction to CI/CD?",
+      "options": [
+        "To automate software integration and delivery pipelines.",
+        "To assign cloud infrastructure access permissions.",
+        "To coordinate cluster pods networking schedules.",
+        "To track compiler variables."
+      ],
+      "answer": "To automate software integration and delivery pipelines.",
+      "explanation": "CI/CD automates integration testing, packaging, and deployments."
+    },
+    {
+      "question": "What is the role of the Continuous Integration phase?",
+      "options": [
+        "To automate code linting, checks, and unit tests runs.",
+        "To manually approve production releases.",
+        "To store backups of configuration parameters.",
+        "To deploy physical servers."
+      ],
+      "answer": "To automate code linting, checks, and unit tests runs.",
+      "explanation": "Continuous Integration automatically merges developer code commits and validates them using automated quality checks."
+    },
+    {
+      "question": "What distinguishes Continuous Delivery from Continuous Deployment?",
+      "options": [
+        "Continuous Delivery requires a manual approval trigger to deploy.",
+        "Continuous Deployment compiles code slower.",
+        "Continuous Delivery uses no YAML configurations.",
+        "Continuous Deployment runs no unit tests."
+      ],
+      "answer": "Continuous Delivery requires a manual approval trigger to deploy.",
+      "explanation": "Continuous Delivery packages releases automatically but keeps deployment staging/production behind manual approval checks."
+    },
+    {
+      "question": "What keyword defines the sequential blocks in a pipeline schema?",
+      "options": [
+        "stages",
+        "pipelines",
+        "blocks",
+        "sequence"
+      ],
+      "answer": "stages",
+      "explanation": "The 'stages' key organizes pipeline execution components into sequential phases."
+    },
+    {
+      "question": "Why is testing early in the pipeline timeline recommended?",
+      "options": [
+        "To discover software anomalies early before costly downstream phases run.",
+        "To reduce compilation CPU loads.",
+        "To avoid configuring secrets parameters.",
+        "To speed up container packaging durations."
+      ],
+      "answer": "To discover software anomalies early before costly downstream phases run.",
+      "explanation": "Running test cases early avoids pushing broken packages downstream (known as shifting security/testing left)."
+    },
+    {
+      "question": "Which stage compiles source files into usable packages?",
+      "options": [
+        "build",
+        "test",
+        "lint",
+        "deploy"
+      ],
+      "answer": "build",
+      "explanation": "The 'build' stage compiles code dependencies and produces deployable software assets."
+    },
+    {
+      "question": "Which parameter stores sensitive keys safely inside pipelines?",
+      "options": [
+        "Environment Secrets",
+        "Public configuration variables",
+        "YAML comments",
+        "Markdown files"
+      ],
+      "answer": "Environment Secrets",
+      "explanation": "Secrets securely inject access credentials without printing them inside execution logs outputs."
+    },
+    {
+      "question": "What is a manual approval gate?",
+      "options": [
+        "An intentional halt in a pipeline requiring admin click approvals to proceed.",
+        "A compiler warning exception check.",
+        "An error during file packaging runs.",
+        "A firewall policy rule parameter."
+      ],
+      "answer": "An intentional halt in a pipeline requiring admin click approvals to proceed.",
+      "explanation": "Approval gates ensure human oversight validates build status before packages deploy to staging/production."
+    },
+    {
+      "question": "What is a pipeline rollback?",
+      "options": [
+        "Restoring the previous working version after a deploy failure.",
+        "Deleting all commits histories.",
+        "Re-running unit test suites.",
+        "Re-indexing database columns."
+      ],
+      "answer": "Restoring the previous working version after a deploy failure.",
+      "explanation": "Rollbacks revert clusters or systems back to stable states in the event of new deployment failures."
+    },
+    {
+      "question": "What format is typically used to write pipeline configuration layouts?",
+      "options": [
+        "YAML",
+        "HTML",
+        "CSV",
+        "TXT"
+      ],
+      "answer": "YAML",
+      "explanation": "YAML is standard for describing pipelines stages, triggers, and commands configurations."
+    }
+  ],
+  "resources": {
+    "summary": "Learn more about CI/CD Introduction to CI/CD through official documentation, guides, and cheat sheets.",
+    "links": [
+      {
+        "title": "CI/CD Introduction to CI/CD Guide",
+        "type": "documentation",
+        "description": "Official documentation and manual for Introduction to CI/CD.",
+        "url": "https://www.redhat.com/en/topics/devops/what-is-ci-cd"
+      },
+      {
+        "title": "CI/CD Awesome References",
+        "type": "reference",
+        "description": "Collection of tutorials, best practices, and pipeline configs.",
+        "url": "https://github.com/meysamhadeli/awesome-cicd"
+      }
+    ],
+    "cheat_sheet": "stages:\n  - checkout       # Stage 1\n  - test           # Stage 2\n  - build          # Stage 3\n  - deploy         # Stage 4",
+    "commands_table": [
+      {
+        "name": "run-pipeline",
+        "syntax": "run-pipeline",
+        "description": "Run and parse pipeline.yml stages."
+      }
+    ],
+    "revision_notes": [
+      "Pipelines are configured as stages lists in pipeline.yml.",
+      "Rollbacks revert system packages to clean previous release states.",
+      "Manual approvals introduce checkpoints for production releases."
+    ],
+    "best_practices": [
+      "Execute syntax and lint checkers first.",
+      "Keep configurations dry and modular.",
+      "Do not store passwords in plaintext."
+    ],
+    "beginner_mistakes": [
+      "Hardcoding server IPs in YAML files.",
+      "Excluding unit testing checks from integration hooks."
+    ],
+    "interview_questions": [
+      {
+        "question": "What is CI/CD Introduction to CI/CD?",
+        "answer": "It is an automation lifecycle framework delivering repeatable, quality-checked code iterations."
+      }
+    ],
+    "books": [
+      {
+        "title": "Continuous Delivery \u2014 Jez Humble & David Farley",
+        "description": "The definitive book explaining reliable software releases configurations, packaging, and deployments."
+      }
+    ]
+  }
+}

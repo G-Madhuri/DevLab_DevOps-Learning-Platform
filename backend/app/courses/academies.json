@@ -407,6 +407,51 @@
     ]
   },
   {
+    "id": "cicd",
+    "title": "CI/CD",
+    "description": "Master the principles of Continuous Integration, Continuous Delivery, and Continuous Deployment. Build clean automated gates and pipelines.",
+    "icon": "git-pull-request",
+    "difficulty": "Beginner",
+    "coming_soon": false,
+    "courses": [
+      {
+        "slug": "introduction-to-cicd",
+        "title": "Introduction to CI/CD",
+        "description": "Learn the software delivery lifecycle, pipelines, and manual vs automated delivery principles.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "continuous-integration",
+        "title": "Continuous Integration",
+        "description": "Automate code checks, syntax rules, compilation validation, and unit testing scripts.",
+        "difficulty": "Beginner",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "continuous-delivery",
+        "title": "Continuous Delivery",
+        "description": "Package build iterations and maintain package registry releases behind manual approval checkpoints.",
+        "difficulty": "Intermediate",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "continuous-deployment",
+        "title": "Continuous Deployment",
+        "description": "Automate final staging and production deployment gates safely without manual triggers.",
+        "difficulty": "Intermediate",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "building-a-complete-cicd-pipeline",
+        "title": "Building a Complete CI/CD Pipeline",
+        "description": "Orchestrate complex pipelines combining compile gates, test scripts, approvals, and rollbacks.",
+        "difficulty": "Advanced",
+        "duration": "60 minutes"
+      }
+    ]
+  },
+  {
     "id": "jenkins",
     "title": "Jenkins",
     "description": "Build production declarative pipelines, deploy local agent runners, and build Groovy shared libraries.",

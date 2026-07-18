@@ -18,8 +18,14 @@ class ValidationEngine:
         lab_name: str = "linux-basics",
     ) -> Dict[str, Any]:
         """
-        Routes the validation check to the appropriate course validators (Linux, Docker, Git, Actions or Kubernetes).
+        Routes the validation check to the appropriate course validators (Linux, Docker, Git, Actions, CI/CD or Kubernetes).
         """
+        if "introduction-to-cicd" in lab_name or "continuous-" in lab_name or "building-a-complete-cicd" in lab_name or lab_name == "cicd":
+            shell = runtime_service.get_session_shell(session_id)
+            if not shell:
+                return {"success": False, "message": "CI/CD shell session not found."}
+            return self._validate_cicd(shell, task_id, lab_name)
+
         if "github-actions" in lab_name:
             shell = runtime_service.get_session_shell(session_id)
             if not shell:
@@ -1600,6 +1606,89 @@ class ValidationEngine:
                     return {"success": False, "message": "Workflow steps must reference deploy secrets '${{ secrets.DEPLOY_KEY }}'."}
 
                 return {"success": True, "message": "Success! Continuous deployment pipeline verified."}
+
+        return {"success": False, "message": "Unknown task check."}
+
+    def _validate_cicd(self, shell: Any, task_id: int, lab_name: str) -> Dict[str, Any]:
+        """
+        Validates CI/CD course progress against pipeline file configurations and simulator logs.
+        """
+        history_str = " ".join(shell.history).lower()
+        pipeline_path = os.path.join(shell.base_dir, "pipeline.yml")
+
+        if task_id == 1:
+            if os.path.exists(pipeline_path):
+                return {"success": True, "message": "Success! pipeline.yml file created."}
+            return {"success": False, "message": "Create the pipeline configuration file named 'pipeline.yml'."}
+
+        elif task_id in [2, 3, 4, 5, 6, 7]:
+            git_cmds = {
+                2: ("git status", "Query repository files status using 'git status'."),
+                3: ("git log", "Print commits timeline history log using 'git log'."),
+                4: ("git config", "Verify config details using 'git config --list'."),
+                5: ("git show-ref", "Query pointer references mappings using 'git show-ref'."),
+                6: ("git branch", "Identify active branches positions utilizing 'git branch'."),
+                7: ("git reflog", "Inspect revisions tracking logs by running 'git reflog'.")
+            }
+            cmd_key, error_msg = git_cmds[task_id]
+            if cmd_key in history_str:
+                return {"success": True, "message": f"Success! Executed {cmd_key} check."}
+            return {"success": False, "message": error_msg}
+
+        elif task_id == 8:
+            if not os.path.exists(pipeline_path):
+                return {"success": False, "message": "pipeline.yml config file does not exist."}
+
+            if not getattr(shell, "pipeline_executed", False):
+                return {"success": False, "message": "Execute the pipeline simulation run by executing the custom command 'run-pipeline'."}
+
+            try:
+                import yaml
+                with open(pipeline_path, "r") as f:
+                    yaml_data = yaml.safe_load(f) or {}
+            except Exception as e:
+                return {"success": False, "message": f"YAML syntax error: {e}"}
+
+            stages = yaml_data.get("stages", [])
+            if not isinstance(stages, list) or not stages:
+                return {"success": False, "message": "Pipeline configuration must define a list of 'stages'."}
+
+            stages_clean = [s.lower().strip() for s in stages]
+
+            if lab_name == "introduction-to-cicd":
+                required = ["checkout", "test", "build"]
+                for req in required:
+                    if req not in stages_clean:
+                        return {"success": False, "message": f"Pipeline must contain '{req}' stage."}
+                return {"success": True, "message": "Success! Introduction to CI/CD pipeline verified."}
+
+            elif lab_name == "continuous-integration":
+                required = ["checkout", "lint", "test", "build"]
+                for req in required:
+                    if req not in stages_clean:
+                        return {"success": False, "message": f"Pipeline must contain '{req}' stage."}
+                return {"success": True, "message": "Success! Continuous Integration pipeline verified."}
+
+            elif lab_name == "continuous-delivery":
+                required = ["checkout", "test", "build", "package", "release"]
+                for req in required:
+                    if req not in stages_clean:
+                        return {"success": False, "message": f"Pipeline must contain '{req}' stage."}
+                return {"success": True, "message": "Success! Continuous Delivery pipeline verified."}
+
+            elif lab_name == "continuous-deployment":
+                required = ["checkout", "test", "build", "deploy", "verify"]
+                for req in required:
+                    if req not in stages_clean:
+                        return {"success": False, "message": f"Pipeline must contain '{req}' stage."}
+                return {"success": True, "message": "Success! Continuous Deployment pipeline verified."}
+
+            elif lab_name == "building-a-complete-cicd-pipeline":
+                required = ["checkout", "lint", "test", "build", "package", "approval", "deploy", "rollback"]
+                for req in required:
+                    if req not in stages_clean:
+                        return {"success": False, "message": f"Pipeline must contain '{req}' stage."}
+                return {"success": True, "message": "Success! Enterprise CI/CD pipeline verified."}
 
         return {"success": False, "message": "Unknown task check."}
 
