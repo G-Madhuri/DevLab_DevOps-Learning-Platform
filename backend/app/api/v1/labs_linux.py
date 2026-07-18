@@ -413,6 +413,56 @@ async def websocket_terminal(websocket: WebSocket, session_id: str):
         except WebSocketDisconnect:
             logger.info(f"WebSocket client disconnected from simulated session {session_id}")
     else:
+        # Check if Kubernetes course lab
+        if lab_name and ("kubernetes-" in lab_name or "k8s-" in lab_name):
+            try:
+                from kubernetes import client as k8s_client, config as k8s_config
+                from kubernetes.stream import stream
+                
+                if os.path.exists(settings.KUBECONFIG_PATH):
+                    k8s_config.load_kube_config(config_file=settings.KUBECONFIG_PATH)
+                else:
+                    k8s_config.load_kube_config()
+                    
+                k8s_v1 = k8s_client.CoreV1Api()
+                ns_name = f"devlab-ns-{session_id}"
+                
+                # Start exec session inside Pod
+                resp_exec = stream(
+                    k8s_v1.connect_get_namespaced_pod_exec,
+                    name="devlab-sandbox",
+                    namespace=ns_name,
+                    command=["/bin/bash"],
+                    stderr=True, stdin=True, stdout=True, tty=True,
+                    _preload_content=False
+                )
+                
+                async def read_from_k8s():
+                    try:
+                        while resp_exec.is_open():
+                            r_data = await asyncio.to_thread(resp_exec.read_stdout, timeout=0.1)
+                            if r_data:
+                                await websocket.send_text(r_data)
+                            await asyncio.sleep(0.01)
+                    except Exception as e:
+                        logger.debug(f"K8s stdout read task stopped: {e}")
+                        
+                read_task = asyncio.create_task(read_from_k8s())
+                
+                try:
+                    while resp_exec.is_open():
+                        data = await websocket.receive_text()
+                        resp_exec.write_stdin(data)
+                finally:
+                    read_task.cancel()
+                    resp_exec.close()
+                    
+            except Exception as e:
+                logger.error(f"WebSocket Kubernetes bridging failed: {e}")
+                await websocket.send_text(f"\r\n[System Error] Failed to attach K8s socket: {e}\r\n")
+                await websocket.close()
+            return
+
         # Real Docker Socket attachments
         if not runtime_service.is_docker_available or not runtime_service.docker_client:
             await websocket.send_text("\r\n[Error] Docker Sandbox and simulated fallback not available.\r\n")

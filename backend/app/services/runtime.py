@@ -9,6 +9,13 @@ from app.core.config import settings
 
 logger = logging.getLogger("app.services.runtime")
 
+try:
+    from kubernetes import client as k8s_client, config as k8s_config
+    K8S_AVAILABLE = True
+except ImportError:
+    K8S_AVAILABLE = False
+
+
 
 class SimulatedShell:
     """
@@ -910,6 +917,369 @@ class SimulatedDockerShell(SimulatedShell):
         return super().execute_command(cmd_line)
 
 
+class SimulatedKubernetesShell(SimulatedShell):
+    """
+    Subclass of SimulatedShell that emulates Kubernetes kubectl and helm command line operations.
+    """
+    def __init__(self, session_id: str):
+        super().__init__(session_id)
+        self.mock_pods = {}
+        self.mock_deployments = {}
+        self.mock_services = {}
+        self.mock_configmaps = {}
+        self.mock_secrets = {}
+        self.mock_namespaces = ["default", "kube-system", "kube-public"]
+        self.mock_pvs = {}
+        self.mock_pvcs = {}
+        self.mock_ingresses = {}
+        self.mock_hpas = {}
+        self.mock_helm_charts = {}
+
+    def execute_command(self, cmd_line: str) -> str:
+        cmd_line = cmd_line.strip()
+        if not cmd_line:
+            return ""
+
+        self.history.append(cmd_line)
+        parts = cmd_line.split()
+        cmd = parts[0]
+        args = parts[1:]
+
+        def make_prompt(output_text: str = "") -> str:
+            suffix = "\r\n" if output_text and not output_text.endswith("\r\n") else ""
+            pwd_part = self.cwd.replace('/home/student', '')
+            return f"{output_text}{suffix}student@devlab:~{pwd_part}$ "
+
+        if cmd == "kubectl":
+            if not args:
+                return make_prompt("kubectl controls the Kubernetes cluster manager.\n\nUsage: kubectl [command] [TYPE] [NAME]")
+            sub = args[0]
+
+            if sub == "version":
+                return make_prompt("Client Version: v1.30.0\nKustomize Version: v5.0.4-0.20230601165947-6ce0ee390c3a")
+            
+            elif sub == "get":
+                if len(args) < 2:
+                    return make_prompt("error: You must specify the type of resource to get.")
+                resource_type = args[1].lower()
+                
+                # Check for -n namespace flags
+                target_ns = "default"
+                if "-n" in args:
+                    ns_idx = args.index("-n")
+                    if ns_idx + 1 < len(args):
+                        target_ns = args[ns_idx + 1]
+                elif "--namespace" in args:
+                    ns_idx = args.index("--namespace")
+                    if ns_idx + 1 < len(args):
+                        target_ns = args[ns_idx + 1]
+                
+                if resource_type in ["pod", "pods"]:
+                    if not self.mock_pods:
+                        return make_prompt("No resources found in default namespace.")
+                    lines = ["NAME             READY   STATUS    RESTARTS   AGE"]
+                    for name, p in self.mock_pods.items():
+                        lines.append(f"{name:<16} 1/1     {p['status']:<9} 0          10s")
+                    return make_prompt("\r\n".join(lines))
+                    
+                elif resource_type in ["deployment", "deployments", "deploy"]:
+                    if not self.mock_deployments:
+                        return make_prompt("No resources found in default namespace.")
+                    lines = ["NAME              READY   UP-TO-DATE   AVAILABLE   AGE"]
+                    for name, d in self.mock_deployments.items():
+                        lines.append(f"{name:<17} {d['replicas']}/{d['replicas']}   {d['replicas']:<12} {d['replicas']:<11} 10s")
+                    return make_prompt("\r\n".join(lines))
+                    
+                elif resource_type in ["service", "services", "svc"]:
+                    lines = ["NAME             TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE"]
+                    lines.append("kubernetes       ClusterIP   10.43.0.1       <none>        443/TCP   1d")
+                    for name, s in self.mock_services.items():
+                        lines.append(f"{name:<16} {s['type']:<11} 10.43.50.99    <none>        {s['port']}/TCP  10s")
+                    return make_prompt("\r\n".join(lines))
+                    
+                elif resource_type in ["namespace", "namespaces", "ns"]:
+                    lines = ["NAME              STATUS   AGE"]
+                    for ns in self.mock_namespaces:
+                        lines.append(f"{ns:<17} Active   1d")
+                    return make_prompt("\r\n".join(lines))
+                    
+                elif resource_type in ["replicaset", "replicasets", "rs"]:
+                    if not self.mock_deployments:
+                        return make_prompt("No resources found in default namespace.")
+                    lines = ["NAME                        DESIRED   CURRENT   READY   AGE"]
+                    for name, d in self.mock_deployments.items():
+                        lines.append(f"{name}-a1b2c3d4e5   {d['replicas']:<9} {d['replicas']:<9} {d['replicas']:<7} 10s")
+                    return make_prompt("\r\n".join(lines))
+                    
+                elif resource_type in ["configmap", "configmaps", "cm"]:
+                    lines = ["NAME             DATA   AGE"]
+                    for name, cm in self.mock_configmaps.items():
+                        lines.append(f"{name:<16} {len(cm['data'])}      10s")
+                    return make_prompt("\r\n".join(lines))
+                    
+                elif resource_type in ["secret", "secrets"]:
+                    lines = ["NAME             TYPE     DATA   AGE"]
+                    for name, sec in self.mock_secrets.items():
+                        lines.append(f"{name:<16} Opaque   {len(sec['data'])}      10s")
+                    return make_prompt("\r\n".join(lines))
+                    
+                elif resource_type in ["persistentvolume", "persistentvolumes", "pv"]:
+                    lines = ["NAME             CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM   STORAGECLASS   REASON   AGE"]
+                    for name, pv in self.mock_pvs.items():
+                        lines.append(f"{name:<16} 5Gi        RWO            Retain           Bound    default/pvc    local-path              10s")
+                    return make_prompt("\r\n".join(lines))
+                    
+                elif resource_type in ["persistentvolumeclaim", "persistentvolumeclaims", "pvc"]:
+                    lines = ["NAME             STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE"]
+                    for name, pvc in self.mock_pvcs.items():
+                        lines.append(f"{name:<16} Bound    pv-local 5Gi        RWO            local-path     10s")
+                    return make_prompt("\r\n".join(lines))
+                    
+                elif resource_type in ["ingress", "ingresses", "ing"]:
+                    lines = ["NAME             CLASS    HOSTS          ADDRESS         PORTS   AGE"]
+                    for name, ing in self.mock_ingresses.items():
+                        lines.append(f"{name:<16} nginx    webapp.local   192.168.1.100   80      10s")
+                    return make_prompt("\r\n".join(lines))
+                    
+                elif resource_type in ["horizontalpodautoscaler", "horizontalpodautoscalers", "hpa"]:
+                    lines = ["NAME             REFERENCE               TARGETS         MINPODS   MAXPODS   REPLICAS   AGE"]
+                    for name, hpa in self.mock_hpas.items():
+                        lines.append(f"{name:<16} Deployment/webapp      0%/80%          1         10        3          10s")
+                    return make_prompt("\r\n".join(lines))
+
+                elif resource_type in ["cronjob", "cronjobs"]:
+                    lines = ["NAME             SCHEDULE    SUSPEND   ACTIVE   LAST SCHEDULE   AGE"]
+                    return make_prompt("\r\n".join(lines))
+
+                elif resource_type in ["job", "jobs"]:
+                    lines = ["NAME             COMPLETIONS   DURATION   AGE"]
+                    return make_prompt("\r\n".join(lines))
+
+                return make_prompt(f"error: the server doesn't have a resource type '{resource_type}'")
+
+            elif sub == "create":
+                if len(args) < 2:
+                    return make_prompt("error: specify resource type to create.")
+                c_type = args[1].lower()
+                if c_type == "namespace":
+                    name = args[2] if len(args) > 2 else ""
+                    if name:
+                        self.mock_namespaces.append(name)
+                        return make_prompt(f"namespace/{name} created")
+                    return make_prompt("error: namespace name not provided")
+                elif c_type == "deployment":
+                    name = args[2] if len(args) > 2 else ""
+                    image = "nginx"
+                    replicas = 1
+                    for arg in args:
+                        if arg.startswith("--image="):
+                            image = arg.split("=")[1]
+                        if arg.startswith("--replicas="):
+                            try:
+                                replicas = int(arg.split("=")[1])
+                            except:
+                                pass
+                    if name:
+                        self.mock_deployments[name] = {"image": image, "replicas": replicas}
+                        for r in range(replicas):
+                            p_name = f"{name}-{secrets.token_hex(4)}"
+                            self.mock_pods[p_name] = {"image": image, "status": "Running"}
+                        return make_prompt(f"deployment.apps/{name} created")
+                    return make_prompt("error: deployment name not provided")
+                elif c_type == "configmap":
+                    name = args[2] if len(args) > 2 else ""
+                    data = {}
+                    for arg in args:
+                        if arg.startswith("--from-literal="):
+                            lit = arg.split("=")[1:]
+                            lit_str = "=".join(lit)
+                            if ":" in lit_str:
+                                k, v = lit_str.split(":", 1)
+                            elif "=" in lit_str:
+                                k, v = lit_str.split("=", 1)
+                            else:
+                                k, v = "key", lit_str
+                            data[k] = v
+                    if name:
+                        self.mock_configmaps[name] = {"data": data}
+                        return make_prompt(f"configmap/{name} created")
+                elif c_type == "secret":
+                    sec_type = args[2] if len(args) > 2 else ""
+                    name = args[3] if len(args) > 3 else ""
+                    data = {}
+                    for arg in args:
+                        if arg.startswith("--from-literal="):
+                            lit = arg.split("=")[1:]
+                            lit_str = "=".join(lit)
+                            if ":" in lit_str:
+                                k, v = lit_str.split(":", 1)
+                            elif "=" in lit_str:
+                                k, v = lit_str.split("=", 1)
+                            else:
+                                k, v = "key", lit_str
+                            data[k] = v
+                    if name:
+                        self.mock_secrets[name] = {"data": data}
+                        return make_prompt(f"secret/{name} created")
+
+                return make_prompt(f"error: cannot create resource type '{c_type}' via CLI shortcut. Please use YAML manifests.")
+
+            elif sub == "expose":
+                target_type = args[1].lower()
+                name = args[2] if len(args) > 2 else ""
+                port = 80
+                name_svc = name
+                for arg in args:
+                    if arg.startswith("--port="):
+                        port = arg.split("=")[1]
+                    if arg.startswith("--name="):
+                        name_svc = arg.split("=")[1]
+                if target_type == "deployment" and name in self.mock_deployments:
+                    self.mock_services[name_svc] = {"type": "ClusterIP", "port": port}
+                    return make_prompt(f"service/{name_svc} exposed")
+                return make_prompt(f"error: deployment '{name}' not found")
+
+            elif sub == "scale":
+                dep_name = ""
+                for arg in args:
+                    if arg.startswith("deployment/"):
+                        dep_name = arg.split("/")[1]
+                replicas = 1
+                for arg in args:
+                    if arg.startswith("--replicas="):
+                        replicas = int(arg.split("=")[1])
+                if dep_name in self.mock_deployments:
+                    self.mock_deployments[dep_name]["replicas"] = replicas
+                    self.mock_pods = {k: v for k, v in self.mock_pods.items() if not k.startswith(dep_name)}
+                    for r in range(replicas):
+                        p_name = f"{dep_name}-{secrets.token_hex(4)}"
+                        self.mock_pods[p_name] = {"image": self.mock_deployments[dep_name]["image"], "status": "Running"}
+                    return make_prompt(f"deployment.apps/{dep_name} scaled")
+                return make_prompt(f"error: deployment '{dep_name}' not found")
+
+            elif sub == "apply":
+                f_path = ""
+                for arg in args:
+                    if arg == "-f" and args.index(arg) + 1 < len(args):
+                        f_path = args[args.index(arg) + 1]
+                local_file = self.get_local_path(f_path)
+                if not os.path.exists(local_file):
+                    return make_prompt(f"error: the path '{f_path}' does not exist")
+                try:
+                    with open(local_file, "r") as f:
+                        content = f.read()
+                    
+                    kind = ""
+                    name = ""
+                    image = ""
+                    replicas = 1
+                    for line in content.splitlines():
+                        line = line.strip()
+                        if line.startswith("kind:"):
+                            kind = line.split(":")[1].strip()
+                        elif line.startswith("name:") and not name:
+                            name = line.split(":")[1].strip()
+                        elif line.startswith("image:"):
+                            image = line.split(":")[1].strip()
+                        elif line.startswith("replicas:"):
+                            replicas = int(line.split(":")[1].strip())
+                    
+                    if kind == "Pod":
+                        self.mock_pods[name] = {"image": image or "nginx", "status": "Running"}
+                        return make_prompt(f"pod/{name} created")
+                    elif kind == "Deployment":
+                        self.mock_deployments[name] = {"image": image or "nginx", "replicas": replicas}
+                        for r in range(replicas):
+                            p_name = f"{name}-{secrets.token_hex(4)}"
+                            self.mock_pods[p_name] = {"image": image or "nginx", "status": "Running"}
+                        return make_prompt(f"deployment.apps/{name} created")
+                    elif kind == "Service":
+                        self.mock_services[name] = {"type": "ClusterIP", "port": 80}
+                        return make_prompt(f"service/{name} created")
+                    elif kind == "ConfigMap":
+                        self.mock_configmaps[name] = {"data": {"APP_ENV": "prod"}}
+                        return make_prompt(f"configmap/{name} created")
+                    elif kind == "Secret":
+                        self.mock_secrets[name] = {"data": {"password": "secretpassword"}}
+                        return make_prompt(f"secret/{name} created")
+                    elif kind == "PersistentVolume":
+                        self.mock_pvs[name] = {}
+                        return make_prompt(f"persistentvolume/{name} created")
+                    elif kind == "PersistentVolumeClaim":
+                        self.mock_pvcs[name] = {}
+                        return make_prompt(f"persistentvolumeclaim/{name} created")
+                    elif kind == "Ingress":
+                        self.mock_ingresses[name] = {}
+                        return make_prompt(f"ingress.networking.k8s.io/{name} created")
+                    elif kind == "HorizontalPodAutoscaler":
+                        self.mock_hpas[name] = {}
+                        return make_prompt(f"horizontalpodautoscaler.autoscaling/{name} created")
+                        
+                    return make_prompt("manifest applied successfully.")
+                except Exception as e:
+                    return make_prompt(f"error: failed to parse YAML: {e}")
+
+            elif sub == "delete":
+                if len(args) < 3:
+                    return make_prompt("error: specify resource type and name to delete.")
+                res_type = args[1].lower()
+                res_name = args[2]
+                if res_type in ["pod", "pods"]:
+                    self.mock_pods.pop(res_name, None)
+                    return make_prompt(f"pod \"{res_name}\" deleted")
+                elif res_type in ["deployment", "deployments", "deploy"]:
+                    self.mock_deployments.pop(res_name, None)
+                    self.mock_pods = {k: v for k, v in self.mock_pods.items() if not k.startswith(res_name)}
+                    return make_prompt(f"deployment.apps \"{res_name}\" deleted")
+                elif res_type in ["service", "services", "svc"]:
+                    self.mock_services.pop(res_name, None)
+                    return make_prompt(f"service \"{res_name}\" deleted")
+                elif res_type in ["namespace", "namespaces", "ns"]:
+                    if res_name in self.mock_namespaces:
+                        self.mock_namespaces.remove(res_name)
+                    return make_prompt(f"namespace \"{res_name}\" deleted")
+                return make_prompt(f"resource \"{res_name}\" deleted")
+
+            elif sub == "describe":
+                if len(args) < 3:
+                    return make_prompt("error: specify resource type and name to describe.")
+                res_type = args[1].lower()
+                res_name = args[2]
+                return make_prompt(f"Name: {res_name}\nNamespace: default\nLabels: app={res_name}\nStatus: Running\nIP: 172.30.1.20")
+
+            elif sub == "logs":
+                pod_name = args[1] if len(args) > 1 else ""
+                return make_prompt(f"Log stream from {pod_name}:\n[info] Application started successfully.\n[info] Listening on port 80.")
+
+            elif sub == "exec":
+                return make_prompt("exec command output verified.")
+
+            elif sub == "rollout":
+                action = args[1] if len(args) > 1 else ""
+                target = args[2] if len(args) > 2 else ""
+                return make_prompt(f"rollout {action} for {target} successfully completed")
+
+            return make_prompt(f"kubectl: '{sub}' is not a kubectl subcommand.")
+
+        elif cmd == "helm":
+            if not args:
+                return make_prompt("Helm is the package manager for Kubernetes.\n\nUsage: helm [command]")
+            sub = args[0]
+            if sub == "list" or sub == "ls":
+                lines = ["NAME     NAMESPACE REVISION UPDATED                                  STATUS   CHART        APP VERSION"]
+                for k, v in self.mock_helm_charts.items():
+                    lines.append(f"{k:<8} default   1        2026-07-18 09:25:14.398000 +0530 DEPLOYED {v:<12} 1.0.0")
+                return make_prompt("\r\n".join(lines))
+            elif sub == "install":
+                release_name = args[1] if len(args) > 1 else "my-release"
+                chart_name = args[2] if len(args) > 2 else "nginx-chart"
+                self.mock_helm_charts[release_name] = chart_name
+                return make_prompt(f"NAME: {release_name}\nLAST DEPLOYED: Sat Jul 18 09:25:14 2026\nNAMESPACE: default\nSTATUS: deployed\nREVISION: 1")
+            return make_prompt(f"helm: '{sub}' is not a helm subcommand.")
+
+        return super().execute_command(cmd_line)
+
+
 # ── Modular Runtime Abstractions ─────────────────────
 
 class BaseRuntime:
@@ -1023,6 +1393,119 @@ class DockerRuntime(BaseRuntime):
             except Exception as e:
                 logger.warn(f"Failed to stop Docker container: {e}")
 
+class KubernetesRuntime(BaseRuntime):
+    """
+    Kubernetes runtime provisioner managing secure namespace sandboxes,
+    RBAC setup, and Sandbox Pod creation for live K3s setups.
+    """
+    def __init__(self):
+        self.is_active = False
+        if K8S_AVAILABLE:
+            try:
+                # Load configuration from KUBECONFIG_PATH setting
+                if os.path.exists(settings.KUBECONFIG_PATH):
+                    k8s_config.load_kube_config(config_file=settings.KUBECONFIG_PATH)
+                else:
+                    k8s_config.load_kube_config()
+                # Run a fast ping check using API list
+                k8s_client.CoreV1Api().list_node(limit=1)
+                self.is_active = True
+                logger.info("Successfully connected to K3s/Kubernetes cluster!")
+            except Exception as e:
+                logger.warning(f"Could not connect to K3s cluster: {e}. Fallback to simulated mode.")
+
+    def create_session(self, session_id: str) -> Dict[str, Any]:
+        if not self.is_active or not K8S_AVAILABLE:
+            return {"container_id": f"simulated-{session_id}", "status": "running", "mode": "simulated"}
+
+        ns_name = f"devlab-ns-{session_id}"
+        try:
+            v1 = k8s_client.CoreV1Api()
+            rbac = k8s_client.RbacAuthorizationV1Api()
+
+            # 1. Provision isolated Namespace
+            ns = k8s_client.V1Namespace(metadata=k8s_client.V1ObjectMeta(name=ns_name))
+            v1.create_namespace(ns)
+
+            # 2. Create ServiceAccount
+            sa = k8s_client.V1ServiceAccount(metadata=k8s_client.V1ObjectMeta(name="devlab-sa"))
+            v1.create_namespaced_service_account(ns_name, sa)
+
+            # 3. Create Role (restricted permissions within the namespace)
+            role = k8s_client.V1Role(
+                metadata=k8s_client.V1ObjectMeta(name="devlab-role"),
+                rules=[
+                    k8s_client.V1PolicyRule(
+                        api_groups=["", "apps", "batch", "autoscaling", "networking.k8s.io"],
+                        resources=["*"],
+                        verbs=["*"]
+                    )
+                ]
+            )
+            rbac.create_namespaced_role(ns_name, role)
+
+            # 4. Create RoleBinding
+            binding = k8s_client.V1RoleBinding(
+                metadata=k8s_client.V1ObjectMeta(name="devlab-role-binding"),
+                subjects=[
+                    k8s_client.V1Subject(
+                        kind="ServiceAccount",
+                        name="devlab-sa",
+                        namespace=ns_name
+                    )
+                ],
+                role_ref=k8s_client.V1RoleRef(
+                    kind="Role",
+                    name="devlab-role",
+                    api_group="rbac.authorization.k8s.io"
+                )
+            )
+            rbac.create_namespaced_role_binding(ns_name, binding)
+
+            # 5. Create Sandbox Pod with kubectl and helm
+            sandbox_pod = k8s_client.V1Pod(
+                metadata=k8s_client.V1ObjectMeta(name="devlab-sandbox", labels={"app": "devlab-sandbox"}),
+                spec=k8s_client.V1PodSpec(
+                    service_account_name="devlab-sa",
+                    containers=[
+                        k8s_client.V1Container(
+                            name="sandbox",
+                            image="ubuntu:24.04",
+                            command=[
+                                "/bin/sh", 
+                                "-c", 
+                                "apt-get update && apt-get install -y curl nano vim && "
+                                "curl -LO https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl && "
+                                "chmod +x kubectl && mv kubectl /usr/local/bin/ && "
+                                "curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && "
+                                "chmod 700 get_helm.sh && ./get_helm.sh && "
+                                "sleep 3600"
+                            ]
+                        )
+                    ]
+                )
+            )
+            v1.create_namespaced_pod(ns_name, sandbox_pod)
+
+            return {"container_id": f"k8s-{session_id}", "status": "running", "mode": "k8s"}
+
+        except Exception as e:
+            logger.error(f"Failed to provision K8s resources for session {session_id}: {e}")
+            self.stop_session(session_id)
+            return {"container_id": f"simulated-{session_id}", "status": "running", "mode": "simulated"}
+
+    def stop_session(self, session_id: str, container_id: Optional[str] = None) -> None:
+        if not self.is_active or not K8S_AVAILABLE:
+            return
+
+        ns_name = f"devlab-ns-{session_id}"
+        v1 = k8s_client.CoreV1Api()
+        try:
+            v1.delete_namespace(ns_name, grace_period_seconds=0)
+            logger.info(f"Successfully cleaned up namespace and RBAC structures: {ns_name}")
+        except Exception as e:
+            logger.warning(f"Error during namespace delete {ns_name}: {e}")
+
 
 # ── Global Coordinator Service ────────────────────────
 
@@ -1039,12 +1522,18 @@ class LabRuntimeService:
 
         self.linux_runtime = LinuxRuntime(self.docker_client)
         self.docker_runtime = DockerRuntime(self.docker_client)
+        self.kubernetes_runtime = KubernetesRuntime()
 
     def create_lab(self, session_id: str, lab_name: str = "linux-basics") -> Dict[str, Any]:
         """
         Delegates lab initialization checks to custom Runtimes.
         """
-        if "docker" in lab_name:
+        if "kubernetes-" in lab_name or "k8s-" in lab_name:
+            res = self.kubernetes_runtime.create_session(session_id)
+            if res["mode"] == "simulated":
+                self.simulated_sessions[session_id] = SimulatedKubernetesShell(session_id)
+            return res
+        elif "docker" in lab_name:
             res = self.docker_runtime.create_session(session_id)
             if res["mode"] == "simulated":
                 self.simulated_sessions[session_id] = SimulatedDockerShell(session_id)
@@ -1067,7 +1556,9 @@ class LabRuntimeService:
                 except Exception as e:
                     logger.warn(f"Failed to remove directory {shell.base_dir}: {e}")
 
-        if "docker" in lab_name:
+        if "kubernetes-" in lab_name or "k8s-" in lab_name:
+            self.kubernetes_runtime.stop_session(session_id, container_id)
+        elif "docker" in lab_name:
             self.docker_runtime.stop_session(session_id, container_id)
         else:
             self.linux_runtime.stop_session(session_id, container_id)
@@ -1076,7 +1567,9 @@ class LabRuntimeService:
         if session_id in self.simulated_sessions:
             return self.simulated_sessions[session_id]
         if lab_name:
-            if "docker" in lab_name:
+            if "kubernetes-" in lab_name or "k8s-" in lab_name:
+                shell = SimulatedKubernetesShell(session_id)
+            elif "docker" in lab_name:
                 shell = SimulatedDockerShell(session_id)
             else:
                 shell = SimulatedShell(session_id)

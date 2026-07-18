@@ -13,6 +13,12 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "DevLab SaaS Platform"
 
+    # Kubernetes Settings
+    KUBECONFIG_PATH: str = "/etc/rancher/k3s/k3s.yaml"
+    KUBERNETES_SERVICE_HOST: str = "127.0.0.1"
+    KUBERNETES_SERVICE_PORT: int = 6443
+
+
     # JWT Settings
     # In production, these must be overridden via environment variables
     JWT_SECRET: str = "your_jwt_secret_key_here"
