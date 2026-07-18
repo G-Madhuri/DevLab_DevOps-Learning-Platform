@@ -16,6 +16,55 @@ def seed_labs():
         db.commit()
 
         labs_data = [
+            # Git Course
+            {
+                "title": "Git Fundamentals",
+                "slug": "git-fundamentals",
+                "description": "Learn the primary concepts, staging area, commit snapshots, and repository management.",
+                "difficulty": "Beginner",
+                "duration": "30 minutes",
+                "category": "Git",
+                "icon": "terminal",
+                "estimated_time": "30m",
+                "status": "Active",
+                "coming_soon": False,
+            },
+            {
+                "title": "Branching & Merging",
+                "slug": "git-branching-and-merging",
+                "description": "Deploy isolated environments using pointers, merge branches, and resolve conflicts.",
+                "difficulty": "Beginner",
+                "duration": "45 minutes",
+                "category": "Git",
+                "icon": "git-branch",
+                "estimated_time": "45m",
+                "status": "Active",
+                "coming_soon": False,
+            },
+            {
+                "title": "Advanced Git",
+                "slug": "advanced-git",
+                "description": "Optimize logs history utilizing stashes, reflog recoveries, tags, and custom settings.",
+                "difficulty": "Intermediate",
+                "duration": "45 minutes",
+                "category": "Git",
+                "icon": "zap",
+                "estimated_time": "45m",
+                "status": "Active",
+                "coming_soon": False,
+            },
+            {
+                "title": "Team Workflows",
+                "slug": "team-workflows",
+                "description": "Coordinate work across remote origins, sync branches, and resolve complex merge conflicts.",
+                "difficulty": "Advanced",
+                "duration": "60 minutes",
+                "category": "Git",
+                "icon": "users",
+                "estimated_time": "60m",
+                "status": "Active",
+                "coming_soon": False,
+            },
             # Linux
             {
                 "title": "Linux Command Line Basics",
@@ -480,31 +529,7 @@ def seed_labs():
                 "status": "Beta",
                 "coming_soon": True,
             },
-            # Git
-            {
-                "title": "Git Branching & Merging",
-                "slug": "git-branching-and-merging",
-                "description": "Understand commits, check out references, merge branches, and resolve conflicts.",
-                "difficulty": "Beginner",
-                "duration": "30 minutes",
-                "category": "Git",
-                "icon": "git-branch",
-                "estimated_time": "30m",
-                "status": "Beta",
-                "coming_soon": True,
-            },
-            {
-                "title": "Advanced Git Workflows",
-                "slug": "advanced-git-workflows",
-                "description": "Clean project histories utilizing interactive rebase, squash commits, and reflog recoveries.",
-                "difficulty": "Advanced",
-                "duration": "60 minutes",
-                "category": "Git",
-                "icon": "shuffle",
-                "estimated_time": "60m",
-                "status": "Beta",
-                "coming_soon": True,
-            },
+
             # GitHub Actions
             {
                 "title": "CI Pipelines with GitHub Actions",

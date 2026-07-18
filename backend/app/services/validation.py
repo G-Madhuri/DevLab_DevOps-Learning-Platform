@@ -1,5 +1,6 @@
 import os
 import logging
+import subprocess
 from typing import Dict, Any, List
 import docker
 from app.services.runtime import runtime_service
@@ -17,8 +18,14 @@ class ValidationEngine:
         lab_name: str = "linux-basics",
     ) -> Dict[str, Any]:
         """
-        Routes the validation check to the appropriate course validators (Linux, Docker or Kubernetes).
+        Routes the validation check to the appropriate course validators (Linux, Docker, Git or Kubernetes).
         """
+        if "git-" in lab_name or lab_name == "git":
+            shell = runtime_service.get_session_shell(session_id)
+            if not shell:
+                return {"success": False, "message": "Git shell session not found."}
+            return self._validate_git(shell, task_id, lab_name)
+
         is_simulated = (mode == "simulated" or (container_id and container_id.startswith("simulated-")))
         
         if "kubernetes-" in lab_name or "k8s-" in lab_name:
@@ -1384,6 +1391,95 @@ class ValidationEngine:
         except Exception as e:
             logger.error(f"Live K8s validation error: {e}")
             return {"success": False, "message": f"Validation failed: K3s cluster unreachable or resources not found."}
+
+    def _validate_git(self, shell: Any, task_id: int, lab_name: str) -> Dict[str, Any]:
+        """
+        Validates Git course progress against the actual repository state.
+        """
+        history_str = " ".join(shell.history).lower()
+        
+        # Helper check if git repo is initialized
+        git_dir = os.path.join(shell.base_dir, ".git")
+        if not os.path.exists(git_dir):
+            if task_id == 1 and lab_name == "git-fundamentals":
+                # Let them run git init
+                pass
+            else:
+                return {"success": False, "message": "Git repository is not initialized. Run 'git init'."}
+
+        # Route validations by task_id and lab_name
+        if task_id == 1:
+            if lab_name == "git-fundamentals":
+                if os.path.exists(git_dir):
+                    return {"success": True, "message": "Success! Empty Git repository initialized."}
+                return {"success": False, "message": "Please initialize the repository using 'git init'."}
+            else:
+                return {"success": True, "message": "Repository initialized."}
+
+        elif task_id == 2:
+            if "git status" in history_str:
+                return {"success": True, "message": "Success! Checked repository status."}
+            return {"success": False, "message": "Query files status by running 'git status'."}
+
+        elif task_id == 3:
+            if "git log" in history_str:
+                return {"success": True, "message": "Success! Inspected commit history log."}
+            return {"success": False, "message": "Print commit history using 'git log'."}
+
+        elif task_id == 4:
+            if "git config" in history_str:
+                return {"success": True, "message": "Success! Config list checked."}
+            return {"success": False, "message": "View config parameters by running 'git config --list'."}
+
+        elif task_id == 5:
+            if "git show-ref" in history_str:
+                return {"success": True, "message": "Success! Commit references queried."}
+            return {"success": False, "message": "Query references mapping by running 'git show-ref'."}
+
+        elif task_id == 6:
+            if "git branch" in history_str:
+                return {"success": True, "message": "Success! Active branches listed."}
+            return {"success": False, "message": "Query branch listings using 'git branch'."}
+
+        elif task_id == 7:
+            if "git reflog" in history_str:
+                return {"success": True, "message": "Success! Pointer history reflogs audited."}
+            return {"success": False, "message": "Query reference action logs using 'git reflog'."}
+
+        elif task_id == 8:
+            # Mini Challenges
+            if lab_name == "git-fundamentals":
+                index_path = os.path.join(shell.base_dir, "index.html")
+                if not os.path.exists(index_path):
+                    return {"success": False, "message": "File 'index.html' is missing."}
+                res = subprocess.run(["git", "log", "-1", "--pretty=%B"], cwd=shell.base_dir, capture_output=True, text=True)
+                if res.returncode == 0 and "initial page" in res.stdout.lower():
+                    return {"success": True, "message": "Success! Committed index.html with message 'feat: initial page'."}
+                return {"success": False, "message": "Commit index.html with message containing 'initial page'."}
+
+            elif lab_name == "git-branching-and-merging":
+                res_l = subprocess.run(["git", "log", "--oneline"], cwd=shell.base_dir, capture_output=True, text=True)
+                if res_l.returncode == 0 and "merge" in res_l.stdout.lower():
+                    return {"success": True, "message": "Success! Feature branch merged into main."}
+                return {"success": False, "message": "Merge 'feature-auth' branch into main."}
+
+            elif lab_name == "advanced-git":
+                res = subprocess.run(["git", "tag"], cwd=shell.base_dir, capture_output=True, text=True)
+                if res.returncode == 0 and "v1.0.0" in res.stdout:
+                    return {"success": True, "message": "Success! Version tag v1.0.0 is created."}
+                return {"success": False, "message": "Create an annotated tag named 'v1.0.0' on current HEAD."}
+
+            elif lab_name == "team-workflows":
+                c_path = os.path.join(shell.base_dir, "conflict.txt")
+                if not os.path.exists(c_path):
+                    return {"success": False, "message": "conflict.txt not found."}
+                with open(c_path, "r") as f:
+                    content = f.read()
+                if "<<<<<<<" in content or "=======" in content or ">>>>>>>" in content:
+                    return {"success": False, "message": "conflict.txt still contains conflict markers."}
+                return {"success": True, "message": "Success! Merge conflicts resolved."}
+
+        return {"success": False, "message": "Unknown task check."}
 
 
 validation_engine = ValidationEngine()

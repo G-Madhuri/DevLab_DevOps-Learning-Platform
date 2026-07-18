@@ -24,7 +24,10 @@
       "multi-container-with-docker-compose",
       "docker-networking-deep-dive",
       "optimizing-dockerfiles",
-      "git"
+      "git-fundamentals",
+      "git-branching-and-merging",
+      "advanced-git",
+      "team-workflows"
     ]
   },
   {
@@ -148,7 +151,10 @@
       "kubernetes-helm-basics",
       "kubernetes-production-best-practices",
       "kubernetes-capstone-project",
-      "git"
+      "git-fundamentals",
+      "git-branching-and-merging",
+      "advanced-git",
+      "team-workflows"
     ]
   },
   {
@@ -268,7 +274,10 @@
       "linux-capstone-project",
       "terraform",
       "ansible",
-      "git"
+      "git-fundamentals",
+      "git-branching-and-merging",
+      "advanced-git",
+      "team-workflows"
     ]
   },
   {
@@ -296,7 +305,10 @@
       "multi-container-with-docker-compose",
       "docker-networking-deep-dive",
       "optimizing-dockerfiles",
-      "git",
+      "git-fundamentals",
+      "git-branching-and-merging",
+      "advanced-git",
+      "team-workflows",
       "github-actions",
       "jenkins"
     ]

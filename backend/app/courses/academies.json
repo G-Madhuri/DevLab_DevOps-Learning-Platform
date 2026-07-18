@@ -1,5 +1,43 @@
 [
   {
+    "id": "git",
+    "title": "Git",
+    "description": "Master local repositories, files staging, commit snapshots, branching strategies, stashing, tagging, and remote workflows.",
+    "icon": "git-branch",
+    "difficulty": "Beginner",
+    "coming_soon": false,
+    "courses": [
+      {
+        "slug": "git-fundamentals",
+        "title": "Git Fundamentals",
+        "description": "Learn the primary concepts, staging area, commit snapshots, and repository management.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "git-branching-and-merging",
+        "title": "Branching & Merging",
+        "description": "Deploy isolated environments using pointers, merge branches, and resolve conflicts.",
+        "difficulty": "Beginner",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "advanced-git",
+        "title": "Advanced Git",
+        "description": "Optimize logs history utilizing stashes, reflog recoveries, tags, and custom settings.",
+        "difficulty": "Intermediate",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "team-workflows",
+        "title": "Team Workflows",
+        "description": "Coordinate work across remote origins, sync branches, and resolve complex merge conflicts.",
+        "difficulty": "Advanced",
+        "duration": "60 minutes"
+      }
+    ]
+  },
+  {
     "id": "linux",
     "title": "Linux",
     "description": "Master files navigation, path routing, permissions security, shell scripting, networking, processes, and service management.",
@@ -217,30 +255,6 @@
         "difficulty": "Advanced",
         "duration": "90 minutes",
         "is_capstone": true
-      }
-    ]
-  },
-  {
-    "id": "git",
-    "title": "Git",
-    "description": "Master distributed version control, branching models, interactive rebases, and merge conflict resolution.",
-    "icon": "git-branch",
-    "difficulty": "Beginner",
-    "coming_soon": true,
-    "courses": [
-      {
-        "slug": "git-branching-and-merging",
-        "title": "Git Branching & Merging",
-        "description": "Understand commits, check out references, merge branches, and resolve conflicts.",
-        "difficulty": "Beginner",
-        "duration": "30 minutes"
-      },
-      {
-        "slug": "advanced-git-workflows",
-        "title": "Advanced Git Workflows",
-        "description": "Clean project histories utilizing interactive rebase, squash commits, and reflog recoveries.",
-        "difficulty": "Advanced",
-        "duration": "60 minutes"
       }
     ]
   },
