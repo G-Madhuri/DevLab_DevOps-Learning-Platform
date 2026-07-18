@@ -1,0 +1,358 @@
+{
+  "slug": "team-workflows",
+  "title": "Team Workflows",
+  "overview": {
+    "introduction": "Coordinate features integration across remote servers, resolve conflicts, and run collaborative team branching models.",
+    "why_it_matters": "Understanding Team Workflows is fundamental to collaborate in any modern engineering organization.",
+    "industry_usage": "Used daily by millions of developers to isolate features development and deploy software securely.",
+    "what_you_will_build": "A series of configured local Git repositories tracking file changes, branches, stashes, and commit histories.",
+    "prerequisites": "Linux CLI basics.",
+    "estimated_time": "30 mins",
+    "difficulty": "Intermediate",
+    "learning_outcomes": [
+      "Explain the primary architecture of Team Workflows.",
+      "Exert master-level control over Git CLI utilities.",
+      "Inspect files tracking states using status and logs commands.",
+      "Diagnose and resolve code merge conflicts.",
+      "Implement clean branching workflows."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "Remote Repos & Syncs",
+      "definition": "Remote repositories are versions of your project hosted on the internet or network. Fetching updates metadata; pulling merges changes.",
+      "why_important": [
+        "Guarantees source code history integrity.",
+        "Enables concurrent development branches.",
+        "Provides rollback points for production bugs."
+      ],
+      "explanation": "When executing Team Workflows workflows, the index metadata records changed files state before writing permanent commits.",
+      "commands": [
+        {
+          "name": "git status",
+          "purpose": "Query modified, untracked, and staged files status.",
+          "syntax": "git status",
+          "example": "git status",
+          "expected_output": "On branch main\nnothing to commit, working tree clean",
+          "output_explanation": "Indicates that all local file edits have been successfully committed to repository history."
+        },
+        {
+          "name": "git log",
+          "purpose": "Inspect commits history timeline.",
+          "syntax": "git log [options]",
+          "example": "git log --oneline -n 3",
+          "expected_output": "a1b2c3d feat: add home button\nd4e5f6g fix: align login text",
+          "output_explanation": "Lists unique commit hash identifiers along with commit logs in reverse chronological order."
+        }
+      ],
+      "pro_tip": "Keep commit messages descriptive and write them in the imperative mood (e.g. 'fix: bug' instead of 'fixed bug').",
+      "best_practices": "Create a .gitignore file immediately to avoid committing temporary build artifacts, configs, and system files.",
+      "common_mistakes": "Executing hard resets or force pushes on shared branch lines without aligning with team members first.",
+      "real_world_usage": "CI/CD pipelines trigger automated compilation checks upon receiving git push commits to remote repositories.",
+      "summary": "Team Workflows form the baseline of secure, modern devops engineering pipelines."
+    }
+  ],
+  "interactive_examples": [
+    {
+      "objective": "Query files version status.",
+      "scenario": "Inspect untracked changes inside your directory workspace.",
+      "command": "git remote -v",
+      "explanation": "Runs git checking command.",
+      "expected_output": "On branch main...",
+      "output_explanation": "Displays branch metadata.",
+      "real_world_use": "Auditing commits history tracking before push.",
+      "common_mistakes": "Running git commands outside initialized git directory workspaces.",
+      "tips": "Add '--short' or '-s' flags to see git status in a compact format."
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Initial Check (List remote repositories)",
+      "definition": "Initialize repository tracking.",
+      "explanation": "Initializes metadata storage inside directory.",
+      "instruction": "List configured remote repository connections with their fetch/push URLs.",
+      "example": "git remote -v",
+      "expected": "",
+      "hint": "Run command: git remote -v",
+      "solution": "git remote -v",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 2,
+      "title": "2. Check status",
+      "definition": "Verify working files states.",
+      "explanation": "Inspects index files stages.",
+      "instruction": "Run git status to see modified files.",
+      "example": "git status",
+      "expected": "",
+      "hint": "Run: git status",
+      "solution": "git status",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 3,
+      "title": "3. Audit Log History",
+      "definition": "Commit history browser.",
+      "explanation": "Displays timeline log of previous commits.",
+      "instruction": "Print commit history log to console screen.",
+      "example": "git log --oneline",
+      "expected": "",
+      "hint": "Run: git log --oneline",
+      "solution": "git log --oneline",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 4,
+      "title": "4. Create configuration",
+      "definition": "Manage git attributes.",
+      "explanation": "List active configuration scopes.",
+      "instruction": "Query git configurations using --list.",
+      "example": "git config --list",
+      "expected": "",
+      "hint": "Run: git config --list",
+      "solution": "git config --list",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 5,
+      "title": "5. Show ref mappings",
+      "definition": "List commit references.",
+      "explanation": "Resolve tags and branches SHA identifiers.",
+      "instruction": "Query refs maps inside repository workspace.",
+      "example": "git show-ref",
+      "expected": "",
+      "hint": "Run: git show-ref",
+      "solution": "git show-ref",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 6,
+      "title": "6. Show active branch",
+      "definition": "Identify branch position.",
+      "explanation": "Queries branch name where checkout pointer HEAD is sitting.",
+      "instruction": "List all branches using git branch.",
+      "example": "git branch",
+      "expected": "",
+      "hint": "Run: git branch",
+      "solution": "git branch",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 7,
+      "title": "7. Audit reflog",
+      "definition": "HEAD history tracking register.",
+      "explanation": "Audits reflog containing history revisions of pointers checkout switches.",
+      "instruction": "Inspect refs movements logs.",
+      "example": "git reflog -n 5",
+      "expected": "",
+      "hint": "Run: git reflog -n 5",
+      "solution": "git reflog -n 5",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 8,
+      "title": "Mini Challenge: Resolve Merge Conflict",
+      "definition": "No step-by-step instructions are provided here. Execute this task directly.",
+      "explanation": "Complete this task on your own.",
+      "instruction": "A conflict is active in 'conflict.txt'. Open the file, clean the git conflict markers, stage, and commit the resolution.",
+      "example": "echo 'Resolved Content' > conflict.txt && git add conflict.txt && git commit -m 'fix: resolve merge conflict'",
+      "expected": "",
+      "hint": "Run command: echo 'Resolved Content' > conflict.txt && git add conflict.txt && git commit -m 'fix: resolve merge conflict'",
+      "solution": "echo 'Resolved Content' > conflict.txt && git add conflict.txt && git commit -m 'fix: resolve merge conflict'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "8m"
+    }
+  ],
+  "exercises": [
+    {
+      "title": "Configure Git attributes",
+      "problem": "Practice git workspace command configurations by querying history logs.",
+      "difficulty": "easy",
+      "hint": "Run git status.",
+      "expected_result": "Success status.",
+      "objective": "Verify Team Workflows core specifications."
+    }
+  ],
+  "quiz": [
+    {
+      "question": "What is the primary function of Git Team Workflows?",
+      "options": [
+        "To track changes in source code files history.",
+        "To build container virtual systems.",
+        "To compile web server code.",
+        "To register cloud domains."
+      ],
+      "answer": "To track changes in source code files history.",
+      "explanation": "Git tracks historical revisions of files inside source controlled projects."
+    },
+    {
+      "question": "Which area stores staged changes in Git before they are committed?",
+      "options": [
+        "Staging area (Index)",
+        "Working directory",
+        "Commit history",
+        "Reflog record"
+      ],
+      "answer": "Staging area (Index)",
+      "explanation": "The staging area, also known as the index, holds edits prepared for the next commit."
+    },
+    {
+      "question": "Which command initializes a new local Git repository?",
+      "options": [
+        "git init",
+        "git clone",
+        "git commit",
+        "git setup"
+      ],
+      "answer": "git init",
+      "explanation": "git init initializes a new empty Git repository in the current directory."
+    },
+    {
+      "question": "What does 'git add' do?",
+      "options": [
+        "Adds changes in the working directory to the staging area.",
+        "Creates a new commit in the repository.",
+        "Creates a new branch.",
+        "Clones a remote repository."
+      ],
+      "answer": "Adds changes in the working directory to the staging area.",
+      "explanation": "git add stages current changes to prepare them for commit."
+    },
+    {
+      "question": "What is the commit message flag in 'git commit'?",
+      "options": [
+        "-m",
+        "-c",
+        "-msg",
+        "-a"
+      ],
+      "answer": "-m",
+      "explanation": "The '-m' flag specifies the commit message inline."
+    },
+    {
+      "question": "Which command lists all commits in reverse chronological order?",
+      "options": [
+        "git log",
+        "git status",
+        "git history",
+        "git show"
+      ],
+      "answer": "git log",
+      "explanation": "git log displays the commit history for the active branch."
+    },
+    {
+      "question": "What is HEAD in Git?",
+      "options": [
+        "A pointer to the currently checked-out commit.",
+        "The first commit in the repository.",
+        "The default main branch.",
+        "A server hosting git repositories."
+      ],
+      "answer": "A pointer to the currently checked-out commit.",
+      "explanation": "HEAD points to the active commit or branch pointer in your local repository."
+    },
+    {
+      "question": "Which command creates a new branch named 'dev'?",
+      "options": [
+        "git branch dev",
+        "git checkout dev",
+        "git create dev",
+        "git switch dev"
+      ],
+      "answer": "git branch dev",
+      "explanation": "git branch [name] creates a new branch pointer at the current commit."
+    },
+    {
+      "question": "How do you switch to an existing branch named 'dev'?",
+      "options": [
+        "git checkout dev",
+        "git add dev",
+        "git merge dev",
+        "git commit dev"
+      ],
+      "answer": "git checkout dev",
+      "explanation": "git checkout [branch] updates files in the working directory to match the target branch."
+    },
+    {
+      "question": "What is a merge conflict in Git?",
+      "options": [
+        "A situation where changes in different branches cannot be merged automatically.",
+        "A server network connection crash.",
+        "An invalid commit message syntax.",
+        "A missing git configuration file."
+      ],
+      "answer": "A situation where changes in different branches cannot be merged automatically.",
+      "explanation": "Conflicts occur when different commits modify the same lines in a file, requiring manual resolution."
+    }
+  ],
+  "resources": {
+    "summary": "Learn more about Git Team Workflows through official documentation, guides, and manuals.",
+    "links": [
+      {
+        "title": "Git Team Workflows Documentation Guide",
+        "type": "documentation",
+        "description": "Official documentation and concepts manual for Team Workflows.",
+        "url": "https://git-scm.com/book/en/v2/Distributed-Git-Distributed-Workflows"
+      },
+      {
+        "title": "Interactive Git Branching Tutorial",
+        "type": "Article",
+        "description": "Learn Git branching visually in your browser.",
+        "url": "https://learngitbranching.js.org/"
+      },
+      {
+        "title": "Git Cheat Sheet",
+        "type": "Cheat Sheet",
+        "description": "Quick reference guide for common git control commands.",
+        "url": "https://education.github.com/git-cheat-sheet-education.pdf"
+      }
+    ],
+    "cheat_sheet": "git status                    # Check repository status\ngit log --oneline            # Show commit logs\ngit add <file>               # Stage file\ngit commit -m <msg>          # Commit changes",
+    "commands_table": [
+      {
+        "name": "git status",
+        "syntax": "git status",
+        "description": "Show the working tree status."
+      },
+      {
+        "name": "git add",
+        "syntax": "git add <file>",
+        "description": "Add file contents to the staging area index."
+      }
+    ],
+    "revision_notes": [
+      "Git is distributed; every client has a full copy of the project history.",
+      "Commits represent snapshots, not diff changes.",
+      "Always check git status before committing."
+    ],
+    "best_practices": [
+      "Write clear, concise commit messages in the imperative mood.",
+      "Keep commits small and focused on single feature changes.",
+      "Configure a global gitignore to prevent cluttering."
+    ],
+    "beginner_mistakes": [
+      "Committing sensitive database keys or secrets to public repositories.",
+      "Modifying commits history that has already been pushed to public team branches."
+    ],
+    "interview_questions": [
+      {
+        "question": "What is Git Team Workflows?",
+        "answer": "It represents the source code version control mechanism for Team Workflows in development teams."
+      }
+    ],
+    "books": [
+      {
+        "title": "Pro Git \u2014 Scott Chacon",
+        "description": "The definitive resource guide explaining Git internals and configurations."
+      }
+    ]
+  }
+}

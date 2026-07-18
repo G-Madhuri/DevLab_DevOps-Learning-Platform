@@ -2,6 +2,7 @@ import os
 import shutil
 import logging
 import secrets
+import subprocess
 from typing import Optional, Dict, Any
 from datetime import datetime
 import docker
@@ -1280,6 +1281,67 @@ class SimulatedKubernetesShell(SimulatedShell):
         return super().execute_command(cmd_line)
 
 
+class GitShell(SimulatedShell):
+    """
+    A real host-based subshell that executes git and basic CLI utilities
+    inside the session's Git repository.
+    """
+    def __init__(self, session_id: str):
+        self.session_id = session_id
+        self.base_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"git-{session_id}")
+        )
+        os.makedirs(self.base_dir, exist_ok=True)
+        self.cwd = "/"
+        self.history = []
+
+    def get_local_path(self, virtual_path: str) -> str:
+        clean_vpath = virtual_path.strip().lstrip("/")
+        if not clean_vpath:
+            return self.base_dir
+        return os.path.abspath(os.path.join(self.base_dir, clean_vpath))
+
+    def execute_command(self, cmd_line: str) -> str:
+        cmd_line = cmd_line.strip()
+        if not cmd_line:
+            return ""
+
+        self.history.append(cmd_line)
+        parts = cmd_line.split()
+        cmd = parts[0]
+        
+        def make_prompt(output_text: str = "") -> str:
+            suffix = "\r\n" if output_text and not output_text.endswith("\r\n") else ""
+            return f"{output_text}{suffix}student@devlab-git:$ "
+
+        # Whitelist safe commands
+        if cmd not in ["git", "ls", "cat", "echo", "touch", "mkdir", "rm", "pwd", "clear"]:
+            return make_prompt(f"bash: {cmd}: command not allowed in Git labs.")
+
+        if cmd == "pwd":
+            return make_prompt("/")
+
+        # Run command using subprocess inside session directory
+        try:
+            res = subprocess.run(
+                cmd_line,
+                cwd=self.base_dir,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            output = res.stdout
+            if res.stderr:
+                output += "\n" + res.stderr
+            output_formatted = output.replace("\r\n", "\n").replace("\n", "\r\n")
+            return make_prompt(output_formatted)
+        except subprocess.TimeoutExpired:
+            return make_prompt("Error: Command execution timed out.")
+        except Exception as e:
+            return make_prompt(f"Error: Command failed: {e}")
+
+
 # ── Modular Runtime Abstractions ─────────────────────
 
 class BaseRuntime:
@@ -1507,6 +1569,43 @@ class KubernetesRuntime(BaseRuntime):
             logger.warning(f"Error during namespace delete {ns_name}: {e}")
 
 
+class GitRuntime(BaseRuntime):
+    """
+    Git runtime provisioner managing local session directory repositories.
+    """
+    def create_session(self, session_id: str) -> Dict[str, Any]:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"git-{session_id}")
+        )
+        os.makedirs(session_dir, exist_ok=True)
+        
+        try:
+            # Run git init
+            subprocess.run(["git", "init"], cwd=session_dir, capture_output=True, check=True)
+            # Set git identity locally inside the repository config
+            subprocess.run(["git", "config", "user.name", "DevLab Student"], cwd=session_dir, check=True)
+            subprocess.run(["git", "config", "user.email", "student@devlab.io"], cwd=session_dir, check=True)
+            
+            # Create a simple welcome file
+            with open(os.path.join(session_dir, "welcome.txt"), "w") as f:
+                f.write("Welcome to DevLab Git Basics! Start by initializing or staging your work.\n")
+                
+            return {"container_id": f"git-{session_id}", "status": "running", "mode": "git"}
+        except Exception as e:
+            logger.error(f"GitRuntime failed to initialize repository: {e}")
+            return {"container_id": f"simulated-{session_id}", "status": "running", "mode": "simulated"}
+
+    def stop_session(self, session_id: str, container_id: Optional[str] = None) -> None:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"git-{session_id}")
+        )
+        if os.path.exists(session_dir):
+            try:
+                shutil.rmtree(session_dir)
+            except Exception as e:
+                logger.warning(f"Failed to remove Git session directory {session_dir}: {e}")
+
+
 # ── Global Coordinator Service ────────────────────────
 
 class LabRuntimeService:
@@ -1523,12 +1622,20 @@ class LabRuntimeService:
         self.linux_runtime = LinuxRuntime(self.docker_client)
         self.docker_runtime = DockerRuntime(self.docker_client)
         self.kubernetes_runtime = KubernetesRuntime()
+        self.git_runtime = GitRuntime()
 
     def create_lab(self, session_id: str, lab_name: str = "linux-basics") -> Dict[str, Any]:
         """
         Delegates lab initialization checks to custom Runtimes.
         """
-        if "kubernetes-" in lab_name or "k8s-" in lab_name:
+        if "git-" in lab_name or lab_name == "git":
+            res = self.git_runtime.create_session(session_id)
+            if res["mode"] == "simulated":
+                self.simulated_sessions[session_id] = SimulatedShell(session_id)
+            else:
+                self.simulated_sessions[session_id] = GitShell(session_id)
+            return res
+        elif "kubernetes-" in lab_name or "k8s-" in lab_name:
             res = self.kubernetes_runtime.create_session(session_id)
             if res["mode"] == "simulated":
                 self.simulated_sessions[session_id] = SimulatedKubernetesShell(session_id)
@@ -1554,9 +1661,11 @@ class LabRuntimeService:
                 try:
                     shutil.rmtree(shell.base_dir)
                 except Exception as e:
-                    logger.warn(f"Failed to remove directory {shell.base_dir}: {e}")
+                    logger.warning(f"Failed to remove directory {shell.base_dir}: {e}")
 
-        if "kubernetes-" in lab_name or "k8s-" in lab_name:
+        if "git-" in lab_name or lab_name == "git":
+            self.git_runtime.stop_session(session_id, container_id)
+        elif "kubernetes-" in lab_name or "k8s-" in lab_name:
             self.kubernetes_runtime.stop_session(session_id, container_id)
         elif "docker" in lab_name:
             self.docker_runtime.stop_session(session_id, container_id)
@@ -1567,7 +1676,9 @@ class LabRuntimeService:
         if session_id in self.simulated_sessions:
             return self.simulated_sessions[session_id]
         if lab_name:
-            if "kubernetes-" in lab_name or "k8s-" in lab_name:
+            if "git-" in lab_name or lab_name == "git":
+                shell = GitShell(session_id)
+            elif "kubernetes-" in lab_name or "k8s-" in lab_name:
                 shell = SimulatedKubernetesShell(session_id)
             elif "docker" in lab_name:
                 shell = SimulatedDockerShell(session_id)
