@@ -371,22 +371,36 @@
   {
     "id": "github-actions",
     "title": "GitHub Actions",
-    "description": "Automate linting, unit tests, container builds, and cloud deployments directly from GitHub events.",
+    "description": "Master automated workflows, triggers, runners, continuous integration, artifact storage, and secure continuous deployment pipelines.",
     "icon": "play",
     "difficulty": "Beginner",
-    "coming_soon": true,
+    "coming_soon": false,
     "courses": [
       {
-        "slug": "ci-pipelines-with-github-actions",
-        "title": "CI Pipelines with GitHub Actions",
-        "description": "Author automated CI runs triggered on push actions to parse code structure and execute tests.",
+        "slug": "github-actions-fundamentals",
+        "title": "GitHub Actions Fundamentals",
+        "description": "Learn workflows configurations, job parallelisms, triggers, and runner environments.",
         "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "building-ci-pipelines",
+        "title": "Building CI Pipelines",
+        "description": "Checkout code repositories, manage Node/Python setups, and run shell steps.",
+        "difficulty": "Beginner",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "testing-and-artifact-management",
+        "title": "Testing & Artifact Management",
+        "description": "Run tests and save output artifacts using upload-artifact actions.",
+        "difficulty": "Intermediate",
         "duration": "45 minutes"
       },
       {
         "slug": "automated-deployments",
         "title": "Automated Deployments",
-        "description": "Deliver built container assets to cloud container registries using secure GitHub Secrets.",
+        "description": "Securely deploy release packages utilizing encrypted Secrets and environments.",
         "difficulty": "Intermediate",
         "duration": "60 minutes"
       }

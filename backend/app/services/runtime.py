@@ -1342,6 +1342,98 @@ class GitShell(SimulatedShell):
             return make_prompt(f"Error: Command failed: {e}")
 
 
+class GitHubActionsShell(GitShell):
+    """
+    A real host-based subshell that executes git and basic CLI utilities
+    inside the session's Git repository, with simulated GitHub Actions workflow trigger on push.
+    """
+    def __init__(self, session_id: str):
+        self.session_id = session_id
+        self.base_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"actions-{session_id}")
+        )
+        os.makedirs(self.base_dir, exist_ok=True)
+        self.cwd = "/"
+        self.history = []
+        self.workflow_executed = False
+
+    def execute_command(self, cmd_line: str) -> str:
+        cmd_line = cmd_line.strip()
+        if not cmd_line:
+            return ""
+
+        self.history.append(cmd_line)
+        parts = cmd_line.split()
+        cmd = parts[0]
+        
+        def make_prompt(output_text: str = "") -> str:
+            suffix = "\r\n" if output_text and not output_text.endswith("\r\n") else ""
+            return f"{output_text}{suffix}student@devlab-actions:$ "
+
+        # Whitelist safe commands
+        if cmd not in ["git", "ls", "cat", "echo", "touch", "mkdir", "rm", "pwd", "clear"]:
+            return make_prompt(f"bash: {cmd}: command not allowed in GitHub Actions labs.")
+
+        if cmd == "pwd":
+            return make_prompt("/")
+
+        # Run command using subprocess inside session directory
+        try:
+            res = subprocess.run(
+                cmd_line,
+                cwd=self.base_dir,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            output = res.stdout
+            if res.stderr:
+                output += "\n" + res.stderr
+            output_formatted = output.replace("\r\n", "\n").replace("\n", "\r\n")
+
+            # Check if command was a git push
+            if cmd == "git" and len(parts) > 1 and parts[1] == "push":
+                workflow_path = os.path.join(self.base_dir, ".github/workflows/main.yml")
+                if os.path.exists(workflow_path):
+                    try:
+                        import yaml
+                        with open(workflow_path, "r") as f:
+                            yaml_data = yaml.safe_load(f) or {}
+                        
+                        job_name = "build-and-test"
+                        if isinstance(yaml_data.get("jobs"), dict):
+                            job_name = list(yaml_data["jobs"].keys())[0]
+
+                        actions_log = (
+                            "\r\n\r\n"
+                            "[\x1b[32mGitHub Actions\x1b[0m] Triggered by push on branch main...\r\n"
+                            "[\x1b[32mGitHub Actions\x1b[0m] Run ID: 87429188\r\n"
+                            f"[\x1b[32mGitHub Actions\x1b[0m] Job: {job_name}\r\n"
+                            "-------------------------------------------------\r\n"
+                            "1. Set up job... \x1b[32mSuccess\x1b[0m\r\n"
+                            "2. Checkout repository... \x1b[32mSuccess\x1b[0m\r\n"
+                            "3. Install dependencies... \x1b[32mSuccess\x1b[0m\r\n"
+                            "4. Run tests... \x1b[32mSuccess\x1b[0m\r\n"
+                            "5. Build project... \x1b[32mSuccess\x1b[0m\r\n"
+                            "6. Upload artifact... \x1b[32mSuccess\x1b[0m\r\n"
+                            "-------------------------------------------------\r\n"
+                            "[\x1b[32mGitHub Actions\x1b[0m] Workflow completed successfully!\r\n"
+                        )
+                        output_formatted += actions_log
+                        self.workflow_executed = True
+                    except Exception as ye:
+                        output_formatted += f"\r\n\r\n[\x1b[31mGitHub Actions Parser Error\x1b[0m] Invalid YAML syntax: {ye}\r\n"
+                else:
+                    output_formatted += "\r\n\r\n[GitHub Actions] No workflows configured in .github/workflows/main.yml.\r\n"
+
+            return make_prompt(output_formatted)
+        except subprocess.TimeoutExpired:
+            return make_prompt("Error: Command execution timed out.")
+        except Exception as e:
+            return make_prompt(f"Error: Command failed: {e}")
+
+
 # ── Modular Runtime Abstractions ─────────────────────
 
 class BaseRuntime:
@@ -1615,6 +1707,60 @@ class GitRuntime(BaseRuntime):
                 logger.warning(f"Failed to remove Git session directory {session_dir}: {e}")
 
 
+class GitHubActionsRuntime(BaseRuntime):
+    """
+    GitHub Actions runtime provisioner managing local session directories
+    and local bare Git remote repositories.
+    """
+    def create_session(self, session_id: str) -> Dict[str, Any]:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"actions-{session_id}")
+        )
+        remote_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"actions-{session_id}-remote.git")
+        )
+        os.makedirs(session_dir, exist_ok=True)
+        os.makedirs(remote_dir, exist_ok=True)
+        
+        try:
+            # 1. Initialize bare remote repository
+            subprocess.run(["git", "init", "--bare"], cwd=remote_dir, capture_output=True, check=True)
+            
+            # 2. Initialize student repository
+            subprocess.run(["git", "init"], cwd=session_dir, capture_output=True, check=True)
+            subprocess.run(["git", "config", "user.name", "DevLab Student"], cwd=session_dir, check=True)
+            subprocess.run(["git", "config", "user.email", "student@devlab.io"], cwd=session_dir, check=True)
+            
+            # 3. Add remote origin pointing to the bare repository
+            remote_path_slashes = remote_dir.replace("\\", "/")
+            subprocess.run(["git", "remote", "add", "origin", remote_path_slashes], cwd=session_dir, check=True)
+            
+            # 4. Create a dummy initial commit so push is easy for the student
+            with open(os.path.join(session_dir, "welcome.txt"), "w") as f:
+                f.write("Welcome to DevLab GitHub Actions! Start by configuring your workflow YAML.\n")
+            subprocess.run(["git", "add", "welcome.txt"], cwd=session_dir, check=True)
+            subprocess.run(["git", "commit", "-m", "initial welcome commit"], cwd=session_dir, check=True)
+            
+            return {"container_id": f"actions-{session_id}", "status": "running", "mode": "actions"}
+        except Exception as e:
+            logger.error(f"GitHubActionsRuntime failed to initialize: {e}")
+            return {"container_id": f"simulated-{session_id}", "status": "running", "mode": "simulated"}
+
+    def stop_session(self, session_id: str, container_id: Optional[str] = None) -> None:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"actions-{session_id}")
+        )
+        remote_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"actions-{session_id}-remote.git")
+        )
+        for path in [session_dir, remote_dir]:
+            if os.path.exists(path):
+                try:
+                    shutil.rmtree(path, onerror=_remove_readonly)
+                except Exception as e:
+                    logger.warning(f"Failed to remove directory {path}: {e}")
+
+
 # ── Global Coordinator Service ────────────────────────
 
 class LabRuntimeService:
@@ -1632,12 +1778,20 @@ class LabRuntimeService:
         self.docker_runtime = DockerRuntime(self.docker_client)
         self.kubernetes_runtime = KubernetesRuntime()
         self.git_runtime = GitRuntime()
+        self.github_actions_runtime = GitHubActionsRuntime()
 
     def create_lab(self, session_id: str, lab_name: str = "linux-basics") -> Dict[str, Any]:
         """
         Delegates lab initialization checks to custom Runtimes.
         """
-        if "git-" in lab_name or lab_name == "git":
+        if "github-actions" in lab_name:
+            res = self.github_actions_runtime.create_session(session_id)
+            if res["mode"] == "simulated":
+                self.simulated_sessions[session_id] = SimulatedShell(session_id)
+            else:
+                self.simulated_sessions[session_id] = GitHubActionsShell(session_id)
+            return res
+        elif "git-" in lab_name or lab_name == "git":
             res = self.git_runtime.create_session(session_id)
             if res["mode"] == "simulated":
                 self.simulated_sessions[session_id] = SimulatedShell(session_id)
@@ -1672,7 +1826,9 @@ class LabRuntimeService:
                 except Exception as e:
                     logger.warning(f"Failed to remove directory {shell.base_dir}: {e}")
 
-        if "git-" in lab_name or lab_name == "git":
+        if "github-actions" in lab_name:
+            self.github_actions_runtime.stop_session(session_id, container_id)
+        elif "git-" in lab_name or lab_name == "git":
             self.git_runtime.stop_session(session_id, container_id)
         elif "kubernetes-" in lab_name or "k8s-" in lab_name:
             self.kubernetes_runtime.stop_session(session_id, container_id)
@@ -1685,7 +1841,9 @@ class LabRuntimeService:
         if session_id in self.simulated_sessions:
             return self.simulated_sessions[session_id]
         if lab_name:
-            if "git-" in lab_name or lab_name == "git":
+            if "github-actions" in lab_name:
+                shell = GitHubActionsShell(session_id)
+            elif "git-" in lab_name or lab_name == "git":
                 shell = GitShell(session_id)
             elif "kubernetes-" in lab_name or "k8s-" in lab_name:
                 shell = SimulatedKubernetesShell(session_id)

@@ -18,8 +18,14 @@ class ValidationEngine:
         lab_name: str = "linux-basics",
     ) -> Dict[str, Any]:
         """
-        Routes the validation check to the appropriate course validators (Linux, Docker, Git or Kubernetes).
+        Routes the validation check to the appropriate course validators (Linux, Docker, Git, Actions or Kubernetes).
         """
+        if "github-actions" in lab_name:
+            shell = runtime_service.get_session_shell(session_id)
+            if not shell:
+                return {"success": False, "message": "Actions shell session not found."}
+            return self._validate_github_actions(shell, task_id, lab_name)
+
         if "git-" in lab_name or lab_name == "git":
             shell = runtime_service.get_session_shell(session_id)
             if not shell:
@@ -1478,6 +1484,122 @@ class ValidationEngine:
                 if "<<<<<<<" in content or "=======" in content or ">>>>>>>" in content:
                     return {"success": False, "message": "conflict.txt still contains conflict markers."}
                 return {"success": True, "message": "Success! Merge conflicts resolved."}
+
+        return {"success": False, "message": "Unknown task check."}
+
+    def _validate_github_actions(self, shell: Any, task_id: int, lab_name: str) -> Dict[str, Any]:
+        """
+        Validates GitHub Actions course progress against YAML file definitions and execution flags.
+        """
+        history_str = " ".join(shell.history).lower()
+        workflow_path = os.path.join(shell.base_dir, ".github/workflows/main.yml")
+
+        if task_id == 1:
+            if os.path.exists(workflow_path):
+                return {"success": True, "message": "Success! main.yml workflow file created."}
+            return {"success": False, "message": "Create the workflow configuration file inside '.github/workflows/main.yml'."}
+
+        elif task_id == 2:
+            if "git status" in history_str:
+                return {"success": True, "message": "Success! Checked repository status."}
+            return {"success": False, "message": "Query files status by running 'git status'."}
+
+        elif task_id == 3:
+            if "git log" in history_str:
+                return {"success": True, "message": "Success! Inspected commit history log."}
+            return {"success": False, "message": "Print commit history using 'git log'."}
+
+        elif task_id == 4:
+            if "git config" in history_str:
+                return {"success": True, "message": "Success! Config list checked."}
+            return {"success": False, "message": "View config parameters by running 'git config --list'."}
+
+        elif task_id == 5:
+            if "git show-ref" in history_str:
+                return {"success": True, "message": "Success! Commit references queried."}
+            return {"success": False, "message": "Query references mapping by running 'git show-ref'."}
+
+        elif task_id == 6:
+            if "git branch" in history_str:
+                return {"success": True, "message": "Success! Active branches listed."}
+            return {"success": False, "message": "Query branch listings using 'git branch'."}
+
+        elif task_id == 7:
+            if "git reflog" in history_str:
+                return {"success": True, "message": "Success! Pointer history reflogs audited."}
+            return {"success": False, "message": "Query reference action logs using 'git reflog'."}
+
+        elif task_id == 8:
+            if not os.path.exists(workflow_path):
+                return {"success": False, "message": "Workflow file '.github/workflows/main.yml' does not exist."}
+            
+            if not getattr(shell, "workflow_executed", False):
+                return {"success": False, "message": "Trigger workflow run by committing and pushing changes using 'git push origin main'."}
+
+            try:
+                import yaml
+                with open(workflow_path, "r") as f:
+                    yaml_data = yaml.safe_load(f) or {}
+            except Exception as e:
+                return {"success": False, "message": f"Indentation error or invalid YAML syntax: {e}"}
+
+            # Handle PyYAML parsing 'on' as boolean True key in YAML 1.1
+            on_val = yaml_data.get("on") if "on" in yaml_data else yaml_data.get(True)
+
+            if lab_name == "github-actions-fundamentals":
+                if not on_val or "push" not in str(on_val):
+                    return {"success": False, "message": "Workflow trigger must contain 'push'."}
+                
+                jobs = yaml_data.get("jobs", {})
+                if not jobs:
+                    return {"success": False, "message": "Workflow jobs configuration is missing."}
+                
+                first_job = list(jobs.values())[0]
+                if "ubuntu-latest" not in str(first_job.get("runs-on")):
+                    return {"success": False, "message": "Runner must be configured as 'runs-on: ubuntu-latest'."}
+                
+                return {"success": True, "message": "Success! First GitHub Actions workflow verified."}
+
+            elif lab_name == "building-ci-pipelines":
+                jobs = yaml_data.get("jobs", {})
+                first_job = list(jobs.values())[0] if jobs else {}
+                steps = first_job.get("steps", [])
+                
+                has_checkout = any("actions/checkout" in str(s.get("uses")) for s in steps if isinstance(s, dict))
+                if not has_checkout:
+                    return {"success": False, "message": "Workflow steps must use 'actions/checkout'."}
+                
+                steps_str = str(steps).lower()
+                if "npm install" not in steps_str or "npm run build" not in steps_str:
+                    return {"success": False, "message": "Workflow steps must run 'npm install' and 'npm run build'."}
+
+                return {"success": True, "message": "Success! CI Pipeline checks verified."}
+
+            elif lab_name == "testing-and-artifact-management":
+                jobs = yaml_data.get("jobs", {})
+                first_job = list(jobs.values())[0] if jobs else {}
+                steps = first_job.get("steps", [])
+                
+                has_upload = any("upload-artifact" in str(s.get("uses")) for s in steps if isinstance(s, dict))
+                if not has_upload:
+                    return {"success": False, "message": "Workflow steps must use 'actions/upload-artifact'."}
+                
+                steps_str = str(steps).lower()
+                if "npm test" not in steps_str:
+                    return {"success": False, "message": "Workflow steps must run 'npm test'."}
+
+                return {"success": True, "message": "Success! Test artifacts uploads verified."}
+
+            elif lab_name == "automated-deployments":
+                jobs = yaml_data.get("jobs", {})
+                first_job = list(jobs.values())[0] if jobs else {}
+                steps = first_job.get("steps", [])
+                
+                steps_str = str(steps)
+                if "secrets.DEPLOY_KEY" not in steps_str:
+                    return {"success": False, "message": "Workflow steps must reference deploy secrets '${{ secrets.DEPLOY_KEY }}'."}
+
+                return {"success": True, "message": "Success! Continuous deployment pipeline verified."}
 
         return {"success": False, "message": "Unknown task check."}
 
