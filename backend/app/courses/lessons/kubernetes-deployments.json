@@ -1,0 +1,358 @@
+{
+  "slug": "kubernetes-deployments",
+  "title": "Deployments",
+  "overview": {
+    "introduction": "A Deployment provides declarative updates for Pods and ReplicaSets. You describe a desired state in a Deployment, and the controller changes the actual state to the desired state.",
+    "why_it_matters": "Understanding Deployments is critical for configuring resilient container cloud architectures.",
+    "industry_usage": "Used daily by platform developers to scale APIs, isolate systems, and ensure high availability.",
+    "what_you_will_build": "A series of configured Kubernetes resources verified inside a K3s sandbox environment.",
+    "prerequisites": "Docker Fundamentals and Linux CLI.",
+    "estimated_time": "45 mins",
+    "difficulty": "Beginner",
+    "learning_outcomes": [
+      "Explain core concepts of Deployments.",
+      "Create and manage Deployments workloads.",
+      "Verify workload status using kubectl commands.",
+      "Debug issues in container logs.",
+      "Enforce best practices for configurations security."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "Declarative Desired State",
+      "definition": "Deployments manage stateless container workloads, ensuring a specified number of replicas are active, healthy, and running.",
+      "why_important": [
+        "Isolates logical system boundaries.",
+        "Provides high reliability and availability.",
+        "Simplifies automation scripts integrations."
+      ],
+      "explanation": "When configuring Deployments, declarative state configurations ensure consistent runtimes.",
+      "commands": [
+        {
+          "name": "kubectl get",
+          "purpose": "Query cluster resources.",
+          "syntax": "kubectl get <resource_type>",
+          "example": "kubectl get pods",
+          "expected_output": "No resources found.",
+          "output_explanation": "Shows standard resource listing from the current namespace."
+        },
+        {
+          "name": "kubectl describe",
+          "purpose": "Get detailed attributes of a specific resource.",
+          "syntax": "kubectl describe <type> <name>",
+          "example": "kubectl describe pod my-pod",
+          "expected_output": "Name: my-pod\nNamespace: default...",
+          "output_explanation": "Shows events, configuration metadata, status details, and environment variables."
+        }
+      ],
+      "pro_tip": "Always use declarative YAML manifests rather than command-line triggers for managing Deployments.",
+      "best_practices": "Specify explicit namespaces for all resources to avoid cluttering the default space.",
+      "common_mistakes": "Forgetting to verify current kubectl contexts before executing delete commands.",
+      "real_world_usage": "Organizations automate cluster state rollouts using GitOps operators (like ArgoCD).",
+      "summary": "Deployments provides the base layer for robust container operations at scale."
+    }
+  ],
+  "interactive_examples": [
+    {
+      "objective": "Query cluster metadata for Deployments.",
+      "scenario": "Confirm the status of your workloads inside the current namespace.",
+      "command": "kubectl create deployment webapp-deploy --image=nginx:alpine --replicas=2",
+      "explanation": "Executes standard kubectl query actions.",
+      "expected_output": "Name: web-app...",
+      "output_explanation": "Lists active resource name tags.",
+      "real_world_use": "Automated status checks inside DevOps build pipelines.",
+      "common_mistakes": "Executing command without active network connection to master node API.",
+      "tips": "Add '-o wide' to see pod IPs and node assignments."
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Initial Check (Create webapp deployment)",
+      "definition": "Kubernetes CLI query tool.",
+      "explanation": "Verifies configuration states from master nodes.",
+      "instruction": "Create a deployment named 'webapp-deploy' running 'nginx:alpine' with 2 replicas.",
+      "example": "kubectl create deployment webapp-deploy --image=nginx:alpine --replicas=2",
+      "expected": "",
+      "hint": "Run: kubectl create deployment webapp-deploy --image=nginx:alpine --replicas=2",
+      "solution": "kubectl create deployment webapp-deploy --image=nginx:alpine --replicas=2",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 2,
+      "title": "2. Verify Details",
+      "definition": "Verify resource configurations.",
+      "explanation": "Ensure the resource was created correctly.",
+      "instruction": "Inspect resources details using kubectl describe.",
+      "example": "kubectl describe pods",
+      "expected": "",
+      "hint": "Type: kubectl describe pods",
+      "solution": "kubectl describe pods",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 3,
+      "title": "3. Check Logs",
+      "definition": "Fetch container stdout log streams.",
+      "explanation": "Provides troubleshooting traces for container runtimes.",
+      "instruction": "Print container logs to console screen.",
+      "example": "kubectl logs webapp-pod",
+      "expected": "",
+      "hint": "Run: kubectl logs --tail=10 webapp-pod",
+      "solution": "kubectl logs --tail=10 webapp-pod",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 4,
+      "title": "4. Create temporary resource",
+      "definition": "Deploy short-lived test pods.",
+      "explanation": "Run test scripts or check API connectivity.",
+      "instruction": "Start a temporary debug pod running busybox.",
+      "example": "kubectl run tmp-debug --image=busybox --restart=Never",
+      "expected": "",
+      "hint": "Type: kubectl run tmp-debug --image=busybox --restart=Never",
+      "solution": "kubectl run tmp-debug --image=busybox --restart=Never",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 5,
+      "title": "5. List Services",
+      "definition": "Service endpoints discover.",
+      "explanation": "Find active service IPs mapping ports.",
+      "instruction": "Retrieve list of services using get.",
+      "example": "kubectl get services",
+      "expected": "",
+      "hint": "Type: kubectl get services",
+      "solution": "kubectl get services",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 6,
+      "title": "6. Clean temporary resource",
+      "definition": "Delete obsolete resources.",
+      "explanation": "Wipe out test pods to recover namespace capacity.",
+      "instruction": "Remove the temporary debug pod named tmp-debug.",
+      "example": "kubectl delete pod tmp-debug",
+      "expected": "",
+      "hint": "Type: kubectl delete pod tmp-debug",
+      "solution": "kubectl delete pod tmp-debug",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 7,
+      "title": "7. Get All Workloads",
+      "definition": "Overview listing of resources.",
+      "explanation": "Queries pods, services, deployments, and replica sets at once.",
+      "instruction": "List all active components in default namespace namespaces.",
+      "example": "kubectl get all",
+      "expected": "",
+      "hint": "Type: kubectl get all",
+      "solution": "kubectl get all",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 8,
+      "title": "Mini Challenge: Multi-Replica Deploy",
+      "definition": "No step-by-step instructions are provided here. Execute this task directly.",
+      "explanation": "Complete this task on your own.",
+      "instruction": "Deploy a deployment named 'db-deploy' running 'redis:alpine' image with exactly 3 replicas.",
+      "example": "kubectl create deployment db-deploy --image=redis:alpine --replicas=3",
+      "expected": "",
+      "hint": "Run command: kubectl create deployment db-deploy --image=redis:alpine --replicas=3",
+      "solution": "kubectl create deployment db-deploy --image=redis:alpine --replicas=3",
+      "difficulty": "Intermediate",
+      "estimated_duration": "8m"
+    }
+  ],
+  "exercises": [
+    {
+      "title": "Deploy Deployments manifest",
+      "problem": "Practice declaring resource layouts by querying node configurations status.",
+      "difficulty": "easy",
+      "hint": "Run kubectl get nodes.",
+      "expected_result": "Success list.",
+      "objective": "Verify Deployments core specifications."
+    }
+  ],
+  "quiz": [
+    {
+      "question": "What is the primary function of Kubernetes Deployments?",
+      "options": [
+        "To orchestrate container workloads.",
+        "To compile source code.",
+        "To deploy host hypervisors.",
+        "To manage domain registration."
+      ],
+      "answer": "To orchestrate container workloads.",
+      "explanation": "Kubernetes automates the deployment and management of containerized stacks."
+    },
+    {
+      "question": "Which CLI command is used to interact with Kubernetes clusters?",
+      "options": [
+        "kubectl",
+        "kubelet",
+        "kubeadm",
+        "docker"
+      ],
+      "answer": "kubectl",
+      "explanation": "kubectl is the official command line client interface for K8s clusters."
+    },
+    {
+      "question": "What is K3s?",
+      "options": [
+        "A highly lightweight, certified Kubernetes distribution.",
+        "A container virtualization hypervisor.",
+        "A package manager for database services.",
+        "A frontend web framework."
+      ],
+      "answer": "A highly lightweight, certified Kubernetes distribution.",
+      "explanation": "K3s is a minimal Kubernetes footprint packaged as a single binary, optimized for local and edge setups."
+    },
+    {
+      "question": "How do you specify a namespace filter in kubectl commands?",
+      "options": [
+        "-n [namespace]",
+        "--space [namespace]",
+        "-s [namespace]",
+        "-d [namespace]"
+      ],
+      "answer": "-n [namespace]",
+      "explanation": "Use the '-n' (or '--namespace') flag option to specify target resources."
+    },
+    {
+      "question": "Which of the following is the control plane component of Kubernetes?",
+      "options": [
+        "kube-apiserver",
+        "kubelet",
+        "kube-proxy",
+        "containerd"
+      ],
+      "answer": "kube-apiserver",
+      "explanation": "The API server (kube-apiserver) is the central entry point that exposes the K8s API."
+    },
+    {
+      "question": "What stores the state and configuration data of a Kubernetes cluster?",
+      "options": [
+        "etcd",
+        "postgres",
+        "redis",
+        "sqlite"
+      ],
+      "answer": "etcd",
+      "explanation": "etcd is a consistent, highly-available key-value store used as Kubernetes' backing store."
+    },
+    {
+      "question": "What runs on worker nodes to monitor container health and lifecycle?",
+      "options": [
+        "kubelet",
+        "kube-apiserver",
+        "kubectl",
+        "etcd"
+      ],
+      "answer": "kubelet",
+      "explanation": "The kubelet agent runs on each node in the cluster and makes sure that containers are running in a Pod."
+    },
+    {
+      "question": "Which command displays details of a resource named 'web-service'?",
+      "options": [
+        "kubectl describe service web-service",
+        "kubectl show service web-service",
+        "kubectl inspect service web-service",
+        "kubectl logs service web-service"
+      ],
+      "answer": "kubectl describe service web-service",
+      "explanation": "kubectl describe displays detailed metadata, events, and specs of target resources."
+    },
+    {
+      "question": "What is a YAML file used for in Kubernetes?",
+      "options": [
+        "To declare desired resource configurations.",
+        "To compile source binaries.",
+        "To format script log streams.",
+        "To install cluster packages."
+      ],
+      "answer": "To declare desired resource configurations.",
+      "explanation": "YAML configurations declare the desired state of API objects, allowing version control and repeatability."
+    },
+    {
+      "question": "What happens if a pod crashes in a Deployment?",
+      "options": [
+        "Kubernetes automatically schedules a new pod to replace it.",
+        "The cluster locks down.",
+        "The admin must rebuild the image.",
+        "The service fails permanently."
+      ],
+      "answer": "Kubernetes automatically schedules a new pod to replace it.",
+      "explanation": "Deployment controllers continuously reconcile active states to match desired states (self-healing)."
+    }
+  ],
+  "resources": {
+    "summary": "Learn more about Kubernetes Deployments through official documentation, guides, and manuals.",
+    "links": [
+      {
+        "title": "Kubernetes Deployments Documentation Guide",
+        "type": "documentation",
+        "description": "Official documentation and concepts manual for Deployments.",
+        "url": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/"
+      },
+      {
+        "title": "Interactive Kubernetes Playground",
+        "type": "playgound",
+        "description": "Browser-based sandbox environment for testing kubectl.",
+        "url": "https://killercoda.com"
+      },
+      {
+        "title": "Kubernetes Cheat Sheet",
+        "type": "cheat_sheet",
+        "description": "Quick reference guide for common kubectl control commands.",
+        "url": "https://kubernetes.io/docs/reference/kubectl/cheatsheet/"
+      }
+    ],
+    "cheat_sheet": "kubectl get pods -n <ns>        # List pods\nkubectl describe pod <name>    # Describe pod\nkubectl apply -f <file>        # Apply manifest\nkubectl delete pod <name>      # Delete pod",
+    "commands_table": [
+      {
+        "name": "kubectl get",
+        "syntax": "kubectl get <resource>",
+        "description": "List resources in the current namespace context."
+      },
+      {
+        "name": "kubectl apply",
+        "syntax": "kubectl apply -f <filename>",
+        "description": "Create or update resources using a YAML manifest file."
+      }
+    ],
+    "revision_notes": [
+      "Kubernetes is declarative; you define the desired state and the control loop resolves it.",
+      "Always run kubectl commands with -n to ensure isolation.",
+      "Self-healing guarantees system reliability."
+    ],
+    "best_practices": [
+      "Use declarative configuration files rather than imperative commands.",
+      "Organize resource environments inside dedicated namespaces.",
+      "Specify resource requests and limits for memory and CPU."
+    ],
+    "beginner_mistakes": [
+      "Deploying resources into default namespaces instead of structured namespace divisions.",
+      "Typos in YAML key indentations causing parser validation crashes."
+    ],
+    "interview_questions": [
+      {
+        "question": "What is Kubernetes Deployments?",
+        "answer": "It represents the resource configuration model for Deployments in Kubernetes API namespaces."
+      }
+    ],
+    "books": [
+      {
+        "title": "Kubernetes Up & Running \u2014 Kelsey Hightower",
+        "description": "Excellent entry guide to Kubernetes clusters operations."
+      }
+    ]
+  }
+}
