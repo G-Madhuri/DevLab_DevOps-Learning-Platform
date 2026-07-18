@@ -358,9 +358,9 @@ async def websocket_terminal(websocket: WebSocket, session_id: str):
     except Exception as e:
         logger.error(f"Failed to query session details: {e}")
 
-    # Check simulated, git or actions host shell
+    # Check simulated, git, actions or cicd host shell
     sim_shell = None
-    if container_id and (container_id.startswith("simulated-") or container_id.startswith("git-") or container_id.startswith("actions-")):
+    if container_id and (container_id.startswith("simulated-") or container_id.startswith("git-") or container_id.startswith("actions-") or container_id.startswith("cicd-")):
         sim_shell = runtime_service.get_session_shell(session_id, lab_name)
     
     # Fallback: if Docker is unavailable, always provide a simulated shell

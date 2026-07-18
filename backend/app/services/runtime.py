@@ -1434,6 +1434,90 @@ class GitHubActionsShell(GitShell):
             return make_prompt(f"Error: Command failed: {e}")
 
 
+class CICDShell(GitShell):
+    """
+    A real host-based subshell that executes git, custom pipeline tools,
+    and basic CLI utilities inside the session's repository.
+    """
+    def __init__(self, session_id: str):
+        self.session_id = session_id
+        self.base_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"cicd-{session_id}")
+        )
+        os.makedirs(self.base_dir, exist_ok=True)
+        self.cwd = "/"
+        self.history = []
+        self.pipeline_executed = False
+
+    def execute_command(self, cmd_line: str) -> str:
+        cmd_line = cmd_line.strip()
+        if not cmd_line:
+            return ""
+
+        self.history.append(cmd_line)
+        parts = cmd_line.split()
+        cmd = parts[0]
+        
+        def make_prompt(output_text: str = "") -> str:
+            suffix = "\r\n" if output_text and not output_text.endswith("\r\n") else ""
+            return f"{output_text}{suffix}student@devlab-cicd:$ "
+
+        # Whitelist safe commands (including run-pipeline)
+        if cmd not in ["git", "ls", "cat", "echo", "touch", "mkdir", "rm", "pwd", "clear", "run-pipeline"]:
+            return make_prompt(f"bash: {cmd}: command not allowed in CI/CD labs.")
+
+        if cmd == "pwd":
+            return make_prompt("/")
+
+        if cmd == "run-pipeline":
+            pipeline_path = os.path.join(self.base_dir, "pipeline.yml")
+            if not os.path.exists(pipeline_path):
+                return make_prompt("[Pipeline] Error: pipeline.yml config file not found.")
+            
+            try:
+                import yaml
+                with open(pipeline_path, "r") as f:
+                    yaml_data = yaml.safe_load(f) or {}
+                
+                stages = yaml_data.get("stages", [])
+                if not isinstance(stages, list) or not stages:
+                    return make_prompt("[Pipeline] Error: No stages list configured in pipeline.yml.")
+                
+                log_lines = [
+                    "[\x1b[34mPipeline\x1b[0m] Starting pipeline execution...",
+                    "[\x1b[34mPipeline\x1b[0m] -------------------------------------------------"
+                ]
+                for idx, stage in enumerate(stages, 1):
+                    log_lines.append(f"[\x1b[34mPipeline\x1b[0m] Stage {idx}: {stage} ... \x1b[32mSuccess\x1b[0m")
+                log_lines.append("[\x1b[34mPipeline\x1b[0m] -------------------------------------------------")
+                log_lines.append("[\x1b[34mPipeline\x1b[0m] Pipeline completed successfully!")
+                
+                self.pipeline_executed = True
+                return make_prompt("\r\n".join(log_lines))
+            except Exception as ye:
+                return make_prompt(f"[Pipeline] YAML Parse Error: Invalid syntax: {ye}")
+
+        # Run command using subprocess inside session directory
+        try:
+            res = subprocess.run(
+                cmd_line,
+                cwd=self.base_dir,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            output = res.stdout
+            if res.stderr:
+                output += "\n" + res.stderr
+            output_formatted = output.replace("\r\n", "\n").replace("\n", "\r\n")
+            return make_prompt(output_formatted)
+        except subprocess.TimeoutExpired:
+            return make_prompt("Error: Command execution timed out.")
+        except Exception as e:
+            return make_prompt(f"Error: Command failed: {e}")
+
+
 # ── Modular Runtime Abstractions ─────────────────────
 
 class BaseRuntime:
@@ -1761,6 +1845,45 @@ class GitHubActionsRuntime(BaseRuntime):
                     logger.warning(f"Failed to remove directory {path}: {e}")
 
 
+class CICDRuntime(BaseRuntime):
+    """
+    CI/CD runtime provisioner managing local session directory repositories.
+    """
+    def create_session(self, session_id: str) -> Dict[str, Any]:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"cicd-{session_id}")
+        )
+        os.makedirs(session_dir, exist_ok=True)
+        
+        try:
+            # 1. Initialize repository
+            subprocess.run(["git", "init"], cwd=session_dir, capture_output=True, check=True)
+            subprocess.run(["git", "config", "user.name", "DevLab Student"], cwd=session_dir, check=True)
+            subprocess.run(["git", "config", "user.email", "student@devlab.io"], cwd=session_dir, check=True)
+            
+            # 2. Create welcome.txt
+            with open(os.path.join(session_dir, "welcome.txt"), "w") as f:
+                f.write("Welcome to DevLab CI/CD! Start by authoring your pipeline.yml configurations.\n")
+            
+            subprocess.run(["git", "add", "welcome.txt"], cwd=session_dir, check=True)
+            subprocess.run(["git", "commit", "-m", "initial welcome commit"], cwd=session_dir, check=True)
+            
+            return {"container_id": f"cicd-{session_id}", "status": "running", "mode": "cicd"}
+        except Exception as e:
+            logger.error(f"CICDRuntime failed to initialize repository: {e}")
+            return {"container_id": f"simulated-{session_id}", "status": "running", "mode": "simulated"}
+
+    def stop_session(self, session_id: str, container_id: Optional[str] = None) -> None:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"cicd-{session_id}")
+        )
+        if os.path.exists(session_dir):
+            try:
+                shutil.rmtree(session_dir, onerror=_remove_readonly)
+            except Exception as e:
+                logger.warning(f"Failed to remove CI/CD session directory {session_dir}: {e}")
+
+
 # ── Global Coordinator Service ────────────────────────
 
 class LabRuntimeService:
@@ -1779,12 +1902,20 @@ class LabRuntimeService:
         self.kubernetes_runtime = KubernetesRuntime()
         self.git_runtime = GitRuntime()
         self.github_actions_runtime = GitHubActionsRuntime()
+        self.cicd_runtime = CICDRuntime()
 
     def create_lab(self, session_id: str, lab_name: str = "linux-basics") -> Dict[str, Any]:
         """
         Delegates lab initialization checks to custom Runtimes.
         """
-        if "github-actions" in lab_name:
+        if "introduction-to-cicd" in lab_name or "continuous-" in lab_name or "building-a-complete-cicd" in lab_name or lab_name == "cicd":
+            res = self.cicd_runtime.create_session(session_id)
+            if res["mode"] == "simulated":
+                self.simulated_sessions[session_id] = SimulatedShell(session_id)
+            else:
+                self.simulated_sessions[session_id] = CICDShell(session_id)
+            return res
+        elif "github-actions" in lab_name:
             res = self.github_actions_runtime.create_session(session_id)
             if res["mode"] == "simulated":
                 self.simulated_sessions[session_id] = SimulatedShell(session_id)
@@ -1826,7 +1957,9 @@ class LabRuntimeService:
                 except Exception as e:
                     logger.warning(f"Failed to remove directory {shell.base_dir}: {e}")
 
-        if "github-actions" in lab_name:
+        if "introduction-to-cicd" in lab_name or "continuous-" in lab_name or "building-a-complete-cicd" in lab_name or lab_name == "cicd":
+            self.cicd_runtime.stop_session(session_id, container_id)
+        elif "github-actions" in lab_name:
             self.github_actions_runtime.stop_session(session_id, container_id)
         elif "git-" in lab_name or lab_name == "git":
             self.git_runtime.stop_session(session_id, container_id)
@@ -1841,7 +1974,9 @@ class LabRuntimeService:
         if session_id in self.simulated_sessions:
             return self.simulated_sessions[session_id]
         if lab_name:
-            if "github-actions" in lab_name:
+            if "introduction-to-cicd" in lab_name or "continuous-" in lab_name or "building-a-complete-cicd" in lab_name or lab_name == "cicd":
+                shell = CICDShell(session_id)
+            elif "github-actions" in lab_name:
                 shell = GitHubActionsShell(session_id)
             elif "git-" in lab_name or lab_name == "git":
                 shell = GitShell(session_id)
