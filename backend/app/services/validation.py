@@ -18,8 +18,14 @@ class ValidationEngine:
         lab_name: str = "linux-basics",
     ) -> Dict[str, Any]:
         """
-        Routes the validation check to the appropriate course validators (Linux, Docker, Git, Actions, CI/CD or Kubernetes).
+        Routes the validation check to the appropriate course validators (Linux, Docker, Git, Actions, CI/CD, Jenkins or Kubernetes).
         """
+        if "jenkins" in lab_name or "freestyle-jobs" in lab_name or "declarative-vs-" in lab_name or "distributed-builds" in lab_name or "credentials-and-secrets" in lab_name or "plugins-and-" in lab_name:
+            shell = runtime_service.get_session_shell(session_id)
+            if not shell:
+                return {"success": False, "message": "Jenkins shell session not found."}
+            return self._validate_jenkins(shell, task_id, lab_name)
+
         if "introduction-to-cicd" in lab_name or "continuous-" in lab_name or "building-a-complete-cicd" in lab_name or lab_name == "cicd":
             shell = runtime_service.get_session_shell(session_id)
             if not shell:
@@ -1689,6 +1695,107 @@ class ValidationEngine:
                     if req not in stages_clean:
                         return {"success": False, "message": f"Pipeline must contain '{req}' stage."}
                 return {"success": True, "message": "Success! Enterprise CI/CD pipeline verified."}
+
+        return {"success": False, "message": "Unknown task check."}
+
+    def _validate_jenkins(self, shell: Any, task_id: int, lab_name: str) -> Dict[str, Any]:
+        """
+        Validates Jenkins course progress against Jenkinsfile configuration attributes and build logs.
+        """
+        history_str = " ".join(shell.history).lower()
+        jenkinsfile_path = os.path.join(shell.base_dir, "Jenkinsfile")
+
+        if task_id == 1:
+            if os.path.exists(jenkinsfile_path):
+                return {"success": True, "message": "Success! Jenkinsfile configuration file created."}
+            return {"success": False, "message": "Create the pipeline configuration file named 'Jenkinsfile'."}
+
+        elif task_id in [2, 3, 4, 5, 6, 7]:
+            git_cmds = {
+                2: ("git status", "Query repository files status using 'git status'."),
+                3: ("git log", "Print commits timeline history log using 'git log'."),
+                4: ("git config", "Verify config details using 'git config --list'."),
+                5: ("git show-ref", "Query pointer references mappings using 'git show-ref'."),
+                6: ("git branch", "Identify active branches positions utilizing 'git branch'."),
+                7: ("git reflog", "Inspect revisions tracking logs by running 'git reflog'.")
+            }
+            cmd_key, error_msg = git_cmds[task_id]
+            if cmd_key in history_str:
+                return {"success": True, "message": f"Success! Executed {cmd_key} check."}
+            return {"success": False, "message": error_msg}
+
+        elif task_id == 8:
+            if not os.path.exists(jenkinsfile_path):
+                return {"success": False, "message": "Jenkinsfile configuration file does not exist."}
+
+            if not getattr(shell, "jenkins_executed", False):
+                return {"success": False, "message": "Execute the Jenkins pipeline simulation build by running the custom command 'jenkins build'."}
+
+            with open(jenkinsfile_path, "r", encoding="utf-8") as f:
+                content = f.read()
+
+            content_clean = content.replace(" ", "").replace("\n", "").replace("\r", "").replace('"', "'").lower()
+
+            if lab_name == "jenkins-fundamentals":
+                if "stage('build')" not in content_clean:
+                    return {"success": False, "message": "Jenkinsfile must contain a stage named 'Build'."}
+                return {"success": True, "message": "Success! Jenkins fundamentals pipeline verified."}
+
+            elif lab_name == "installing-and-configuring-jenkins":
+                if "stage('install')" not in content_clean:
+                    return {"success": False, "message": "Jenkinsfile must contain a stage named 'Install'."}
+                return {"success": True, "message": "Success! Installation verification pipeline verified."}
+
+            elif lab_name == "freestyle-jobs":
+                if "stage('freestyle')" not in content_clean:
+                    return {"success": False, "message": "Jenkinsfile must contain a stage named 'Freestyle'."}
+                return {"success": True, "message": "Success! Freestyle job representation pipeline verified."}
+
+            elif lab_name == "pipeline-as-code-jenkinsfile":
+                if "stage('build')" not in content_clean or "stage('test')" not in content_clean:
+                    return {"success": False, "message": "Jenkinsfile must contain 'Build' and 'Test' stages."}
+                return {"success": True, "message": "Success! Pipeline as Code configuration verified."}
+
+            elif lab_name == "declarative-vs-scripted-pipelines":
+                if "node{" not in content_clean:
+                    return {"success": False, "message": "Jenkinsfile must define a scripted pipeline using a 'node {}' block."}
+                if "stage('checkout')" not in content_clean or "stage('build')" not in content_clean:
+                    return {"success": False, "message": "Scripted pipeline must define 'Checkout' and 'Build' stages."}
+                return {"success": True, "message": "Success! Scripted pipeline paradigm verified."}
+
+            elif lab_name == "distributed-builds-and-agents":
+                if "agent{label'worker-node'}" not in content_clean and "label'worker-node'" not in content_clean:
+                    return {"success": False, "message": "Jenkinsfile must declare execution agent with label 'worker-node'."}
+                return {"success": True, "message": "Success! Distributed agent worker configuration verified."}
+
+            elif lab_name == "credentials-and-secrets-management":
+                if "credentials('db-password')" not in content_clean:
+                    return {"success": False, "message": "Jenkinsfile must bind credentials store database key using credentials('db-password')."}
+                return {"success": True, "message": "Success! Secure credentials binding verified."}
+
+            elif lab_name == "plugins-and-integrations":
+                if "slacksend" not in content_clean:
+                    return {"success": False, "message": "Jenkinsfile step must send Slack notification via slackSend step."}
+                return {"success": True, "message": "Success! Plugin notifications step verified."}
+
+            elif lab_name == "building-a-complete-cicd-pipeline-jenkins":
+                required = ["stage('checkout')", "stage('build')", "stage('test')", "stage('deploy')"]
+                for req in required:
+                    if req not in content_clean:
+                        return {"success": False, "message": f"Pipeline must define stage: {req}."}
+                return {"success": True, "message": "Success! Complete pipeline integration verified."}
+
+            elif lab_name == "jenkins-best-practices":
+                if "builddiscarder" not in content_clean:
+                    return {"success": False, "message": "Jenkinsfile must configure a buildDiscarder option to rotate logs."}
+                return {"success": True, "message": "Success! Log pruning best practices verified."}
+
+            elif lab_name == "jenkins-capstone-project":
+                required = ["stage('checkout')", "stage('build')", "stage('test')", "stage('deploy')", "stage('archive')"]
+                for req in required:
+                    if req not in content_clean:
+                        return {"success": False, "message": f"Capstone pipeline must define stage: {req}."}
+                return {"success": True, "message": "Success! Jenkins Capstone Project verified."}
 
         return {"success": False, "message": "Unknown task check."}
 
