@@ -20,6 +20,12 @@ class ValidationEngine:
         """
         Routes the validation check to the appropriate course validators (Linux, Docker, Git, Actions, CI/CD, Jenkins or Kubernetes).
         """
+        if "terraform" in lab_name or "variables-outputs" in lab_name or "state-management" in lab_name or "best-practices-terraform" in lab_name:
+            shell = runtime_service.get_session_shell(session_id)
+            if not shell:
+                return {"success": False, "message": "Terraform shell session not found."}
+            return self._validate_terraform(shell, task_id, lab_name)
+
         if "jenkins" in lab_name or "freestyle-jobs" in lab_name or "declarative-vs-" in lab_name or "distributed-builds" in lab_name or "credentials-and-secrets" in lab_name or "plugins-and-" in lab_name:
             shell = runtime_service.get_session_shell(session_id)
             if not shell:
@@ -1796,6 +1802,122 @@ class ValidationEngine:
                     if req not in content_clean:
                         return {"success": False, "message": f"Capstone pipeline must define stage: {req}."}
                 return {"success": True, "message": "Success! Jenkins Capstone Project verified."}
+
+    def _validate_terraform(self, shell: Any, task_id: int, lab_name: str) -> Dict[str, Any]:
+        """
+        Validates Terraform course progress against HCL files, workspaces, and state caches.
+        """
+        main_tf = os.path.join(shell.base_dir, "main.tf")
+        variables_tf = os.path.join(shell.base_dir, "variables.tf")
+        outputs_tf = os.path.join(shell.base_dir, "outputs.tf")
+        state_file = os.path.join(shell.base_dir, "terraform.tfstate")
+        history_str = " ".join(shell.history).lower()
+
+        # Step 1: Initialize first files check
+        if task_id == 1:
+            if os.path.exists(main_tf):
+                return {"success": True, "message": "Success! 'main.tf' configuration file created."}
+            return {"success": False, "message": "Create the main configuration file named 'main.tf'."}
+
+        # Step 2: Validate syntax via `terraform validate`
+        if task_id == 2:
+            if "terraform validate" in history_str:
+                return {"success": True, "message": "Success! Validation command execution checked."}
+            return {"success": False, "message": "Execute the formatting validation checks using 'terraform validate'."}
+
+        # Step 3: Check Dry-Run Plan
+        if task_id == 3:
+            if "terraform plan" in history_str:
+                return {"success": True, "message": "Success! Dry-run planning execution verified."}
+            return {"success": False, "message": "Trigger plan verification output by running 'terraform plan'."}
+
+        # Step 4: Check Apply Lifecycle
+        if task_id == 4:
+            if os.path.exists(state_file):
+                return {"success": True, "message": "Success! Resource applied and saved in state file."}
+            return {"success": False, "message": "Deploy resources by running 'terraform apply' to write state file."}
+
+        # Step 5: Check Workspace Isolation
+        if task_id == 5:
+            if getattr(shell, "tf_workspace", "default") == "dev":
+                return {"success": True, "message": "Success! Environment workspace 'dev' selected."}
+            return {"success": False, "message": "Switch active environment using 'terraform workspace select dev'."}
+
+        # Step 6: Check Managed State Lists
+        if task_id == 6:
+            if "terraform state list" in history_str:
+                return {"success": True, "message": "Success! Inspected managed state resource lists."}
+            return {"success": False, "message": "Inspect active resource identifiers by executing 'terraform state list'."}
+
+        # Step 7: Check Output Variables
+        if task_id == 7:
+            if "terraform output" in history_str:
+                return {"success": True, "message": "Success! Outputs retrieval verified."}
+            return {"success": False, "message": "Retrieve parameterized variable outputs values by running 'terraform output'."}
+
+        # Step 8 (Mini Challenge): Module-specific custom criteria
+        if task_id == 8:
+            content = ""
+            if os.path.exists(main_tf):
+                with open(main_tf, "r", encoding="utf-8") as f:
+                    content = f.read().lower()
+
+            if lab_name == "terraform-fundamentals":
+                if "resource" not in content or "local_file" not in content:
+                    return {"success": False, "message": "Configuration must declare a 'local_file' resource block."}
+                return {"success": True, "message": "Success! Terraform fundamentals challenge verified."}
+
+            elif lab_name == "installing-terraform-and-providers":
+                if "provider" not in content or "local" not in content:
+                    return {"success": False, "message": "Configuration must declare a 'local' provider configuration block."}
+                return {"success": True, "message": "Success! Providers installation challenge verified."}
+
+            elif lab_name == "variables-outputs-and-locals":
+                if not os.path.exists(variables_tf) or not os.path.exists(outputs_tf):
+                    return {"success": False, "message": "You must create both 'variables.tf' and 'outputs.tf' files."}
+                return {"success": True, "message": "Success! Parameter boundaries variables and outputs verified."}
+
+            elif lab_name == "resources-and-dependencies":
+                if "depends_on" not in content:
+                    return {"success": False, "message": "Resource configuration must declare explicit dependency via depends_on."}
+                return {"success": True, "message": "Success! Resource dependency graph validation verified."}
+
+            elif lab_name == "state-management":
+                if not os.path.exists(state_file):
+                    return {"success": False, "message": "Execute terraform apply first to synchronize the state file."}
+                return {"success": True, "message": "Success! State metadata cache verified."}
+
+            elif lab_name == "modules":
+                if "module" not in content or "local_gen" not in content:
+                    return {"success": False, "message": "Configuration must declare a module block named 'local_gen'."}
+                return {"success": True, "message": "Success! Reusable local module configuration verified."}
+
+            elif lab_name == "provisioners":
+                if "provisioner" not in content or "local-exec" not in content:
+                    return {"success": False, "message": "Resource block must contain a provisioner 'local-exec' block."}
+                return {"success": True, "message": "Success! Local execution provisioner step verified."}
+
+            elif lab_name == "workspaces":
+                if "dev" not in getattr(shell, "tf_workspaces_list", []):
+                    return {"success": False, "message": "Workspace list must contain 'dev' workspace."}
+                return {"success": True, "message": "Success! Isolated workspaces environment verified."}
+
+            elif lab_name == "remote-state-concepts":
+                if "backend" not in content or "local" not in content:
+                    return {"success": False, "message": "Configuration must configure local state backend path settings."}
+                return {"success": True, "message": "Success! Remote backend state settings verified."}
+
+            elif lab_name == "best-practices-terraform":
+                if "terraform fmt" not in history_str:
+                    return {"success": False, "message": "Clean HCL files formatting must be checked using 'terraform fmt'."}
+                return {"success": True, "message": "Success! Linting/formatting best practices verified."}
+
+            elif lab_name == "terraform-capstone-project":
+                if not os.path.exists(state_file) or "apply" not in history_str:
+                    return {"success": False, "message": "Complete the capstone infrastructure deployment by running 'terraform apply'."}
+                return {"success": True, "message": "Success! Terraform Capstone Project validated."}
+
+        return {"success": False, "message": "Unknown task check."}
 
         return {"success": False, "message": "Unknown task check."}
 
