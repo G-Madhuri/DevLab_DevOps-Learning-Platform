@@ -1518,6 +1518,104 @@ class CICDShell(GitShell):
             return make_prompt(f"Error: Command failed: {e}")
 
 
+class JenkinsShell(GitShell):
+    """
+    A real host-based subshell that executes git, custom jenkins builds,
+    and basic CLI utilities inside the session's repository.
+    """
+    def __init__(self, session_id: str):
+        self.session_id = session_id
+        self.base_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"jenkins-{session_id}")
+        )
+        os.makedirs(self.base_dir, exist_ok=True)
+        self.cwd = "/"
+        self.history = []
+        self.jenkins_executed = False
+
+    def execute_command(self, cmd_line: str) -> str:
+        cmd_line = cmd_line.strip()
+        if not cmd_line:
+            return ""
+
+        self.history.append(cmd_line)
+        parts = cmd_line.split()
+        cmd = parts[0]
+        
+        def make_prompt(output_text: str = "") -> str:
+            suffix = "\r\n" if output_text and not output_text.endswith("\r\n") else ""
+            return f"{output_text}{suffix}student@devlab-jenkins:$ "
+
+        # Whitelist safe commands (including jenkins)
+        if cmd not in ["git", "ls", "cat", "echo", "touch", "mkdir", "rm", "pwd", "clear", "jenkins"]:
+            return make_prompt(f"bash: {cmd}: command not allowed in Jenkins labs.")
+
+        if cmd == "pwd":
+            return make_prompt("/")
+
+        if cmd == "jenkins":
+            if len(parts) < 2 or parts[1] != "build":
+                return make_prompt("Usage: jenkins build")
+                
+            jenkinsfile_path = os.path.join(self.base_dir, "Jenkinsfile")
+            if not os.path.exists(jenkinsfile_path):
+                return make_prompt("[Jenkins] Error: Jenkinsfile config file not found.")
+            
+            try:
+                # Read Jenkinsfile text and extract stages
+                with open(jenkinsfile_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                
+                # Extract stage names using a simple regex/parser
+                import re
+                stage_names = re.findall(r'stage\s*\(\s*["\']([^"\']+)["\']\s*\)', content)
+                
+                log_lines = [
+                    "[\x1b[35mJenkins\x1b[0m] Starting pipeline execution (Build #1)...",
+                    "[\x1b[35mJenkins\x1b[0m] -------------------------------------------------"
+                ]
+                if not stage_names:
+                    # Let's see if it's a scripted pipeline without standard quotes or standard stages
+                    # If empty, default to checking checkout/build/test/deploy keywords
+                    keywords = ["Checkout", "Build", "Test", "Deploy", "Install", "Freestyle", "Notify", "Archive"]
+                    for kw in keywords:
+                        if kw.lower() in content.lower():
+                            stage_names.append(kw)
+                
+                if not stage_names:
+                    stage_names = ["Build"]
+                
+                for idx, stage in enumerate(stage_names, 1):
+                    log_lines.append(f"[\x1b[35mJenkins\x1b[0m] Stage: {stage} ... \x1b[32mSuccess\x1b[0m")
+                log_lines.append("[\x1b[35mJenkins\x1b[0m] -------------------------------------------------")
+                log_lines.append("[\x1b[35mJenkins\x1b[0m] Pipeline completed successfully! (Build #1)")
+                
+                self.jenkins_executed = True
+                return make_prompt("\r\n".join(log_lines))
+            except Exception as ye:
+                return make_prompt(f"[Jenkins] Syntax Error: Invalid Jenkinsfile syntax: {ye}")
+
+        # Run command using subprocess inside session directory
+        try:
+            res = subprocess.run(
+                cmd_line,
+                cwd=self.base_dir,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            output = res.stdout
+            if res.stderr:
+                output += "\n" + res.stderr
+            output_formatted = output.replace("\r\n", "\n").replace("\n", "\r\n")
+            return make_prompt(output_formatted)
+        except subprocess.TimeoutExpired:
+            return make_prompt("Error: Command execution timed out.")
+        except Exception as e:
+            return make_prompt(f"Error: Command failed: {e}")
+
+
 # ── Modular Runtime Abstractions ─────────────────────
 
 class BaseRuntime:
@@ -1884,6 +1982,45 @@ class CICDRuntime(BaseRuntime):
                 logger.warning(f"Failed to remove CI/CD session directory {session_dir}: {e}")
 
 
+class JenkinsRuntime(BaseRuntime):
+    """
+    Jenkins runtime provisioner managing local session directory repositories.
+    """
+    def create_session(self, session_id: str) -> Dict[str, Any]:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"jenkins-{session_id}")
+        )
+        os.makedirs(session_dir, exist_ok=True)
+        
+        try:
+            # 1. Initialize repository
+            subprocess.run(["git", "init"], cwd=session_dir, capture_output=True, check=True)
+            subprocess.run(["git", "config", "user.name", "DevLab Student"], cwd=session_dir, check=True)
+            subprocess.run(["git", "config", "user.email", "student@devlab.io"], cwd=session_dir, check=True)
+            
+            # 2. Create welcome.txt
+            with open(os.path.join(session_dir, "welcome.txt"), "w") as f:
+                f.write("Welcome to DevLab Jenkins! Start by authoring your Jenkinsfile configuration.\n")
+            
+            subprocess.run(["git", "add", "welcome.txt"], cwd=session_dir, check=True)
+            subprocess.run(["git", "commit", "-m", "initial welcome commit"], cwd=session_dir, check=True)
+            
+            return {"container_id": f"jenkins-{session_id}", "status": "running", "mode": "jenkins"}
+        except Exception as e:
+            logger.error(f"JenkinsRuntime failed to initialize repository: {e}")
+            return {"container_id": f"simulated-{session_id}", "status": "running", "mode": "simulated"}
+
+    def stop_session(self, session_id: str, container_id: Optional[str] = None) -> None:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"jenkins-{session_id}")
+        )
+        if os.path.exists(session_dir):
+            try:
+                shutil.rmtree(session_dir, onerror=_remove_readonly)
+            except Exception as e:
+                logger.warning(f"Failed to remove Jenkins session directory {session_dir}: {e}")
+
+
 # ── Global Coordinator Service ────────────────────────
 
 class LabRuntimeService:
@@ -1903,12 +2040,20 @@ class LabRuntimeService:
         self.git_runtime = GitRuntime()
         self.github_actions_runtime = GitHubActionsRuntime()
         self.cicd_runtime = CICDRuntime()
+        self.jenkins_runtime = JenkinsRuntime()
 
     def create_lab(self, session_id: str, lab_name: str = "linux-basics") -> Dict[str, Any]:
         """
         Delegates lab initialization checks to custom Runtimes.
         """
-        if "introduction-to-cicd" in lab_name or "continuous-" in lab_name or "building-a-complete-cicd" in lab_name or lab_name == "cicd":
+        if "jenkins" in lab_name or "freestyle-jobs" in lab_name or "declarative-vs-" in lab_name or "distributed-builds" in lab_name or "credentials-and-secrets" in lab_name or "plugins-and-" in lab_name:
+            res = self.jenkins_runtime.create_session(session_id)
+            if res["mode"] == "simulated":
+                self.simulated_sessions[session_id] = SimulatedShell(session_id)
+            else:
+                self.simulated_sessions[session_id] = JenkinsShell(session_id)
+            return res
+        elif "introduction-to-cicd" in lab_name or "continuous-" in lab_name or "building-a-complete-cicd" in lab_name or lab_name == "cicd":
             res = self.cicd_runtime.create_session(session_id)
             if res["mode"] == "simulated":
                 self.simulated_sessions[session_id] = SimulatedShell(session_id)
@@ -1957,7 +2102,9 @@ class LabRuntimeService:
                 except Exception as e:
                     logger.warning(f"Failed to remove directory {shell.base_dir}: {e}")
 
-        if "introduction-to-cicd" in lab_name or "continuous-" in lab_name or "building-a-complete-cicd" in lab_name or lab_name == "cicd":
+        if "jenkins" in lab_name or "freestyle-jobs" in lab_name or "declarative-vs-" in lab_name or "distributed-builds" in lab_name or "credentials-and-secrets" in lab_name or "plugins-and-" in lab_name:
+            self.jenkins_runtime.stop_session(session_id, container_id)
+        elif "introduction-to-cicd" in lab_name or "continuous-" in lab_name or "building-a-complete-cicd" in lab_name or lab_name == "cicd":
             self.cicd_runtime.stop_session(session_id, container_id)
         elif "github-actions" in lab_name:
             self.github_actions_runtime.stop_session(session_id, container_id)
@@ -1974,7 +2121,9 @@ class LabRuntimeService:
         if session_id in self.simulated_sessions:
             return self.simulated_sessions[session_id]
         if lab_name:
-            if "introduction-to-cicd" in lab_name or "continuous-" in lab_name or "building-a-complete-cicd" in lab_name or lab_name == "cicd":
+            if "jenkins" in lab_name or "freestyle-jobs" in lab_name or "declarative-vs-" in lab_name or "distributed-builds" in lab_name or "credentials-and-secrets" in lab_name or "plugins-and-" in lab_name:
+                shell = JenkinsShell(session_id)
+            elif "introduction-to-cicd" in lab_name or "continuous-" in lab_name or "building-a-complete-cicd" in lab_name or lab_name == "cicd":
                 shell = CICDShell(session_id)
             elif "github-actions" in lab_name:
                 shell = GitHubActionsShell(session_id)

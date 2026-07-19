@@ -58,22 +58,42 @@ class UserService:
 
     def calculate_streak(self, db: Session, user_id) -> int:
         """
-        Calculates the user's daily streak dynamically based on the days they created lab sessions.
+        Calculates the user's daily streak dynamically based on the days they created lab sessions
+        and/or updated their course progress, using correct system-local timezone conversion.
         """
         from app.models.session import LabSession
-        from datetime import date
+        from app.models.progress import CourseProgress
+        from datetime import date, timezone
+
         sessions = (
             db.query(LabSession)
             .filter(LabSession.user_id == user_id)
-            .order_by(LabSession.created_at.desc())
             .all()
         )
-        if not sessions:
+        progress_records = (
+            db.query(CourseProgress)
+            .filter(CourseProgress.user_id == user_id)
+            .all()
+        )
+
+        all_datetimes = []
+        for s in sessions:
+            if s.created_at:
+                all_datetimes.append(s.created_at)
+        for p in progress_records:
+            if p.updated_at:
+                all_datetimes.append(p.updated_at)
+
+        if not all_datetimes:
             return 1
 
-        # Extract unique dates (timezone naive)
+        def get_local_date(dt) -> date:
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return dt.astimezone().date()
+
         unique_dates = sorted(
-            list(set(s.created_at.date() for s in sessions)),
+            list(set(get_local_date(dt) for dt in all_datetimes)),
             reverse=True
         )
 
