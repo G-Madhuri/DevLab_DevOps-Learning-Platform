@@ -321,7 +321,17 @@
       "building-ci-pipelines",
       "testing-and-artifact-management",
       "automated-deployments",
-      "jenkins"
+      "jenkins-fundamentals",
+      "installing-and-configuring-jenkins",
+      "freestyle-jobs",
+      "pipeline-as-code-jenkinsfile",
+      "declarative-vs-scripted-pipelines",
+      "distributed-builds-and-agents",
+      "credentials-and-secrets-management",
+      "plugins-and-integrations",
+      "building-a-complete-cicd-pipeline-jenkins",
+      "jenkins-best-practices",
+      "jenkins-capstone-project"
     ]
   },
   {

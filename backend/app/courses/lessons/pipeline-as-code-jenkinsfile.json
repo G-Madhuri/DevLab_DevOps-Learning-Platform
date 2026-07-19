@@ -1,0 +1,339 @@
+{
+  "slug": "pipeline-as-code-jenkinsfile",
+  "title": "Pipeline as Code (Jenkinsfile)",
+  "overview": {
+    "introduction": "Version control your delivery pipelines by writing a Jenkinsfile alongside your codebase.",
+    "why_it_matters": "Understanding Pipeline as Code (Jenkinsfile) allows developers to automate release iterations safely and predictably.",
+    "industry_usage": "Adopted by enterprise companies to scale integration and delivery jobs workloads.",
+    "what_you_will_build": "A configured local Git repository with a custom Jenkinsfile running inside the Jenkins logs simulator.",
+    "prerequisites": "CI/CD course basics.",
+    "estimated_time": "30 mins",
+    "difficulty": "Intermediate",
+    "learning_outcomes": [
+      "Explain the purpose and mechanics of Pipeline as Code (Jenkinsfile).",
+      "Write structured Jenkinsfile pipelines.",
+      "Incorporate validation checks like linting, unit tests, and compilation checks.",
+      "Incorporate credentials, agent labeling parameters, and option attributes.",
+      "Analyze and debug running pipeline build logs."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "Pipeline versioning",
+      "definition": "Managing development, staging, and production flows in text-based Groovy files.",
+      "why_important": [
+        "Guarantees build repeatability.",
+        "Saves developer time through automation.",
+        "Improves software release quality metrics."
+      ],
+      "explanation": "A Jenkins pipeline splits software delivery tasks into sequential steps, ensuring validation gates are satisfied.",
+      "commands": [
+        {
+          "name": "jenkins build",
+          "purpose": "Simulate and run Jenkinsfile pipeline stages.",
+          "syntax": "jenkins build",
+          "example": "jenkins build",
+          "expected_output": "Pipeline completed successfully!",
+          "output_explanation": "Executes local stages configured inside Jenkinsfile."
+        }
+      ],
+      "pro_tip": "Keep Jenkinsfiles modular to easily pinpoint error locations and optimize resource utilization.",
+      "best_practices": "Always archive build artifacts and run test stages early in the pipeline timeline.",
+      "common_mistakes": "Typing stage names or parentheses incorrectly in Groovy syntaxes.",
+      "real_world_usage": "Jenkins pipelines compile code, run tests, and deploy packages for every developer push command.",
+      "summary": "Pipeline as Code (Jenkinsfile) forms the foundation of enterprise CI/CD automation."
+    }
+  ],
+  "interactive_examples": [
+    {
+      "objective": "Define Jenkinsfile pipeline stages.",
+      "scenario": "Author initial schema layout.",
+      "command": "echo -e 'pipeline {\\n  agent any\\n  stages {\\n    stage(\"Build\") {\\n      steps {\\n        echo \"Building...\"\\n      }\\n    }\\n    stage(\"Test\") {\\n      steps {\\n        echo \"Testing...\"\\n      }\\n    }\\n  }\\n}' > Jenkinsfile",
+      "explanation": "Create standard configurations.",
+      "expected_output": "File updated.",
+      "output_explanation": "Updates Jenkinsfile configuration.",
+      "real_world_use": "Standardizing automation checks.",
+      "common_mistakes": "Typing brackets incorrectly in Groovy syntax definitions.",
+      "tips": "Verify brackets balance parameters."
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Create Configuration (Define declarative pipeline)",
+      "definition": "Initialize configuration target.",
+      "explanation": "Create target configuration parameters file.",
+      "instruction": "Add 'Build' and 'Test' stages inside your 'Jenkinsfile'.",
+      "example": "echo -e 'pipeline {\\n  agent any\\n  stages {\\n    stage(\"Build\") {\\n      steps {\\n        echo \"Building...\"\\n      }\\n    }\\n    stage(\"Test\") {\\n      steps {\\n        echo \"Testing...\"\\n      }\\n    }\\n  }\\n}' > Jenkinsfile",
+      "expected": "",
+      "hint": "Run command: echo -e 'pipeline {\\n  agent any\\n  stages {\\n    stage(\"Build\") {\\n      steps {\\n        echo \"Building...\"\\n      }\\n    }\\n    stage(\"Test\") {\\n      steps {\\n        echo \"Testing...\"\\n      }\\n    }\\n  }\\n}' > Jenkinsfile",
+      "solution": "echo -e 'pipeline {\\n  agent any\\n  stages {\\n    stage(\"Build\") {\\n      steps {\\n        echo \"Building...\"\\n      }\\n    }\\n    stage(\"Test\") {\\n      steps {\\n        echo \"Testing...\"\\n      }\\n    }\\n  }\\n}' > Jenkinsfile",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 2,
+      "title": "2. Inspect Status",
+      "definition": "Verify working workspace status.",
+      "explanation": "Inspects git files trackings.",
+      "instruction": "Run git status to see modified files.",
+      "example": "git status",
+      "expected": "",
+      "hint": "Run: git status",
+      "solution": "git status",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 3,
+      "title": "3. Audit History Log",
+      "definition": "Inspect timeline commits.",
+      "explanation": "Displays timeline log of previous commits.",
+      "instruction": "Print commit history log to console screen.",
+      "example": "git log --oneline",
+      "expected": "",
+      "hint": "Run: git log --oneline",
+      "solution": "git log --oneline",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 4,
+      "title": "4. Verify Configuration Settings",
+      "definition": "Manage configs attributes.",
+      "explanation": "List active configuration scopes.",
+      "instruction": "Query git configurations using --list.",
+      "example": "git config --list",
+      "expected": "",
+      "hint": "Run: git config --list",
+      "solution": "git config --list",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 5,
+      "title": "5. Show pointer references",
+      "definition": "Query tracking references.",
+      "explanation": "Locates branches and tags SHA mappings.",
+      "instruction": "Query refs mapping by running git show-ref.",
+      "example": "git show-ref",
+      "expected": "",
+      "hint": "Run: git show-ref",
+      "solution": "git show-ref",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 6,
+      "title": "6. Show active branches",
+      "definition": "Identify checked out pointers.",
+      "explanation": "List current active pointers locations.",
+      "instruction": "List all branches using git branch.",
+      "example": "git branch",
+      "expected": "",
+      "hint": "Run: git branch",
+      "solution": "git branch",
+      "difficulty": "Beginner",
+      "estimated_duration": "3m"
+    },
+    {
+      "id": 7,
+      "title": "7. Audit pointer trackings",
+      "definition": "Audit tracking register.",
+      "explanation": "Audits reflog revisions entries.",
+      "instruction": "Inspect refs movements logs.",
+      "example": "git reflog -n 5",
+      "expected": "",
+      "hint": "Run: git reflog -n 5",
+      "solution": "git reflog -n 5",
+      "difficulty": "Beginner",
+      "estimated_duration": "4m"
+    },
+    {
+      "id": 8,
+      "title": "Mini Challenge: Write Jenkinsfile",
+      "definition": "No step-by-step instructions are provided here. Execute this task directly.",
+      "explanation": "Complete this task on your own.",
+      "instruction": "Construct a Jenkinsfile with 'Build' and 'Test' stages configured properly.",
+      "example": "echo -e 'pipeline {\\n  agent any\\n  stages {\\n    stage(\"Build\") {\\n      steps {\\n        echo \"Building...\"\\n      }\\n    }\\n    stage(\"Test\") {\\n      steps {\\n        echo \"Testing...\"\\n      }\\n    }\\n  }\\n}' > Jenkinsfile && git add Jenkinsfile && git commit -m 'feat: add build and test stages'",
+      "expected": "",
+      "hint": "Run command: echo -e 'pipeline {\\n  agent any\\n  stages {\\n    stage(\"Build\") {\\n      steps {\\n        echo \"Building...\"\\n      }\\n    }\\n    stage(\"Test\") {\\n      steps {\\n        echo \"Testing...\"\\n      }\\n    }\\n  }\\n}' > Jenkinsfile && git add Jenkinsfile && git commit -m 'feat: add build and test stages'",
+      "solution": "echo -e 'pipeline {\\n  agent any\\n  stages {\\n    stage(\"Build\") {\\n      steps {\\n        echo \"Building...\"\\n      }\\n    }\\n    stage(\"Test\") {\\n      steps {\\n        echo \"Testing...\"\\n      }\\n    }\\n  }\\n}' > Jenkinsfile && git add Jenkinsfile && git commit -m 'feat: add build and test stages'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "8m"
+    }
+  ],
+  "exercises": [
+    {
+      "title": "Configure local Jenkinsfile",
+      "problem": "Practice Jenkinsfile configuration by configuring Jenkinsfile.",
+      "difficulty": "easy",
+      "hint": "Run git status.",
+      "expected_result": "Success status.",
+      "objective": "Verify Pipeline as Code (Jenkinsfile) parameters."
+    }
+  ],
+  "quiz": [
+    {
+      "question": "What is the primary function of Jenkins Pipeline as Code (Jenkinsfile)?",
+      "options": [
+        "To automate software integration and delivery pipelines.",
+        "To assign cloud infrastructure access permissions.",
+        "To coordinate cluster pods networking schedules.",
+        "To track compiler variables."
+      ],
+      "answer": "To automate software integration and delivery pipelines.",
+      "explanation": "Jenkins is an automation server that compiles, tests, and deploys code."
+    },
+    {
+      "question": "What is Pipeline as Code in Jenkins?",
+      "options": [
+        "Defining build stages and pipeline flows using a Jenkinsfile in version control.",
+        "Writing raw machine compiler bytecode instructions.",
+        "Manually clicking configuration buttons in the UI dashboard.",
+        "Creating physical server partition schemes."
+      ],
+      "answer": "Defining build stages and pipeline flows using a Jenkinsfile in version control.",
+      "explanation": "Pipeline as Code allows defining Jenkins pipelines in a text file (Jenkinsfile) committed to git."
+    },
+    {
+      "question": "What distinguishes Declarative from Scripted pipelines in Jenkins?",
+      "options": [
+        "Declarative pipelines use a structured, pre-defined syntax with 'pipeline' block.",
+        "Scripted pipelines use strictly XML elements.",
+        "Declarative pipelines run no unit tests.",
+        "Scripted pipelines do not support parallel stages."
+      ],
+      "answer": "Declarative pipelines use a structured, pre-defined syntax with 'pipeline' block.",
+      "explanation": "Declarative syntax offers a clean, opinionated layout with structure checks, while Scripted uses raw imperative Groovy code."
+    },
+    {
+      "question": "What block contains all the stage definitions in a Declarative pipeline?",
+      "options": [
+        "stages",
+        "pipelines",
+        "steps",
+        "node"
+      ],
+      "answer": "stages",
+      "explanation": "The 'stages' block contains the individual 'stage' definitions in a Declarative pipeline layout."
+    },
+    {
+      "question": "How do you specify where a stage or pipeline should execute in Jenkins?",
+      "options": [
+        "agent",
+        "runner",
+        "executor",
+        "host"
+      ],
+      "answer": "agent",
+      "explanation": "The 'agent' parameter specifies where the build steps will execute (e.g. 'agent any' or a specific label worker agent)."
+    },
+    {
+      "question": "Which block encapsulates actual execution commands inside a stage?",
+      "options": [
+        "steps",
+        "commands",
+        "tasks",
+        "scripts"
+      ],
+      "answer": "steps",
+      "explanation": "The 'steps' block is nested inside a stage and lists the sequential build command instructions."
+    },
+    {
+      "question": "What utility securely binds API keys and SSH logins in pipelines?",
+      "options": [
+        "credentials()",
+        "secrets()",
+        "keys()",
+        "passwords()"
+      ],
+      "answer": "credentials()",
+      "explanation": "The credentials() wrapper links defined secret keys and tokens safely inside environment variables without printing them."
+    },
+    {
+      "question": "What option prunes old pipeline build logs and histories?",
+      "options": [
+        "buildDiscarder",
+        "historyPruner",
+        "logRotator",
+        "cleanWs"
+      ],
+      "answer": "buildDiscarder",
+      "explanation": "The buildDiscarder option limits the number of historical build logs stored on the server disk."
+    },
+    {
+      "question": "What block executes actions based on pipeline success or failure outcomes?",
+      "options": [
+        "post",
+        "final",
+        "outcome",
+        "always"
+      ],
+      "answer": "post",
+      "explanation": "The 'post' block defines condition actions (such as success, failure, always) that execute after the stages complete."
+    },
+    {
+      "question": "What is the file name of the standard pipeline config committed in Git?",
+      "options": [
+        "Jenkinsfile",
+        "jenkins.yml",
+        "pipeline.gro",
+        "build.xml"
+      ],
+      "answer": "Jenkinsfile",
+      "explanation": "Jenkinsfile (without extension) is the default configuration file for defining Jenkins pipelines."
+    }
+  ],
+  "resources": {
+    "summary": "Learn more about Jenkins Pipeline as Code (Jenkinsfile) through official documentation, guides, and cheat sheets.",
+    "links": [
+      {
+        "title": "Jenkins Pipeline as Code (Jenkinsfile) Guide",
+        "type": "documentation",
+        "description": "Official documentation and manual for Pipeline as Code (Jenkinsfile).",
+        "url": "https://www.jenkins.io/doc/book/pipeline/"
+      },
+      {
+        "title": "Jenkins Pipeline Syntax",
+        "type": "reference",
+        "description": "Standard references and specifications for Jenkins pipeline layouts.",
+        "url": "https://www.jenkins.io/doc/book/pipeline/syntax/"
+      }
+    ],
+    "cheat_sheet": "pipeline {\n  agent any\n  stages {\n    stage('Build') {\n      steps {\n        echo 'Building...'\n      }\n    }\n  }\n}",
+    "commands_table": [
+      {
+        "name": "jenkins build",
+        "syntax": "jenkins build",
+        "description": "Run and parse Jenkinsfile stages."
+      }
+    ],
+    "revision_notes": [
+      "Pipelines are written as declarative or scripted syntax inside Jenkinsfile.",
+      "Build discarders option prevents server disk utilization overload.",
+      "Agents distribute jobs execution loads away from the master controller."
+    ],
+    "best_practices": [
+      "Always run pipelines inside version controlled Jenkinsfile.",
+      "Prune build history logs using buildDiscarder options.",
+      "Never store plain credentials tokens inside scripts."
+    ],
+    "beginner_mistakes": [
+      "Hardcoding variables without parameter options.",
+      "Omitting closing brackets in Groovy pipeline scripts."
+    ],
+    "interview_questions": [
+      {
+        "question": "What is Jenkins Pipeline as Code (Jenkinsfile)?",
+        "answer": "It is an automation server delivering repeatable, automated code pipelines."
+      }
+    ],
+    "books": [
+      {
+        "title": "Jenkins 2: Up and Running \u2014 Brent Laster",
+        "description": "The definitive book explaining Jenkins pipelines as code, agents configurations, and integrations."
+      }
+    ]
+  }
+}

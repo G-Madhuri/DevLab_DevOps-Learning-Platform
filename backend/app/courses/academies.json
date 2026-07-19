@@ -454,24 +454,88 @@
   {
     "id": "jenkins",
     "title": "Jenkins",
-    "description": "Build production declarative pipelines, deploy local agent runners, and build Groovy shared libraries.",
+    "description": "Master declarative and scripted build automation pipelines using the industry standard Jenkins automation server.",
     "icon": "settings",
-    "difficulty": "Intermediate",
-    "coming_soon": true,
+    "difficulty": "Beginner",
+    "coming_soon": false,
     "courses": [
       {
-        "slug": "jenkins-pipelines-as-code",
-        "title": "Jenkins Pipelines as Code",
-        "description": "Write and structure robust declarative Jenkinsfiles to execute multi-stage CI operations.",
+        "slug": "jenkins-fundamentals",
+        "title": "Jenkins Fundamentals",
+        "description": "Learn the main elements of Jenkins architecture including master, agent, and executors configurations.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "installing-and-configuring-jenkins",
+        "title": "Installing & Configuring Jenkins",
+        "description": "Install, run, and secure a Jenkins controller environment with basic plugins.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "freestyle-jobs",
+        "title": "Freestyle Jobs",
+        "description": "Configure graphical linear build tasks, build triggers, and file collections properties.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "pipeline-as-code-jenkinsfile",
+        "title": "Pipeline as Code (Jenkinsfile)",
+        "description": "Learn to declare multi-stage build pipelines committed as text alongside code.",
         "difficulty": "Intermediate",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "declarative-vs-scripted-pipelines",
+        "title": "Declarative vs Scripted Pipelines",
+        "description": "Understand structured Declarative syntax and compare it to imperatively scripted Groovy node blocks.",
+        "difficulty": "Intermediate",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "distributed-builds-and-agents",
+        "title": "Distributed Builds & Agents",
+        "description": "Distribute resource compile execution pipelines across isolated agent pools via node labels.",
+        "difficulty": "Intermediate",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "credentials-and-secrets-management",
+        "title": "Credentials & Secrets Management",
+        "description": "Safely bind database logins, API keys, and SSH keys in runtime variables environments.",
+        "difficulty": "Intermediate",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "plugins-and-integrations",
+        "title": "Plugins & Integrations",
+        "description": "Integrate third-party build status reports, Slack messaging webhooks, and git events hooks.",
+        "difficulty": "Intermediate",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "building-a-complete-cicd-pipeline-jenkins",
+        "title": "Building a Complete CI/CD Pipeline",
+        "description": "Combine compilation steps, lint operations, automated unit tests, and final deployment rules.",
+        "difficulty": "Advanced",
         "duration": "60 minutes"
       },
       {
-        "slug": "jenkins-shared-libraries",
-        "title": "Jenkins Shared Libraries",
-        "description": "Write shared Groovy libraries to modularize and standardize CI workflows at scale.",
+        "slug": "jenkins-best-practices",
+        "title": "Jenkins Best Practices",
+        "description": "Configure log file pruning rules and backup server details to reduce master loads.",
         "difficulty": "Advanced",
-        "duration": "90 minutes"
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "jenkins-capstone-project",
+        "title": "Jenkins Capstone Project",
+        "description": "Deploy a multi-stage production deployment pipeline with artifacts archival and rollbacks.",
+        "difficulty": "Advanced",
+        "duration": "90 minutes",
+        "is_capstone": true
       }
     ]
   },
