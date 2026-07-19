@@ -2342,6 +2342,298 @@ class TerraformRuntime(BaseRuntime):
                 logger.warning(f"Failed to remove Terraform session directory {session_dir}: {e}")
 
 
+class AnsibleShell(GitShell):
+    """
+    A real host-based subshell that executes basic CLI utilities and
+    simulates Ansible commands inside the session's workspace.
+    """
+    def __init__(self, session_id: str):
+        self.session_id = session_id
+        self.base_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"ansible-{session_id}")
+        )
+        os.makedirs(self.base_dir, exist_ok=True)
+        self.cwd = "/"
+        self.history = []
+
+    def execute_command(self, cmd_line: str) -> str:
+        cmd_line = cmd_line.strip()
+        if not cmd_line:
+            return ""
+
+        self.history.append(cmd_line)
+        parts = cmd_line.split()
+        cmd = parts[0]
+        args = parts[1:]
+
+        def make_prompt(output_text: str = "") -> str:
+            suffix = "\r\n" if output_text and not output_text.endswith("\r\n") else ""
+            return f"{output_text}{suffix}student@devlab-ansible:$ "
+
+        # Whitelist safe commands (including ansible tools)
+        ansible_cmds = ["ansible", "ansible-playbook", "ansible-inventory", "ansible-galaxy", "ansible-doc"]
+        if cmd not in ["git", "ls", "cat", "echo", "touch", "mkdir", "rm", "pwd", "clear"] + ansible_cmds:
+            return make_prompt(f"bash: {cmd}: command not allowed in Ansible labs.")
+
+        if cmd == "pwd":
+            return make_prompt("/")
+
+        # Check if actual Ansible is installed on the host
+        actual_bin = shutil.which(cmd)
+        if actual_bin:
+            try:
+                res = subprocess.run(
+                    cmd_line,
+                    cwd=self.base_dir,
+                    shell=True,
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                output = res.stdout
+                if res.stderr:
+                    output += "\n" + res.stderr
+                output_formatted = output.replace("\r\n", "\n").replace("\n", "\r\n")
+                return make_prompt(output_formatted)
+            except subprocess.TimeoutExpired:
+                return make_prompt("Error: Command execution timed out.")
+            except Exception as e:
+                return make_prompt(f"Error: Command execution failed: {e}")
+
+        # Simulated Fallback Behavior
+        if cmd == "ansible":
+            if not args:
+                return make_prompt("Usage: ansible <host-pattern> [options]")
+            
+            hosts_file = os.path.join(self.base_dir, "hosts")
+            if "-i" in args:
+                hosts_idx = args.index("-i") + 1
+                if hosts_idx < len(args):
+                    hosts_file = os.path.normpath(os.path.join(self.base_dir, args[hosts_idx]))
+            
+            if not os.path.exists(hosts_file):
+                return make_prompt(f"ERROR! The pathway {os.path.basename(hosts_file)} does not exist")
+
+            if "-m" in args:
+                module_idx = args.index("-m") + 1
+                module_name = args[module_idx] if module_idx < len(args) else ""
+                
+                if module_name == "ping":
+                    output = (
+                        "localhost | SUCCESS => {\r\n"
+                        "    \"changed\": false,\r\n"
+                        "    \"ping\": \"pong\"\r\n"
+                        "}"
+                    )
+                    return make_prompt(output)
+                elif module_name in ["shell", "command"]:
+                    cmd_arg = ""
+                    if "-a" in args:
+                        arg_idx = args.index("-a") + 1
+                        if arg_idx < len(args):
+                            cmd_arg = args[arg_idx].strip("\"'")
+                    
+                    if cmd_arg == "uptime":
+                        output = (
+                            "localhost | CHANGED | rc=0 >>\r\n"
+                            " 11:49:15 up 2 days, 3 hours, 1 user, load average: 0.05, 0.03, 0.01"
+                        )
+                        return make_prompt(output)
+                    else:
+                        output = f"localhost | SUCCESS | rc=0 >>\r\nExecuted ad-hoc command: {cmd_arg}"
+                        return make_prompt(output)
+
+            return make_prompt("localhost | SUCCESS => {\n    \"changed\": false\n}")
+
+        if cmd == "ansible-playbook":
+            if not args:
+                return make_prompt("Usage: ansible-playbook playbook.yml [options]")
+            
+            playbook_name = args[0]
+            for arg in args:
+                if arg.endswith(".yml") or arg.endswith(".yaml"):
+                    playbook_name = arg
+                    break
+                    
+            playbook_path = os.path.join(self.base_dir, playbook_name)
+            if not os.path.exists(playbook_path):
+                return make_prompt(f"ERROR! The playbook file {playbook_name} could not be found.")
+
+            if "--syntax-check" in args:
+                try:
+                    import yaml
+                    with open(playbook_path, "r", encoding="utf-8") as f:
+                        yaml.safe_load(f)
+                    return make_prompt(f"\r\nplaybook: {playbook_name}")
+                except Exception as ye:
+                    return make_prompt(f"ERROR! Playbook syntax check failed:\n{ye}")
+
+            try:
+                import yaml
+                with open(playbook_path, "r", encoding="utf-8") as f:
+                    playbook_data = yaml.safe_load(f) or []
+            except Exception as e:
+                return make_prompt(f"ERROR! Failed to parse playbook YAML: {e}")
+
+            if not isinstance(playbook_data, list):
+                if isinstance(playbook_data, dict):
+                    playbook_data = [playbook_data]
+                else:
+                    return make_prompt("ERROR! Playbook must be a list of plays.")
+
+            log_lines = []
+            for play in playbook_data:
+                play_name = play.get("name", "Unnamed Play")
+                log_lines.append(f"\r\nPLAY [{play_name}] *********************************************************************")
+                log_lines.append("\r\nTASK [Gathering Facts] *********************************************************")
+                log_lines.append("ok: [localhost]")
+
+                roles = play.get("roles", [])
+                if isinstance(roles, list):
+                    for role in roles:
+                        role_name = role if isinstance(role, str) else role.get("role", "unknown")
+                        role_task_path = os.path.join(self.base_dir, "roles", role_name, "tasks", "main.yml")
+                        if os.path.exists(role_task_path):
+                            log_lines.append(f"\r\nTASK [{role_name} : Run role task] ******************************************************")
+                            log_lines.append("changed: [localhost]")
+
+                tasks = play.get("tasks", [])
+                if isinstance(tasks, list):
+                    for task in tasks:
+                        task_name = task.get("name", "Run task module")
+                        log_lines.append(f"\r\nTASK [{task_name}] ***********************************************************")
+                        
+                        if "template" in task:
+                            tmpl_info = task["template"]
+                            src = tmpl_info.get("src")
+                            dest = tmpl_info.get("dest")
+                            if src and dest:
+                                src_path = os.path.join(self.base_dir, src)
+                                dest_path = os.path.join(self.base_dir, dest)
+                                if os.path.exists(src_path):
+                                    with open(src_path, "r", encoding="utf-8") as sf:
+                                        content = sf.read()
+                                    val_port = "8080"
+                                    content_rendered = content.replace("{{ app_port }}", val_port).replace("{{app_port}}", val_port)
+                                    with open(dest_path, "w", encoding="utf-8") as df:
+                                        df.write(content_rendered)
+                            log_lines.append("changed: [localhost]")
+                        else:
+                            log_lines.append("changed: [localhost]")
+                            
+            log_lines.append("\r\nPLAY RECAP *********************************************************************")
+            log_lines.append("localhost                  : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0")
+            return make_prompt("\r\n".join(log_lines))
+
+        if cmd == "ansible-inventory":
+            if not args:
+                return make_prompt("Usage: ansible-inventory -i hosts [options]")
+            hosts_file = "hosts"
+            if "-i" in args:
+                hosts_idx = args.index("-i") + 1
+                if hosts_idx < len(args):
+                    hosts_file = args[hosts_idx]
+            
+            hosts_path = os.path.join(self.base_dir, hosts_file)
+            if not os.path.exists(hosts_path):
+                return make_prompt(f"ERROR! Inventory file {hosts_file} could not be found.")
+
+            if "--list" in args:
+                output = (
+                    "{\r\n"
+                    "    \"_meta\": {\r\n"
+                    "        \"hostvars\": {}\r\n"
+                    "    },\r\n"
+                    "    \"all\": {\r\n"
+                    "        \"children\": [\r\n"
+                    "            \"ungrouped\",\r\n"
+                    "            \"webservers\"\r\n"
+                    "        ]\r\n"
+                    "    },\r\n"
+                    "    \"webservers\": {\r\n"
+                    "        \"hosts\": [\r\n"
+                    "            \"localhost\"\r\n"
+                    "        ]\r\n"
+                    "    }\r\n"
+                    "}"
+                )
+                return make_prompt(output)
+            return make_prompt("localhost")
+
+        if cmd == "ansible-galaxy":
+            if len(args) < 2:
+                return make_prompt("Usage: ansible-galaxy [role|collection] [action] [options]")
+            
+            sub = args[0]
+            action = args[1]
+            if sub == "role" or action == "init":
+                role_name = args[2] if len(args) > 2 else args[-1]
+                role_dir = os.path.join(self.base_dir, role_name)
+                os.makedirs(os.path.join(role_dir, "tasks"), exist_ok=True)
+                os.makedirs(os.path.join(role_dir, "vars"), exist_ok=True)
+                os.makedirs(os.path.join(role_dir, "handlers"), exist_ok=True)
+                os.makedirs(os.path.join(role_dir, "templates"), exist_ok=True)
+                
+                with open(os.path.join(role_dir, "tasks", "main.yml"), "w") as f:
+                    f.write("---\n# tasks file for " + os.path.basename(role_name) + "\n")
+                
+                output = f"- {os.path.basename(role_name)} was created successfully"
+                return make_prompt(output)
+            
+            return make_prompt("ansible-galaxy operation successful")
+
+        if cmd == "ansible-doc":
+            module_name = args[0] if args else "ping"
+            output = (
+                f"> {module_name.upper()}    ({self.base_dir})\r\n\r\n"
+                f"  This module simulates help documentation for {module_name}.\r\n"
+                "  Refer to docs.ansible.com for official options definitions."
+            )
+            return make_prompt(output)
+
+        return super().execute_command(cmd_line)
+
+
+class AnsibleRuntime:
+    """
+    Manages isolated host-based workspace directories for Ansible sandbox tasks.
+    """
+    def create_session(self, session_id: str) -> Dict[str, Any]:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"ansible-{session_id}")
+        )
+        os.makedirs(session_dir, exist_ok=True)
+        try:
+            with open(os.path.join(session_dir, "hosts"), "w") as f:
+                f.write(
+                    "[webservers]\n"
+                    "localhost ansible_connection=local\n"
+                )
+            with open(os.path.join(session_dir, "playbook.yml"), "w") as f:
+                f.write(
+                    "---\n"
+                    "- name: DevLab Ansible Playground\n"
+                    "  hosts: all\n"
+                    "  tasks:\n"
+                    "    - name: Ping test\n"
+                    "      ping:\n"
+                )
+            return {"container_id": f"ansible-{session_id}", "status": "running", "mode": "ansible"}
+        except Exception as e:
+            logger.error(f"AnsibleRuntime failed to initialize workspace: {e}")
+            return {"container_id": f"simulated-{session_id}", "status": "running", "mode": "simulated"}
+
+    def stop_session(self, session_id: str, container_id: Optional[str] = None) -> None:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"ansible-{session_id}")
+        )
+        if os.path.exists(session_dir):
+            try:
+                shutil.rmtree(session_dir, onerror=_remove_readonly)
+            except Exception as e:
+                logger.warning(f"Failed to remove Ansible session directory {session_dir}: {e}")
+
+
 # ── Global Coordinator Service ────────────────────────
 
 class LabRuntimeService:
@@ -2363,12 +2655,20 @@ class LabRuntimeService:
         self.cicd_runtime = CICDRuntime()
         self.jenkins_runtime = JenkinsRuntime()
         self.terraform_runtime = TerraformRuntime()
+        self.ansible_runtime = AnsibleRuntime()
 
     def create_lab(self, session_id: str, lab_name: str = "linux-basics") -> Dict[str, Any]:
         """
         Delegates lab initialization checks to custom Runtimes.
         """
-        if "terraform" in lab_name or "variables-outputs" in lab_name or "state-management" in lab_name or "best-practices-terraform" in lab_name:
+        if "ansible" in lab_name or "inventory-files" in lab_name or "ad-hoc-commands" in lab_name or "writing-playbooks" in lab_name or "variables-and-facts" in lab_name or "templates-and-jinja2" in lab_name or "ansible-galaxy" in lab_name or "tags-handlers-and" in lab_name:
+            res = self.ansible_runtime.create_session(session_id)
+            if res["mode"] == "simulated":
+                self.simulated_sessions[session_id] = SimulatedShell(session_id)
+            else:
+                self.simulated_sessions[session_id] = AnsibleShell(session_id)
+            return res
+        elif "terraform" in lab_name or "variables-outputs" in lab_name or "state-management" in lab_name or "best-practices-terraform" in lab_name:
             res = self.terraform_runtime.create_session(session_id)
             if res["mode"] == "simulated":
                 self.simulated_sessions[session_id] = SimulatedShell(session_id)
@@ -2431,7 +2731,9 @@ class LabRuntimeService:
                 except Exception as e:
                     logger.warning(f"Failed to remove directory {shell.base_dir}: {e}")
 
-        if "terraform" in lab_name or "variables-outputs" in lab_name or "state-management" in lab_name or "best-practices-terraform" in lab_name:
+        if "ansible" in lab_name or "inventory-files" in lab_name or "ad-hoc-commands" in lab_name or "writing-playbooks" in lab_name or "variables-and-facts" in lab_name or "templates-and-jinja2" in lab_name or "ansible-galaxy" in lab_name or "tags-handlers-and" in lab_name:
+            self.ansible_runtime.stop_session(session_id, container_id)
+        elif "terraform" in lab_name or "variables-outputs" in lab_name or "state-management" in lab_name or "best-practices-terraform" in lab_name:
             self.terraform_runtime.stop_session(session_id, container_id)
         elif "jenkins" in lab_name or "freestyle-jobs" in lab_name or "declarative-vs-" in lab_name or "distributed-builds" in lab_name or "credentials-and-secrets" in lab_name or "plugins-and-" in lab_name:
             self.jenkins_runtime.stop_session(session_id, container_id)
@@ -2452,7 +2754,9 @@ class LabRuntimeService:
         if session_id in self.simulated_sessions:
             return self.simulated_sessions[session_id]
         if lab_name:
-            if "terraform" in lab_name or "variables-outputs" in lab_name or "state-management" in lab_name or "best-practices-terraform" in lab_name:
+            if "ansible" in lab_name or "inventory-files" in lab_name or "ad-hoc-commands" in lab_name or "writing-playbooks" in lab_name or "variables-and-facts" in lab_name or "templates-and-jinja2" in lab_name or "ansible-galaxy" in lab_name or "tags-handlers-and" in lab_name:
+                shell = AnsibleShell(session_id)
+            elif "terraform" in lab_name or "variables-outputs" in lab_name or "state-management" in lab_name or "best-practices-terraform" in lab_name:
                 shell = TerraformShell(session_id)
             elif "jenkins" in lab_name or "freestyle-jobs" in lab_name or "declarative-vs-" in lab_name or "distributed-builds" in lab_name or "credentials-and-secrets" in lab_name or "plugins-and-" in lab_name:
                 shell = JenkinsShell(session_id)

@@ -20,6 +20,12 @@ class ValidationEngine:
         """
         Routes the validation check to the appropriate course validators (Linux, Docker, Git, Actions, CI/CD, Jenkins or Kubernetes).
         """
+        if "ansible" in lab_name or "inventory-files" in lab_name or "ad-hoc-commands" in lab_name or "writing-playbooks" in lab_name or "variables-and-facts" in lab_name or "templates-and-jinja2" in lab_name or "ansible-galaxy" in lab_name or "tags-handlers-and" in lab_name:
+            shell = runtime_service.get_session_shell(session_id)
+            if not shell:
+                return {"success": False, "message": "Ansible shell session not found."}
+            return self._validate_ansible(shell, task_id, lab_name)
+
         if "terraform" in lab_name or "variables-outputs" in lab_name or "state-management" in lab_name or "best-practices-terraform" in lab_name:
             shell = runtime_service.get_session_shell(session_id)
             if not shell:
@@ -1918,6 +1924,134 @@ class ValidationEngine:
                 return {"success": True, "message": "Success! Terraform Capstone Project validated."}
 
         return {"success": False, "message": "Unknown task check."}
+
+        return {"success": False, "message": "Unknown task check."}
+
+    def _validate_ansible(self, shell: Any, task_id: int, lab_name: str) -> Dict[str, Any]:
+        """
+        Validates Ansible course progress against playbook syntax, inventory files, and history execution logs.
+        """
+        hosts_file = os.path.join(shell.base_dir, "hosts")
+        playbook_file = os.path.join(shell.base_dir, "playbook.yml")
+        history_str = " ".join(shell.history).lower()
+
+        # Step 1: Initialize first files check
+        if task_id == 1:
+            if lab_name == "ansible-galaxy":
+                if "ansible-galaxy" in history_str:
+                    return {"success": True, "message": "Success! Galaxy role init command executed."}
+                return {"success": False, "message": "Run ansible-galaxy init command to initialize database role folders."}
+            
+            if os.path.exists(hosts_file) or os.path.exists(playbook_file) or os.path.exists(os.path.join(shell.base_dir, "roles")):
+                return {"success": True, "message": "Success! File configuration created."}
+            return {"success": False, "message": "Create the required files (hosts, playbook.yml, or roles structure)."}
+
+        # Step 2: System diagnostic checks
+        if task_id == 2:
+            if "pwd" in history_str or "version" in history_str:
+                return {"success": True, "message": "Success! Diagnostics checked."}
+            return {"success": False, "message": "Confirm workspace path by running pwd or diagnostic version commands."}
+
+        # Step 3: List files check
+        if task_id == 3:
+            if "ls" in history_str:
+                return {"success": True, "message": "Success! Directory contents listed."}
+            return {"success": False, "message": "List active configuration files by executing ls."}
+
+        # Step 4: Verify files contents display
+        if task_id == 4:
+            if "cat" in history_str:
+                return {"success": True, "message": "Success! Inspected configuration variables contents."}
+            return {"success": False, "message": "View local variables file layout using cat."}
+
+        # Step 5: Read module help docs
+        if task_id == 5:
+            if "ansible-doc" in history_str:
+                return {"success": True, "message": "Success! Sourced module configurations options help document."}
+            return {"success": False, "message": "Query the ping module options schema using 'ansible-doc ping'."}
+
+        # Step 6: Query inventory targets list
+        if task_id == 6:
+            if "ansible-inventory" in history_str or os.path.exists(hosts_file):
+                return {"success": True, "message": "Success! Target inventory hosts configuration checked."}
+            return {"success": False, "message": "Inspect configured target hosts list using 'ansible-inventory'."}
+
+        # Step 7: Syntax dry checks
+        if task_id == 7:
+            if "playbook" in history_str or "ansible-playbook" in history_str:
+                return {"success": True, "message": "Success! Playbook syntax check diagnostics processed."}
+            return {"success": False, "message": "Trigger playbook syntax validation checks before applying execution."}
+
+        # Step 8 (Mini Challenge): Module-specific custom criteria
+        if task_id == 8:
+            content = ""
+            if os.path.exists(playbook_file):
+                with open(playbook_file, "r", encoding="utf-8") as f:
+                    content = f.read().lower()
+
+            if lab_name == "introduction-to-ansible":
+                if "ansible-doc" in history_str:
+                    return {"success": True, "message": "Success! Sourced help docs for built-in ping module."}
+                return {"success": False, "message": "Run ansible-doc ping command to inspect options schema."}
+
+            elif lab_name == "inventory-files-and-hosts":
+                if os.path.exists(hosts_file):
+                    with open(hosts_file, "r", encoding="utf-8") as f:
+                        h_content = f.read()
+                    if "[webservers]" in h_content:
+                        return {"success": True, "message": "Success! Inventory with webservers host group created."}
+                return {"success": False, "message": "Define the '[webservers]' hosts block inside your hosts inventory file."}
+
+            elif lab_name == "ad-hoc-commands":
+                if "uptime" in history_str:
+                    return {"success": True, "message": "Success! Executed ad-hoc module shell for system uptime."}
+                return {"success": False, "message": "Run ad-hoc command using shell module passing uptime argument."}
+
+            elif lab_name == "writing-playbooks":
+                if "welcome" in content or "hosts:" in content:
+                    return {"success": True, "message": "Success! Welcome debug tasks playbook validated."}
+                return {"success": False, "message": "Define tasks printing welcome debug messages inside playbook.yml."}
+
+            elif lab_name == "variables-and-facts":
+                if "vars:" in content or "app_port" in content:
+                    return {"success": True, "message": "Success! Parameters app_port variable scope verified."}
+                return {"success": False, "message": "Declare variables block mapping app_port parameter inside playbook.yml."}
+
+            elif lab_name == "templates-and-jinja2":
+                j2_path = os.path.join(shell.base_dir, "config.j2")
+                if os.path.exists(j2_path):
+                    with open(j2_path, "r", encoding="utf-8") as f:
+                        j_content = f.read()
+                    if "{{" in j_content and "}}" in j_content:
+                        return {"success": True, "message": "Success! Dynamic Jinja2 configuration templates verified."}
+                return {"success": False, "message": "Create config.j2 referencing app_port double curly braces template variables."}
+
+            elif lab_name == "roles":
+                role_task = os.path.join(shell.base_dir, "roles", "web", "tasks", "main.yml")
+                if os.path.exists(role_task):
+                    return {"success": True, "message": "Success! Web server role structure layout verified."}
+                return {"success": False, "message": "Configure task commands inside roles/web/tasks/main.yml path."}
+
+            elif lab_name == "ansible-galaxy":
+                db_task = os.path.join(shell.base_dir, "roles", "db", "tasks", "main.yml")
+                if os.path.exists(db_task):
+                    return {"success": True, "message": "Success! Galaxy role packages layout verified."}
+                return {"success": False, "message": "Verify db roles structure file roles/db/tasks/main.yml exists."}
+
+            elif lab_name == "tags-handlers-and-conditionals":
+                if "handlers:" in content or "notify:" in content or "tags:" in content:
+                    return {"success": True, "message": "Success! Handler callback tasks notifications verified."}
+                return {"success": False, "message": "Configure handlers block and notify task inside playbook.yml."}
+
+            elif lab_name == "best-practices":
+                if "syntax-check" in history_str or os.path.exists(os.path.join(shell.base_dir, "group_vars")):
+                    return {"success": True, "message": "Success! Clean variables directory hierarchy verified."}
+                return {"success": False, "message": "Create variables directory structures or run dry syntax checks."}
+
+            elif lab_name == "ansible-capstone-project":
+                if "ansible-playbook" in history_str:
+                    return {"success": True, "message": "Success! Enterprise capstone orchestration playbooks verified."}
+                return {"success": False, "message": "Run ansible-playbook command to apply capstone configurations."}
 
         return {"success": False, "message": "Unknown task check."}
 
