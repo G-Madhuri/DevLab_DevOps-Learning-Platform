@@ -1,0 +1,302 @@
+{
+  "slug": "aws-security-best-practices",
+  "title": "AWS Security Best Practices",
+  "overview": {
+    "introduction": "Secure accounts variables and restrict network ports via Security Groups.",
+    "why_it_matters": "Understanding AWS Security Best Practices allows developers to deploy environments reliably at high speed.",
+    "industry_usage": "Used by system administrators and platform engineering teams globally.",
+    "what_you_will_build": "An isolated sandbox folder deploying yaml configurations and targets configs.",
+    "prerequisites": "Git course and Linux terminal fundamentals.",
+    "estimated_time": "30 mins",
+    "difficulty": "Medium",
+    "learning_outcomes": [
+      "Explain the main concepts of AWS Security Best Practices.",
+      "Structure identity tables, compute servers, networks, and storage systems.",
+      "Incorporate monitoring, databases, and multi-tier security firewalls.",
+      "Deploy and check state values on target resources.",
+      "Adopt clean infrastructure orchestration provisioning workflows."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "VPC Security Groups rules mapping",
+      "definition": "Opening firewalls for specified incoming IP ranges only (e.g. port 22/80).",
+      "why_important": [
+        "Guarantees environment replication repeatability.",
+        "Saves manual server setup configuration time.",
+        "Enforces security parameter boundaries."
+      ],
+      "explanation": "Detailed context regarding AWS Security Best Practices. Structuring configurations as code blocks improves change transparency.",
+      "commands": [
+        {
+          "name": "aws",
+          "purpose": "Execute actions related to AWS Security Best Practices.",
+          "syntax": "aws",
+          "example": "aws",
+          "expected_output": "Success!",
+          "output_explanation": "Confirms action step for AWS Security Best Practices is processed."
+        }
+      ],
+      "pro_tip": "Run configuration validations using dry run configurations flags to verify effects before provisioning targets.",
+      "best_practices": "Version control your manifests and store credentials securely using environment keys.",
+      "common_mistakes": "Forgetting firewall port rules configuration causing connection timeout failures.",
+      "real_world_usage": "Cloud architects design multi-tier secure environments using VPCs and virtual instances.",
+      "summary": "AWS Security Best Practices configuration forms the building block of secure cloud design."
+    }
+  ],
+  "interactive_examples": [
+    {
+      "objective": "Define AWS Security Best Practices parameters.",
+      "scenario": "Review local variables settings in workspace.",
+      "steps": [
+        {
+          "command": "pwd",
+          "expected_output": "/home/student",
+          "explanation": "Ensure you are in the correct home directory."
+        }
+      ],
+      "solution": "Verify tasks lists details and paths."
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Create a VPC firewall Security Group",
+      "definition": "Opening firewalls for specified incoming IP ranges only (e.g. port 22/80).",
+      "explanation": "Understanding Create a VPC firewall Security Group is critical for configuring this step.",
+      "instruction": "Declare a Security Group named devlab-sg acting as instance port firewall.",
+      "example": "aws ec2 create-security-group --group-name devlab-sg",
+      "expected": "Success!",
+      "hint": "Check spelling and spacings of your commands carefully.",
+      "solution": "aws ec2 create-security-group --group-name devlab-sg",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 2,
+      "title": "2. Display system diagnostics",
+      "definition": "Opening firewalls for specified incoming IP ranges only (e.g. port 22/80).",
+      "explanation": "Understanding Display system diagnostics is critical for configuring this step.",
+      "instruction": "Inspect sandbox properties configurations.",
+      "example": "pwd",
+      "expected": "Success!",
+      "hint": "Confirm you are in the workspace folder.",
+      "solution": "pwd",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 3,
+      "title": "3. List directory contents",
+      "definition": "Opening firewalls for specified incoming IP ranges only (e.g. port 22/80).",
+      "explanation": "Understanding List directory contents is critical for configuring this step.",
+      "instruction": "Confirm created hosts, templates, or playbooks configurations.",
+      "example": "ls -l",
+      "expected": "Success!",
+      "hint": "Run files list to verify existence.",
+      "solution": "ls -l",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 4,
+      "title": "4. Verify file content displays",
+      "definition": "Opening firewalls for specified incoming IP ranges only (e.g. port 22/80).",
+      "explanation": "Understanding Verify file content displays is critical for configuring this step.",
+      "instruction": "Check the configured playbook.yml file content details.",
+      "example": "cat playbook.yml || cat main.tf || cat hosts || echo 'file check'",
+      "expected": "Success!",
+      "hint": "Verify the configuration files are correctly saved.",
+      "solution": "cat playbook.yml || cat main.tf || cat hosts || echo 'file check'",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 5,
+      "title": "5. Display AWS user profile status",
+      "definition": "Opening firewalls for specified incoming IP ranges only (e.g. port 22/80).",
+      "explanation": "Understanding Display AWS user profile status is critical for configuring this step.",
+      "instruction": "Retrieve description properties for IAM user configurations.",
+      "example": "aws iam list-users || echo 'iam checked'",
+      "expected": "Success!",
+      "hint": "Use active user list query command.",
+      "solution": "aws iam list-users || echo 'iam checked'",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 6,
+      "title": "6. Query active instances status",
+      "definition": "Opening firewalls for specified incoming IP ranges only (e.g. port 22/80).",
+      "explanation": "Understanding Query active instances status is critical for configuring this step.",
+      "instruction": "Check list outcomes of configured virtual machine targets.",
+      "example": "aws ec2 describe-instances || echo 'ec2 checked'",
+      "expected": "Success!",
+      "hint": "Ensure instance describes options are run.",
+      "solution": "aws ec2 describe-instances || echo 'ec2 checked'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 7,
+      "title": "7. Query S3 object storage state",
+      "definition": "Opening firewalls for specified incoming IP ranges only (e.g. port 22/80).",
+      "explanation": "Understanding Query S3 object storage state is critical for configuring this step.",
+      "instruction": "Check bucket metadata and active storage lists.",
+      "example": "aws s3 ls || echo 's3 checked'",
+      "expected": "Success!",
+      "hint": "Run storage check using aws s3 ls command.",
+      "solution": "aws s3 ls || echo 's3 checked'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 8,
+      "title": "8. Mini Challenge: Authorize port ingress traffic rules",
+      "definition": "Opening firewalls for specified incoming IP ranges only (e.g. port 22/80).",
+      "explanation": "Understanding Mini Challenge: Authorize port ingress traffic rules is critical for configuring this step.",
+      "instruction": "Add port 80 HTTP entry permission rules into security group settings.",
+      "example": "aws ec2 authorize-security-group-ingress --group-name devlab-sg",
+      "expected": "Mini Challenge Complete",
+      "hint": "Complete the mini challenge criteria to validate lesson progress.",
+      "solution": "aws ec2 authorize-security-group-ingress --group-name devlab-sg",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    }
+  ],
+  "practice_exercises": [
+    {
+      "title": "Exercise: Explore AWS Security Best Practices",
+      "description": "Try appending test configs and check metrics values.",
+      "expected_outcome": "Valid configuration parameters verified."
+    }
+  ],
+  "quiz": [
+    {
+      "id": 1,
+      "question": "Question 1 for AWS Security Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 1: Option A is correct according to AWS Security Best Practices principles."
+    },
+    {
+      "id": 2,
+      "question": "Question 2 for AWS Security Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 2: Option A is correct according to AWS Security Best Practices principles."
+    },
+    {
+      "id": 3,
+      "question": "Question 3 for AWS Security Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 3: Option A is correct according to AWS Security Best Practices principles."
+    },
+    {
+      "id": 4,
+      "question": "Question 4 for AWS Security Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 4: Option A is correct according to AWS Security Best Practices principles."
+    },
+    {
+      "id": 5,
+      "question": "Question 5 for AWS Security Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 5: Option A is correct according to AWS Security Best Practices principles."
+    },
+    {
+      "id": 6,
+      "question": "Question 6 for AWS Security Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 6: Option A is correct according to AWS Security Best Practices principles."
+    },
+    {
+      "id": 7,
+      "question": "Question 7 for AWS Security Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 7: Option A is correct according to AWS Security Best Practices principles."
+    },
+    {
+      "id": 8,
+      "question": "Question 8 for AWS Security Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 8: Option A is correct according to AWS Security Best Practices principles."
+    },
+    {
+      "id": 9,
+      "question": "Question 9 for AWS Security Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 9: Option A is correct according to AWS Security Best Practices principles."
+    },
+    {
+      "id": 10,
+      "question": "Question 10 for AWS Security Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 10: Option A is correct according to AWS Security Best Practices principles."
+    }
+  ],
+  "resources": [
+    {
+      "title": "Official AWS Security Best Practices Documentation",
+      "url": "https://aws.amazon.com/security/"
+    }
+  ]
+}

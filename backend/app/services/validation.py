@@ -20,6 +20,12 @@ class ValidationEngine:
         """
         Routes the validation check to the appropriate course validators (Linux, Docker, Git, Actions, CI/CD, Jenkins or Kubernetes).
         """
+        if "aws" in lab_name or "iam-" in lab_name or "ec2-" in lab_name or "vpc-" in lab_name or "s3-" in lab_name or "rds-" in lab_name or "load-balancers-" in lab_name or "cloudwatch-" in lab_name:
+            shell = runtime_service.get_session_shell(session_id)
+            if not shell:
+                return {"success": False, "message": "AWS shell session not found."}
+            return self._validate_aws(shell, task_id, lab_name)
+
         if "ansible" in lab_name or "inventory-files" in lab_name or "ad-hoc-commands" in lab_name or "writing-playbooks" in lab_name or "variables-and-facts" in lab_name or "templates-and-jinja2" in lab_name or "ansible-galaxy" in lab_name or "tags-handlers-and" in lab_name:
             shell = runtime_service.get_session_shell(session_id)
             if not shell:
@@ -2052,6 +2058,129 @@ class ValidationEngine:
                 if "ansible-playbook" in history_str:
                     return {"success": True, "message": "Success! Enterprise capstone orchestration playbooks verified."}
                 return {"success": False, "message": "Run ansible-playbook command to apply capstone configurations."}
+
+        return {"success": False, "message": "Unknown task check."}
+
+    def _validate_aws(self, shell: Any, task_id: int, lab_name: str) -> Dict[str, Any]:
+        """
+        Validates AWS course progress against simulated infrastructure state and command history.
+        """
+        history_str = " ".join(shell.history).lower()
+        state = getattr(shell, "aws_state", {})
+
+        # Step 1: Initialize first files / command check
+        if task_id == 1:
+            if lab_name == "aws-security-best-practices":
+                if "create-security-group" in history_str or "security-group" in history_str:
+                    return {"success": True, "message": "Success! VPC firewall security group initialized."}
+                return {"success": False, "message": "Create a new VPC Security Group firewall by running create-security-group."}
+            if "aws" in history_str or "terraform" in history_str or os.path.exists(os.path.join(shell.base_dir, "main.tf")):
+                return {"success": True, "message": "Success! AWS lab workspace ready."}
+            return {"success": False, "message": "Run basic aws configuration or terraform initialization command."}
+
+        # Step 2: System diagnostic checks
+        if task_id == 2:
+            if "pwd" in history_str:
+                return {"success": True, "message": "Success! Workspace path diagnostics verified."}
+            return {"success": False, "message": "Verify path by executing pwd."}
+
+        # Step 3: List files check
+        if task_id == 3:
+            if "ls" in history_str:
+                return {"success": True, "message": "Success! Active workspace files cataloged."}
+            return {"success": False, "message": "Execute ls command to display files inside the workspace."}
+
+        # Step 4: Verify files contents display
+        if task_id == 4:
+            if "cat" in history_str:
+                return {"success": True, "message": "Success! Read workspace parameters templates configuration details."}
+            return {"success": False, "message": "View local variables template configuration values using cat."}
+
+        # Step 5: Read IAM user stats
+        if task_id == 5:
+            if "iam" in history_str or "user" in history_str or len(state.get("users", [])) > 0:
+                return {"success": True, "message": "Success! Sourced active user accounts credentials information."}
+            return {"success": False, "message": "Run aws iam list-users to display active user credentials list."}
+
+        # Step 6: Query ec2 compute instances
+        if task_id == 6:
+            if "ec2" in history_str or "instances" in history_str or len(state.get("instances", [])) > 0:
+                return {"success": True, "message": "Success! Sourced compute virtual machines records."}
+            return {"success": False, "message": "Query running instances lists status by running ec2 describe-instances."}
+
+        # Step 7: Query s3 storage bucket status
+        if task_id == 7:
+            if "s3" in history_str or len(state.get("buckets", {})) > 0:
+                return {"success": True, "message": "Success! Active object storage repositories audited."}
+            return {"success": False, "message": "List globally registered storage buckets by executing aws s3 ls."}
+
+        # Step 8 (Mini Challenge): Module-specific custom criteria
+        if task_id == 8:
+            if lab_name == "aws-cloud-fundamentals":
+                if "configure" in history_str:
+                    return {"success": True, "message": "Success! AWS CLI profile configuration loaded."}
+                return {"success": False, "message": "Configure local credentials profile by executing aws configure list."}
+
+            elif lab_name == "iam-users-groups-and-roles":
+                if "devlab-admin" in state.get("users", []):
+                    return {"success": True, "message": "Success! IAM administrative user account created."}
+                return {"success": False, "message": "Create a new IAM user account named 'devlab-admin'."}
+
+            elif lab_name == "ec2-virtual-machines":
+                if len(state.get("instances", [])) > 0:
+                    return {"success": True, "message": "Success! Micro compute server provisioned successfully."}
+                return {"success": False, "message": "Launch a new virtual compute node by running aws ec2 run-instances."}
+
+            elif lab_name == "vpc-networking":
+                if len(state.get("subnets", [])) > 0:
+                    return {"success": True, "message": "Success! Subnet configuration partition added."}
+                return {"success": False, "message": "Create a routing subnet using ec2 create-subnet command."}
+
+            elif lab_name == "s3-storage":
+                has_uploaded = False
+                for b_name, files in state.get("buckets", {}).items():
+                    if "test.txt" in files:
+                        has_uploaded = True
+                        break
+                if has_uploaded:
+                    return {"success": True, "message": "Success! Object uploaded to bucket successfully."}
+                return {"success": False, "message": "Upload 'test.txt' to s3 storage bucket by executing aws s3 cp."}
+
+            elif lab_name == "rds-databases":
+                if len(state.get("rds", [])) > 0:
+                    return {"success": True, "message": "Success! Postgres RDS databases instance deployed."}
+                return {"success": False, "message": "Create Postgres database instances by running rds create-db-instance."}
+
+            elif lab_name == "load-balancers-and-auto-scaling":
+                if len(state.get("asg", [])) > 0 or "asg" in history_str:
+                    return {"success": True, "message": "Success! Load balancers auto scaling capacities configured."}
+                return {"success": False, "message": "Create an Auto Scaling Group template by running create-auto-scaling-group."}
+
+            elif lab_name == "cloudwatch-monitoring":
+                if len(state.get("alarms", [])) > 0 or "alarm" in history_str:
+                    return {"success": True, "message": "Success! Custom CPU monitoring alarm limits defined."}
+                return {"success": False, "message": "Configure CPU utilization metric thresholds alerts using put-metric-alarm."}
+
+            elif lab_name == "infrastructure-with-terraform-on-aws":
+                if "plan" in history_str:
+                    return {"success": True, "message": "Success! Infrastructure configuration blue print verified."}
+                return {"success": False, "message": "Verify resources addition plan maps by executing terraform plan."}
+
+            elif lab_name == "deploying-applications-on-aws":
+                if "curl" in history_str:
+                    return {"success": True, "message": "Success! Target servers port connections audited."}
+                return {"success": False, "message": "Check application response status by calling curl."}
+
+            elif lab_name == "aws-security-best-practices":
+                if "authorize" in history_str:
+                    return {"success": True, "message": "Success! Port firewall ingress configurations authorized."}
+                return {"success": False, "message": "Authorize port ingress traffic parameters on the Security Group."}
+
+            elif lab_name == "aws-capstone-project":
+                state_file = os.path.join(shell.base_dir, "terraform.tfstate")
+                if os.path.exists(state_file) and "curl" in history_str:
+                    return {"success": True, "message": "Success! Complete multi-tier architecture verified and deployed."}
+                return {"success": False, "message": "Apply infrastructure blueprints via terraform apply and curl verify output."}
 
         return {"success": False, "message": "Unknown task check."}
 

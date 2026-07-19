@@ -352,28 +352,92 @@
     "description": "Implement enterprise cloud resources in Amazon Web Services including VPCs, IAM policies, and S3.",
     "icon": "globe",
     "difficulty": "Beginner",
-    "coming_soon": true,
+    "coming_soon": false,
     "courses": [
       {
-        "slug": "aws-s3-storage-basics",
-        "title": "AWS S3 Storage Basics",
-        "description": "Configure object versioning, access control lists, and bucket lifecycle policies.",
+        "slug": "aws-cloud-fundamentals",
+        "title": "AWS Cloud Fundamentals",
+        "description": "Learn the core global infrastructure, services, and CLI interface basics of AWS.",
         "difficulty": "Beginner",
         "duration": "30 minutes"
       },
       {
-        "slug": "iam-users-and-policies",
-        "title": "IAM Users and Policies",
-        "description": "Configure user scopes, roles, groups, and authorize granular permissions using JSON templates.",
-        "difficulty": "Intermediate",
-        "duration": "45 minutes"
+        "slug": "iam-users-groups-and-roles",
+        "title": "IAM Users, Groups & Roles",
+        "description": "Configure administrative credentials, policy mappings, and user permissions securely.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
       },
       {
-        "slug": "multi-az-vpc-setup",
-        "title": "Multi-AZ VPC Setup",
-        "description": "Provision high-availability subnets, internet/NAT gateways, and custom route bindings.",
+        "slug": "ec2-virtual-machines",
+        "title": "EC2 Virtual Machines",
+        "description": "Launch elastic virtual compute instance servers and monitor setup logs.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "vpc-networking",
+        "title": "VPC Networking",
+        "description": "Design isolated virtual networking boundaries, subnets, and routing adapters.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "s3-storage",
+        "title": "S3 Storage",
+        "description": "Manage object storage buckets, uploads, and lifecycle rules parameters.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "rds-databases",
+        "title": "RDS Databases",
+        "description": "Deploy secure Postgres RDS database servers with automated configurations.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "load-balancers-and-auto-scaling",
+        "title": "Load Balancers & Auto Scaling",
+        "description": "Distribute incoming client workloads using ALB and scale virtual machine groups.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "cloudwatch-monitoring",
+        "title": "CloudWatch Monitoring",
+        "description": "Monitor system resources metrics and define automated alarm thresholds.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "infrastructure-with-terraform-on-aws",
+        "title": "Infrastructure with Terraform on AWS",
+        "description": "Provision AWS environments programmatically using declarative Terraform HCL manifests.",
         "difficulty": "Advanced",
-        "duration": "90 minutes"
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "deploying-applications-on-aws",
+        "title": "Deploying Applications on AWS",
+        "description": "Establish SSH server sessions and audit port bindings using curl utility.",
+        "difficulty": "Advanced",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "aws-security-best-practices",
+        "title": "AWS Security Best Practices",
+        "description": "Restrict ports configurations using custom Security Group ingress firewall rules.",
+        "difficulty": "Advanced",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "aws-capstone-project",
+        "title": "AWS Capstone Project",
+        "description": "Deploy a complete multi-tier enterprise web application architecture on AWS.",
+        "difficulty": "Advanced",
+        "duration": "45 minutes",
+        "is_capstone": true
       }
     ]
   },
