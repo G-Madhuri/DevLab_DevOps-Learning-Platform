@@ -264,28 +264,85 @@
     "description": "Build Infrastructure as Code using HCL declarations, state storage, variables, and reusable modules.",
     "icon": "cpu",
     "difficulty": "Beginner",
-    "coming_soon": true,
+    "coming_soon": false,
     "courses": [
       {
-        "slug": "terraform-basics",
-        "title": "Terraform Basics",
-        "description": "Learn initializations, dry-run plans, applying configurations, and managing variables.",
+        "slug": "terraform-fundamentals",
+        "title": "Terraform Fundamentals",
+        "description": "Learn HCL declarative syntax and initialize local workspaces.",
         "difficulty": "Beginner",
-        "duration": "45 minutes"
+        "duration": "30 minutes"
       },
       {
-        "slug": "state-management-in-terraform",
-        "title": "State Management in Terraform",
-        "description": "Understand lock mechanisms, workspace segregation, and migrating backends to remote stores.",
+        "slug": "installing-terraform-and-providers",
+        "title": "Installing Terraform & Providers",
+        "description": "Understand registry provider configurations and resource plugins.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "variables-outputs-and-locals",
+        "title": "Variables, Outputs & Locals",
+        "description": "Customized parameter boundaries and local variables scope.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "resources-and-dependencies",
+        "title": "Resources & Dependencies",
+        "description": "Configure explicit resource ordering and handle state graphs.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "state-management",
+        "title": "State Management",
+        "description": "Inspect tfstate cache structures and track active resources.",
         "difficulty": "Intermediate",
-        "duration": "60 minutes"
+        "duration": "30 minutes"
       },
       {
-        "slug": "designing-reusable-modules",
-        "title": "Designing Reusable Modules",
-        "description": "Author highly customizable infrastructure modules that scale across multiple environments.",
+        "slug": "modules",
+        "title": "Modules",
+        "description": "Import dry modular packages and scale infrastructure setups.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "provisioners",
+        "title": "Provisioners",
+        "description": "Add local-exec bootstrap commands within resource components.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "workspaces",
+        "title": "Workspaces",
+        "description": "Isolate environment states using workspace CLI commands.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "remote-state-concepts",
+        "title": "Remote State Concepts",
+        "description": "Deploy backend state settings and check team lock files.",
         "difficulty": "Advanced",
-        "duration": "75 minutes"
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "best-practices-terraform",
+        "title": "Best Practices",
+        "description": "Incorporate style guide formatting and linting validations.",
+        "difficulty": "Advanced",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "terraform-capstone-project",
+        "title": "Terraform Capstone Project",
+        "description": "Integrate multi-tier setups, inputs, and outputs validation checks.",
+        "difficulty": "Advanced",
+        "duration": "45 minutes",
+        "is_capstone": true
       }
     ]
   },

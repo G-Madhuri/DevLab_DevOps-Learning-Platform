@@ -2021,6 +2021,327 @@ class JenkinsRuntime(BaseRuntime):
                 logger.warning(f"Failed to remove Jenkins session directory {session_dir}: {e}")
 
 
+class TerraformShell(GitShell):
+    """
+    A real host-based subshell that executes basic CLI utilities and
+    simulates Terraform commands inside the session's workspace.
+    """
+    def __init__(self, session_id: str):
+        self.session_id = session_id
+        self.base_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"terraform-{session_id}")
+        )
+        os.makedirs(self.base_dir, exist_ok=True)
+        self.cwd = "/"
+        self.history = []
+        self.tf_initialized = False
+        self.tf_workspace = "default"
+        self.tf_workspaces_list = ["default"]
+
+    def execute_command(self, cmd_line: str) -> str:
+        cmd_line = cmd_line.strip()
+        if not cmd_line:
+            return ""
+
+        self.history.append(cmd_line)
+        parts = cmd_line.split()
+        cmd = parts[0]
+        args = parts[1:]
+
+        def make_prompt(output_text: str = "") -> str:
+            suffix = "\r\n" if output_text and not output_text.endswith("\r\n") else ""
+            return f"{output_text}{suffix}student@devlab-terraform:$ "
+
+        # Whitelist safe commands (including terraform)
+        if cmd not in ["git", "ls", "cat", "echo", "touch", "mkdir", "rm", "pwd", "clear", "terraform"]:
+            return make_prompt(f"bash: {cmd}: command not allowed in Terraform labs.")
+
+        if cmd == "pwd":
+            return make_prompt("/")
+
+        if cmd == "terraform":
+            if not args:
+                return make_prompt("Usage: terraform <subcommand> [options]")
+            sub = args[0]
+            
+            # Subcommand: init
+            if sub == "init":
+                # Find all .tf files in the directory
+                tf_files = [f for f in os.listdir(self.base_dir) if f.endswith(".tf")]
+                if not tf_files:
+                    return make_prompt("Error: No Terraform configuration files (*.tf) found in the directory.")
+                
+                # Simulate downloading providers
+                self.tf_initialized = True
+                dot_tf_dir = os.path.join(self.base_dir, ".terraform")
+                os.makedirs(dot_tf_dir, exist_ok=True)
+                lock_file = os.path.join(self.base_dir, ".terraform.lock.hcl")
+                with open(lock_file, "w") as lf:
+                    lf.write('# Simulated lock file\nprovider "registry.terraform.io/hashicorp/local" {\n  version = "2.2.3"\n}\n')
+                
+                output = (
+                    "\x1b[32mInitializing the backend...\x1b[0m\r\n"
+                    "Initializing provider plugins...\r\n"
+                    "- Finding hashicorp/local versions matching \"~> 2.0\"...\r\n"
+                    "- Installing hashicorp/local v2.2.3...\r\n"
+                    "- Installed hashicorp/local v2.2.3 (simulated)\r\n\r\n"
+                    "\x1b[32mTerraform has been successfully initialized!\x1b[0m\r\n\r\n"
+                    "You may now begin working with Terraform. Try running \"terraform plan\" to see\r\n"
+                    "any changes that are required for your infrastructure."
+                )
+                return make_prompt(output)
+
+            # Check if initialized for subcommands other than init/fmt/workspace
+            if sub not in ["fmt", "workspace"] and not self.tf_initialized:
+                return make_prompt("Error: Terraform not initialized. Please run 'terraform init' first.")
+
+            # Subcommand: fmt
+            if sub == "fmt":
+                # Find all .tf files
+                tf_files = [f for f in os.listdir(self.base_dir) if f.endswith(".tf")]
+                formatted = []
+                for tf in tf_files:
+                    formatted.append(tf)
+                output = "\r\n".join(formatted) if formatted else "No files formatted."
+                return make_prompt(output)
+
+            # Subcommand: validate
+            if sub == "validate":
+                tf_files = [f for f in os.listdir(self.base_dir) if f.endswith(".tf")]
+                for tf in tf_files:
+                    with open(os.path.join(self.base_dir, tf), "r", encoding="utf-8") as f:
+                        content = f.read()
+                        if content.count("{") != content.count("}"):
+                            return make_prompt(f"\x1b[31mError:\x1b[0m Syntax error in {tf}: mismatched curly braces.")
+                return make_prompt("\x1b[32mSuccess! The configuration is valid.\x1b[0m")
+
+            # Subcommand: plan
+            if sub == "plan":
+                tf_files = [f for f in os.listdir(self.base_dir) if f.endswith(".tf")]
+                import re
+                resources = []
+                for tf in tf_files:
+                    with open(os.path.join(self.base_dir, tf), "r", encoding="utf-8") as f:
+                        content = f.read()
+                        matches = re.findall(r'resource\s+["\']([^"\']+)["\']\s+["\']([^"\']+)["\']', content)
+                        for r_type, r_name in matches:
+                            resources.append(f"{r_type}.{r_name}")
+
+                if not resources:
+                    return make_prompt("No changes. Infrastructure is up-to-date.")
+
+                plan_lines = [
+                    "Terraform used the selected providers to generate the following execution plan.",
+                    "Resource actions are indicated with the following symbols:",
+                    "  \x1b[32m+\x1b[0m create",
+                    "",
+                    "Terraform will perform the following actions:",
+                    ""
+                ]
+                for r in resources:
+                    plan_lines.append(f"  \x1b[32m+ {r}\x1b[0m will be created")
+                    plan_lines.append("      id:   (known after apply)")
+                
+                plan_lines.append("")
+                plan_lines.append(f"\x1b[32mPlan:\x1b[0m {len(resources)} to add, 0 to change, 0 to destroy.")
+                return make_prompt("\r\n".join(plan_lines))
+
+            # Subcommand: apply
+            if sub == "apply":
+                tf_files = [f for f in os.listdir(self.base_dir) if f.endswith(".tf")]
+                import re
+                resources = []
+                for tf in tf_files:
+                    with open(os.path.join(self.base_dir, tf), "r", encoding="utf-8") as f:
+                        content = f.read()
+                        matches = re.findall(r'resource\s+["\']([^"\']+)["\']\s+["\']([^"\']+)["\']', content)
+                        for r_type, r_name in matches:
+                            resources.append((r_type, r_name))
+
+                if not resources:
+                    return make_prompt("Apply complete! Resources: 0 added, 0 changed, 0 destroyed.")
+
+                apply_lines = []
+                for r_type, r_name in resources:
+                    apply_lines.append(f"{r_type}.{r_name}: Creating...")
+                    apply_lines.append(f"{r_type}.{r_name}: Creation complete after 1s [id={r_type}_{r_name}_id]")
+
+                # Write terraform.tfstate file
+                state_path = os.path.join(self.base_dir, "terraform.tfstate")
+                state_data = {
+                    "version": 4,
+                    "terraform_version": "1.5.0",
+                    "serial": 1,
+                    "lineage": "simulated-lineage-uuid",
+                    "outputs": {},
+                    "resources": []
+                }
+                for r_type, r_name in resources:
+                    state_data["resources"].append({
+                        "mode": "managed",
+                        "type": r_type,
+                        "name": r_name,
+                        "provider": "provider[\"registry.terraform.io/hashicorp/local\"]",
+                        "instances": [
+                            {
+                                "schema_version": 0,
+                                "attributes": {
+                                    "id": f"{r_type}_{r_name}_id",
+                                    "content": "Simulated content",
+                                    "filename": "simulated.txt"
+                                }
+                            }
+                        ]
+                    })
+                
+                # Check for outputs and add to state
+                for tf in tf_files:
+                    with open(os.path.join(self.base_dir, tf), "r", encoding="utf-8") as f:
+                        content = f.read()
+                        out_matches = re.findall(r'output\s+["\']([^"\']+)["\']\s*\{', content)
+                        for out_name in out_matches:
+                            state_data["outputs"][out_name] = {
+                                "type": "string",
+                                "value": f"value_of_{out_name}"
+                            }
+
+                import json
+                with open(state_path, "w", encoding="utf-8") as sf:
+                    json.dump(state_data, sf, indent=2)
+
+                apply_lines.append("")
+                apply_lines.append(f"\x1b[32mApply complete! Resources: {len(resources)} added, 0 changed, 0 destroyed.\x1b[0m")
+                return make_prompt("\r\n".join(apply_lines))
+
+            # Subcommand: destroy
+            if sub == "destroy":
+                state_path = os.path.join(self.base_dir, "terraform.tfstate")
+                if not os.path.exists(state_path):
+                    return make_prompt("Error: No state file found. Nothing to destroy.")
+
+                import json
+                try:
+                    with open(state_path, "r", encoding="utf-8") as sf:
+                        state_data = json.load(sf)
+                except Exception:
+                    state_data = {"resources": []}
+
+                destroy_lines = []
+                for res in state_data.get("resources", []):
+                    r_type = res["type"]
+                    r_name = res["name"]
+                    destroy_lines.append(f"{r_type}.{r_name}: Destroying...")
+                    destroy_lines.append(f"{r_type}.{r_name}: Destruction complete after 1s")
+
+                if os.path.exists(state_path):
+                    os.remove(state_path)
+
+                destroy_lines.append("")
+                destroy_lines.append(f"\x1b[32mDestroy complete! Resources: {len(state_data.get('resources', []))} destroyed.\x1b[0m")
+                return make_prompt("\r\n".join(destroy_lines))
+
+            # Subcommand: output
+            if sub == "output":
+                state_path = os.path.join(self.base_dir, "terraform.tfstate")
+                if not os.path.exists(state_path):
+                    return make_prompt("Error: No outputs found or state file missing.")
+                import json
+                with open(state_path, "r", encoding="utf-8") as sf:
+                    state_data = json.load(sf)
+                outputs = state_data.get("outputs", {})
+                if not outputs:
+                    return make_prompt("No outputs defined.")
+                out_lines = []
+                for k, v in outputs.items():
+                    out_lines.append(f"{k} = \"{v['value']}\"")
+                return make_prompt("\r\n".join(out_lines))
+
+            # Subcommand: state
+            if sub == "state":
+                if len(args) < 2 or args[1] != "list":
+                    return make_prompt("Usage: terraform state list")
+                state_path = os.path.join(self.base_dir, "terraform.tfstate")
+                if not os.path.exists(state_path):
+                    return make_prompt("No resources found in state.")
+                import json
+                with open(state_path, "r", encoding="utf-8") as sf:
+                    state_data = json.load(sf)
+                res_lines = []
+                for r in state_data.get("resources", []):
+                    res_lines.append(f"{r['type']}.{r['name']}")
+                return make_prompt("\r\n".join(res_lines) if res_lines else "No resources in state.")
+
+            # Subcommand: workspace
+            if sub == "workspace":
+                if len(args) < 2:
+                    return make_prompt("Usage: terraform workspace [list/new/select]")
+                w_action = args[1]
+                if w_action == "list":
+                    list_lines = []
+                    for w in self.tf_workspaces_list:
+                        prefix = "*" if w == self.tf_workspace else " "
+                        list_lines.append(f"{prefix} {w}")
+                    return make_prompt("\r\n".join(list_lines))
+                elif w_action == "new":
+                    if len(args) < 3:
+                        return make_prompt("Error: workspace name required.")
+                    w_name = args[2]
+                    if w_name in self.tf_workspaces_list:
+                        return make_prompt(f"Error: Workspace {w_name} already exists.")
+                    self.tf_workspaces_list.append(w_name)
+                    self.tf_workspace = w_name
+                    w_dir = os.path.join(self.base_dir, "terraform.tfstate.d", w_name)
+                    os.makedirs(w_dir, exist_ok=True)
+                    return make_prompt(f"Created and switched to workspace \"{w_name}\"!")
+                elif w_action == "select":
+                    if len(args) < 3:
+                        return make_prompt("Error: workspace name required.")
+                    w_name = args[2]
+                    if w_name not in self.tf_workspaces_list:
+                        return make_prompt(f"Error: Workspace {w_name} does not exist.")
+                    self.tf_workspace = w_name
+                    return make_prompt(f"Switched to workspace \"{w_name}\"!")
+                else:
+                    return make_prompt(f"Error: workspace subcommand {w_action} not recognized.")
+
+            return make_prompt(f"Error: terraform subcommand {sub} not recognized.")
+
+        return super().execute_command(cmd_line)
+
+
+class TerraformRuntime(BaseRuntime):
+    """
+    Terraform runtime provisioner managing local session workspace directories.
+    """
+    def create_session(self, session_id: str) -> Dict[str, Any]:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"terraform-{session_id}")
+        )
+        os.makedirs(session_dir, exist_ok=True)
+        
+        try:
+            with open(os.path.join(session_dir, "main.tf"), "w") as f:
+                f.write(
+                    "# Welcome to Terraform on DevLab!\n"
+                    "# Define your resources, variables, and providers configuration blocks here.\n"
+                )
+            
+            return {"container_id": f"terraform-{session_id}", "status": "running", "mode": "terraform"}
+        except Exception as e:
+            logger.error(f"TerraformRuntime failed to initialize workspace: {e}")
+            return {"container_id": f"simulated-{session_id}", "status": "running", "mode": "simulated"}
+
+    def stop_session(self, session_id: str, container_id: Optional[str] = None) -> None:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"terraform-{session_id}")
+        )
+        if os.path.exists(session_dir):
+            try:
+                shutil.rmtree(session_dir, onerror=_remove_readonly)
+            except Exception as e:
+                logger.warning(f"Failed to remove Terraform session directory {session_dir}: {e}")
+
+
 # ── Global Coordinator Service ────────────────────────
 
 class LabRuntimeService:
@@ -2041,12 +2362,20 @@ class LabRuntimeService:
         self.github_actions_runtime = GitHubActionsRuntime()
         self.cicd_runtime = CICDRuntime()
         self.jenkins_runtime = JenkinsRuntime()
+        self.terraform_runtime = TerraformRuntime()
 
     def create_lab(self, session_id: str, lab_name: str = "linux-basics") -> Dict[str, Any]:
         """
         Delegates lab initialization checks to custom Runtimes.
         """
-        if "jenkins" in lab_name or "freestyle-jobs" in lab_name or "declarative-vs-" in lab_name or "distributed-builds" in lab_name or "credentials-and-secrets" in lab_name or "plugins-and-" in lab_name:
+        if "terraform" in lab_name or "variables-outputs" in lab_name or "state-management" in lab_name or "best-practices-terraform" in lab_name:
+            res = self.terraform_runtime.create_session(session_id)
+            if res["mode"] == "simulated":
+                self.simulated_sessions[session_id] = SimulatedShell(session_id)
+            else:
+                self.simulated_sessions[session_id] = TerraformShell(session_id)
+            return res
+        elif "jenkins" in lab_name or "freestyle-jobs" in lab_name or "declarative-vs-" in lab_name or "distributed-builds" in lab_name or "credentials-and-secrets" in lab_name or "plugins-and-" in lab_name:
             res = self.jenkins_runtime.create_session(session_id)
             if res["mode"] == "simulated":
                 self.simulated_sessions[session_id] = SimulatedShell(session_id)
@@ -2102,7 +2431,9 @@ class LabRuntimeService:
                 except Exception as e:
                     logger.warning(f"Failed to remove directory {shell.base_dir}: {e}")
 
-        if "jenkins" in lab_name or "freestyle-jobs" in lab_name or "declarative-vs-" in lab_name or "distributed-builds" in lab_name or "credentials-and-secrets" in lab_name or "plugins-and-" in lab_name:
+        if "terraform" in lab_name or "variables-outputs" in lab_name or "state-management" in lab_name or "best-practices-terraform" in lab_name:
+            self.terraform_runtime.stop_session(session_id, container_id)
+        elif "jenkins" in lab_name or "freestyle-jobs" in lab_name or "declarative-vs-" in lab_name or "distributed-builds" in lab_name or "credentials-and-secrets" in lab_name or "plugins-and-" in lab_name:
             self.jenkins_runtime.stop_session(session_id, container_id)
         elif "introduction-to-cicd" in lab_name or "continuous-" in lab_name or "building-a-complete-cicd" in lab_name or lab_name == "cicd":
             self.cicd_runtime.stop_session(session_id, container_id)
@@ -2121,7 +2452,9 @@ class LabRuntimeService:
         if session_id in self.simulated_sessions:
             return self.simulated_sessions[session_id]
         if lab_name:
-            if "jenkins" in lab_name or "freestyle-jobs" in lab_name or "declarative-vs-" in lab_name or "distributed-builds" in lab_name or "credentials-and-secrets" in lab_name or "plugins-and-" in lab_name:
+            if "terraform" in lab_name or "variables-outputs" in lab_name or "state-management" in lab_name or "best-practices-terraform" in lab_name:
+                shell = TerraformShell(session_id)
+            elif "jenkins" in lab_name or "freestyle-jobs" in lab_name or "declarative-vs-" in lab_name or "distributed-builds" in lab_name or "credentials-and-secrets" in lab_name or "plugins-and-" in lab_name:
                 shell = JenkinsShell(session_id)
             elif "introduction-to-cicd" in lab_name or "continuous-" in lab_name or "building-a-complete-cicd" in lab_name or lab_name == "cicd":
                 shell = CICDShell(session_id)

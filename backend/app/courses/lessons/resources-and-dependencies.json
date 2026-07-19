@@ -1,0 +1,302 @@
+{
+  "slug": "resources-and-dependencies",
+  "title": "Resources & Dependencies",
+  "overview": {
+    "introduction": "Define resource blocks to create infrastructure objects. Terraform automatically calculates dependency graphs, but you can declare explicit orderings.",
+    "why_it_matters": "Understanding Resources & Dependencies allows developers to scale cloud deployments safely and predictably.",
+    "industry_usage": "Used by DevOps engineers worldwide to standardize resource management pipelines.",
+    "what_you_will_build": "An isolated workspace containing HCL files and running Terraform CLI operations.",
+    "prerequisites": "Git course and Linux terminal fundamentals.",
+    "estimated_time": "30 mins",
+    "difficulty": "Beginner",
+    "learning_outcomes": [
+      "Explain the purpose and mechanics of Resources & Dependencies.",
+      "Write structured and clean HCL configurations.",
+      "Resolve variable parameters, inputs, and outputs dependencies.",
+      "Inspect resource state maps using state files.",
+      "Configure and switch workspaces cleanly."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "Resource Dependency Graphs",
+      "definition": "Using implicit reference parameters or explicit dependencies configuration rules to dictate ordering.",
+      "why_important": [
+        "Saves manual cloud configuration time.",
+        "Guarantees environment replication repeatability.",
+        "Improves changes tracking transparency."
+      ],
+      "explanation": "Detailed context regarding Resources & Dependencies. Designing and provisioning infrastructure declarations cleanly ensures high availability.",
+      "commands": [
+        {
+          "name": "echo",
+          "purpose": "Execute operations related to Resources & Dependencies.",
+          "syntax": "echo",
+          "example": "echo",
+          "expected_output": "Success!",
+          "output_explanation": "Confirms action step for Resources & Dependencies is processed."
+        }
+      ],
+      "pro_tip": "Keep configurations DRY by dividing infrastructure components into clean directories and modules.",
+      "best_practices": "Version control your .tf configurations and never commit secret keys or tfstate files.",
+      "common_mistakes": "Running apply without running plan first to audit resource state changes.",
+      "real_world_usage": "Companies spin up test, staging, and production environments in seconds using Terraform.",
+      "summary": "Resources & Dependencies configuration forms the building block of Infrastructure as Code."
+    }
+  ],
+  "interactive_examples": [
+    {
+      "objective": "Define Resources & Dependencies settings.",
+      "scenario": "Configure key parameters in local workspace.",
+      "steps": [
+        {
+          "command": "pwd",
+          "expected_output": "/home/student",
+          "explanation": "Ensure you are in the correct home directory."
+        }
+      ],
+      "solution": "Check your commands spacing and verify provider declarations."
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Configure explicit resource dependency",
+      "definition": "Using implicit reference parameters or explicit dependencies configuration rules to dictate ordering.",
+      "explanation": "Understanding Configure explicit resource dependency is critical for configuring this step.",
+      "instruction": "Add a second file resource inside 'main.tf' that depends explicitly on the first resource using 'depends_on'.",
+      "example": "echo 'resource \"local_file\" \"first\" {\n  filename = \"first.txt\"\n  content  = \"First file!\"\n}\n\nresource \"local_file\" \"second\" {\n  filename = \"second.txt\"\n  content  = \"Second file!\"\n  depends_on = [local_file.first]\n}' > main.tf",
+      "expected": "Success!",
+      "hint": "Check the spelling of your files and declarations.",
+      "solution": "echo 'resource \"local_file\" \"first\" {\n  filename = \"first.txt\"\n  content  = \"First file!\"\n}\n\nresource \"local_file\" \"second\" {\n  filename = \"second.txt\"\n  content  = \"Second file!\"\n  depends_on = [local_file.first]\n}' > main.tf",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 2,
+      "title": "2. Validate configuration layout",
+      "definition": "Using implicit reference parameters or explicit dependencies configuration rules to dictate ordering.",
+      "explanation": "Understanding Validate configuration layout is critical for configuring this step.",
+      "instruction": "Run the validate command to audit formatting/syntax validity.",
+      "example": "terraform validate",
+      "expected": "Success!",
+      "hint": "Ensure you initialized the directory with init first.",
+      "solution": "terraform validate",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 3,
+      "title": "3. Execute Terraform plan",
+      "definition": "Using implicit reference parameters or explicit dependencies configuration rules to dictate ordering.",
+      "explanation": "Understanding Execute Terraform plan is critical for configuring this step.",
+      "instruction": "Perform a plan preview run to inspect resource lifecycle changes.",
+      "example": "terraform plan",
+      "expected": "Success!",
+      "hint": "Verify provider definitions are complete.",
+      "solution": "terraform plan",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 4,
+      "title": "4. Execute Terraform apply",
+      "definition": "Using implicit reference parameters or explicit dependencies configuration rules to dictate ordering.",
+      "explanation": "Understanding Execute Terraform apply is critical for configuring this step.",
+      "instruction": "Apply configuration settings to synchronize state caches.",
+      "example": "terraform apply -auto-approve",
+      "expected": "Success!",
+      "hint": "Confirm there are no validation syntax failures.",
+      "solution": "terraform apply -auto-approve",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 5,
+      "title": "5. List current workspace",
+      "definition": "Using implicit reference parameters or explicit dependencies configuration rules to dictate ordering.",
+      "explanation": "Understanding List current workspace is critical for configuring this step.",
+      "instruction": "Check the workspace list to confirm isolated paths.",
+      "example": "terraform workspace list",
+      "expected": "Success!",
+      "hint": "Workspace defaults are active.",
+      "solution": "terraform workspace list",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 6,
+      "title": "6. Check current state lists",
+      "definition": "Using implicit reference parameters or explicit dependencies configuration rules to dictate ordering.",
+      "explanation": "Understanding Check current state lists is critical for configuring this step.",
+      "instruction": "Retrieve managed resources list from state tracker.",
+      "example": "terraform state list",
+      "expected": "Success!",
+      "hint": "Make sure you applied the changes first.",
+      "solution": "terraform state list",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 7,
+      "title": "7. Execute Terraform output",
+      "definition": "Using implicit reference parameters or explicit dependencies configuration rules to dictate ordering.",
+      "explanation": "Understanding Execute Terraform output is critical for configuring this step.",
+      "instruction": "View defined output parameters values.",
+      "example": "terraform output",
+      "expected": "Success!",
+      "hint": "Verify outputs are declared in configuration files.",
+      "solution": "terraform output",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 8,
+      "title": "8. Mini Challenge: Define Dependency",
+      "definition": "Using implicit reference parameters or explicit dependencies configuration rules to dictate ordering.",
+      "explanation": "Understanding Mini Challenge: Define Dependency is critical for configuring this step.",
+      "instruction": "Establish an explicit 'depends_on' configuration link between resources, and verify validity with plan.",
+      "example": "echo 'resource \"local_file\" \"first\" {\n  filename = \"first.txt\"\n  content  = \"First file!\"\n}\n\nresource \"local_file\" \"second\" {\n  filename = \"second.txt\"\n  content  = \"Second file!\"\n  depends_on = [local_file.first]\n}' > main.tf && terraform plan",
+      "expected": "Mini Challenge Complete",
+      "hint": "Refer to the task guidelines and complete the challenge correctly.",
+      "solution": "echo 'resource \"local_file\" \"first\" {\n  filename = \"first.txt\"\n  content  = \"First file!\"\n}\n\nresource \"local_file\" \"second\" {\n  filename = \"second.txt\"\n  content  = \"Second file!\"\n  depends_on = [local_file.first]\n}' > main.tf && terraform plan",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    }
+  ],
+  "practice_exercises": [
+    {
+      "title": "Exercise: Explore Resources & Dependencies",
+      "description": "Try modifying local parameters and running validate.",
+      "expected_outcome": "Valid configuration output confirmed."
+    }
+  ],
+  "quiz": [
+    {
+      "id": 1,
+      "question": "Question 1 for Resources & Dependencies: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 1: Option A is correct according to Resources & Dependencies principles."
+    },
+    {
+      "id": 2,
+      "question": "Question 2 for Resources & Dependencies: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 2: Option A is correct according to Resources & Dependencies principles."
+    },
+    {
+      "id": 3,
+      "question": "Question 3 for Resources & Dependencies: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 3: Option A is correct according to Resources & Dependencies principles."
+    },
+    {
+      "id": 4,
+      "question": "Question 4 for Resources & Dependencies: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 4: Option A is correct according to Resources & Dependencies principles."
+    },
+    {
+      "id": 5,
+      "question": "Question 5 for Resources & Dependencies: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 5: Option A is correct according to Resources & Dependencies principles."
+    },
+    {
+      "id": 6,
+      "question": "Question 6 for Resources & Dependencies: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 6: Option A is correct according to Resources & Dependencies principles."
+    },
+    {
+      "id": 7,
+      "question": "Question 7 for Resources & Dependencies: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 7: Option A is correct according to Resources & Dependencies principles."
+    },
+    {
+      "id": 8,
+      "question": "Question 8 for Resources & Dependencies: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 8: Option A is correct according to Resources & Dependencies principles."
+    },
+    {
+      "id": 9,
+      "question": "Question 9 for Resources & Dependencies: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 9: Option A is correct according to Resources & Dependencies principles."
+    },
+    {
+      "id": 10,
+      "question": "Question 10 for Resources & Dependencies: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 10: Option A is correct according to Resources & Dependencies principles."
+    }
+  ],
+  "resources": [
+    {
+      "title": "Official Resources & Dependencies Documentation",
+      "url": "https://developer.hashicorp.com/terraform/language/resources/behavior"
+    }
+  ]
+}
