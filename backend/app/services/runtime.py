@@ -2342,6 +2342,387 @@ class TerraformRuntime(BaseRuntime):
                 logger.warning(f"Failed to remove Terraform session directory {session_dir}: {e}")
 
 
+class AWSShell(GitShell):
+    """
+    A real host-based subshell that executes basic CLI utilities and
+    simulates AWS CLI commands inside the session's workspace.
+    """
+    def __init__(self, session_id: str):
+        self.session_id = session_id
+        self.base_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"aws-{session_id}")
+        )
+        os.makedirs(self.base_dir, exist_ok=True)
+        self.cwd = "/"
+        self.history = []
+        self.aws_state = {
+            "users": [],
+            "vpcs": [],
+            "subnets": [],
+            "security_groups": [],
+            "instances": [],
+            "buckets": {},
+            "rds": [],
+            "load_balancers": [],
+            "asg": [],
+            "alarms": []
+        }
+
+    def execute_command(self, cmd_line: str) -> str:
+        cmd_line = cmd_line.strip()
+        if not cmd_line:
+            return ""
+
+        self.history.append(cmd_line)
+        parts = cmd_line.split()
+        cmd = parts[0]
+        args = parts[1:]
+
+        def make_prompt(output_text: str = "") -> str:
+            suffix = "\r\n" if output_text and not output_text.endswith("\r\n") else ""
+            return f"{output_text}{suffix}student@devlab-aws:$ "
+
+        # Whitelist safe commands (including aws, ssh, curl, terraform)
+        aws_cmds = ["aws", "ssh", "curl", "terraform"]
+        if cmd not in ["git", "ls", "cat", "echo", "touch", "mkdir", "rm", "pwd", "clear"] + aws_cmds:
+            return make_prompt(f"bash: {cmd}: command not allowed in AWS labs.")
+
+        if cmd == "pwd":
+            return make_prompt("/")
+
+        # Check if actual command exists and run, or fallback to simulated behavior
+        actual_bin = shutil.which(cmd)
+        
+        # If running terraform init/plan/apply in AWS workspace, support simulation
+        if cmd == "terraform":
+            if not args:
+                return make_prompt("Usage: terraform <subcommand> [options]")
+            sub = args[0]
+            if sub == "init":
+                dot_tf = os.path.join(self.base_dir, ".terraform")
+                os.makedirs(dot_tf, exist_ok=True)
+                return make_prompt("Initializing provider plugins...\n- Sourced hashicorp/aws (simulated)\nTerraform successfully initialized!")
+            elif sub == "plan":
+                return make_prompt("Plan: 8 to add, 0 to change, 0 to destroy.")
+            elif sub == "apply":
+                state_file = os.path.join(self.base_dir, "terraform.tfstate")
+                with open(state_file, "w") as sf:
+                    sf.write('{"version": 4, "resources": []}')
+                return make_prompt("Apply complete! Resources: 8 added, 0 changed, 0 destroyed.")
+
+        if cmd == "ssh":
+            return make_prompt("Connection to 127.0.0.1 closed.\r\nstudent@devlab-aws:$ ")
+
+        if cmd == "curl":
+            return make_prompt("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\nWelcome to AWS Production Web App!")
+
+        if cmd == "aws":
+            if not args:
+                return make_prompt("Usage: aws [options] <command> <subcommand> [parameters]")
+            
+            sub = args[0]
+            if sub == "--version":
+                return make_prompt("aws-cli/2.15.0 Python/3.11.5 Windows/10 botocore/2.4.5")
+            
+            if len(args) < 2 and sub != "configure" and sub != "s3":
+                return make_prompt(f"aws {sub}: missing subcommands parameters.")
+
+            if sub == "configure":
+                if args[1:] and args[1] == "list":
+                    output = (
+                        "      Name                    Value             Type    Location\r\n"
+                        "      ----                    -----             ----    --------\r\n"
+                        "   profile                <not set>             None    None\r\n"
+                        "access_key     ****************t5a4      shared-credentials-file\r\n"
+                        "secret_key     ****************T2e9      shared-credentials-file\r\n"
+                        "    region                us-east-1      config-file    ~/.aws/config"
+                    )
+                    return make_prompt(output)
+                return make_prompt("Configured AWS Access Credentials saved successfully (simulated).")
+
+            if sub == "iam":
+                action = args[1]
+                if action == "create-user":
+                    user_name = "devlab-admin"
+                    if "--user-name" in args:
+                        user_idx = args.index("--user-name") + 1
+                        if user_idx < len(args):
+                            user_name = args[user_idx]
+                    self.aws_state["users"].append(user_name)
+                    output_json = {
+                        "User": {
+                            "Path": "/",
+                            "UserName": user_name,
+                            "UserId": "AIDA1234567890EXAMPLE",
+                            "Arn": f"arn:aws:iam::123456789012:user/{user_name}",
+                            "CreateDate": "2026-07-19T20:00:00Z"
+                        }
+                    }
+                    import json
+                    return make_prompt(json.dumps(output_json, indent=4))
+                elif action == "list-users":
+                    users_list = []
+                    for u in self.aws_state["users"]:
+                        users_list.append({
+                            "Path": "/",
+                            "UserName": u,
+                            "UserId": "AIDA1234567890EXAMPLE",
+                            "Arn": f"arn:aws:iam::123456789012:user/{u}",
+                            "CreateDate": "2026-07-19T20:00:00Z"
+                        })
+                    import json
+                    return make_prompt(json.dumps({"Users": users_list}, indent=4))
+
+            if sub == "ec2":
+                action = args[1]
+                if action == "create-vpc":
+                    cidr = "10.0.0.0/16"
+                    if "--cidr-block" in args:
+                        cidr_idx = args.index("--cidr-block") + 1
+                        if cidr_idx < len(args):
+                            cidr = args[cidr_idx]
+                    vpc_id = f"vpc-{len(self.aws_state['vpcs']):08d}"
+                    self.aws_state["vpcs"].append({"id": vpc_id, "cidr": cidr})
+                    output_json = {
+                        "Vpc": {
+                            "CidrBlock": cidr,
+                            "VpcId": vpc_id,
+                            "State": "available"
+                        }
+                    }
+                    import json
+                    return make_prompt(json.dumps(output_json, indent=4))
+                
+                elif action == "create-subnet":
+                    cidr = "10.0.1.0/24"
+                    if "--cidr-block" in args:
+                        cidr_idx = args.index("--cidr-block") + 1
+                        if cidr_idx < len(args):
+                            cidr = args[cidr_idx]
+                    subnet_id = f"subnet-{len(self.aws_state['subnets']):08d}"
+                    self.aws_state["subnets"].append({"id": subnet_id, "cidr": cidr})
+                    output_json = {
+                        "Subnet": {
+                            "CidrBlock": cidr,
+                            "SubnetId": subnet_id,
+                            "State": "available"
+                        }
+                    }
+                    import json
+                    return make_prompt(json.dumps(output_json, indent=4))
+
+                elif action == "create-security-group":
+                    sg_name = "devlab-sg"
+                    if "--group-name" in args:
+                        sg_idx = args.index("--group-name") + 1
+                        if sg_idx < len(args):
+                            sg_name = args[sg_idx]
+                    sg_id = f"sg-{len(self.aws_state['security_groups']):08d}"
+                    self.aws_state["security_groups"].append({"id": sg_id, "name": sg_name})
+                    import json
+                    return make_prompt(json.dumps({"GroupId": sg_id}, indent=4))
+
+                elif action == "authorize-security-group-ingress":
+                    return make_prompt("Security Group ingress rule successfully authorized (simulated).")
+
+                elif action == "run-instances":
+                    inst_id = f"i-{len(self.aws_state['instances']):08d}"
+                    self.aws_state["instances"].append(inst_id)
+                    output_json = {
+                        "Instances": [
+                            {
+                                "InstanceId": inst_id,
+                                "State": {
+                                    "Code": 16,
+                                    "Name": "running"
+                                },
+                                "PublicDnsName": f"ec2-127-0-0-1.compute-1.amazonaws.com"
+                            }
+                        ]
+                    }
+                    import json
+                    return make_prompt(json.dumps(output_json, indent=4))
+
+                elif action == "describe-instances":
+                    insts = []
+                    for inst in self.aws_state["instances"]:
+                        insts.append({
+                            "InstanceId": inst,
+                            "State": {
+                                "Code": 16,
+                                "Name": "running"
+                            },
+                            "PublicDnsName": f"ec2-127-0-0-1.compute-1.amazonaws.com"
+                        })
+                    import json
+                    return make_prompt(json.dumps({"Reservations": [{"Instances": insts}]}, indent=4))
+
+            if sub == "s3":
+                s3_cmd = args[1]
+                if s3_cmd == "mb":
+                    bucket = args[2] if len(args) > 2 else "s3://devlab-bucket"
+                    bucket_name = bucket.replace("s3://", "")
+                    self.aws_state["buckets"][bucket_name] = []
+                    os.makedirs(os.path.join(self.base_dir, bucket_name), exist_ok=True)
+                    return make_prompt(f"make_bucket: {bucket}")
+                elif s3_cmd == "cp":
+                    src = args[2] if len(args) > 2 else ""
+                    dest = args[3] if len(args) > 3 else ""
+                    dest_clean = dest.replace("s3://", "")
+                    dest_parts = dest_clean.split("/")
+                    bucket_name = dest_parts[0]
+                    if len(dest_parts) > 1 and dest_parts[1]:
+                        file_name = dest_parts[1]
+                    else:
+                        file_name = os.path.basename(src)
+                    if bucket_name in self.aws_state["buckets"]:
+                        self.aws_state["buckets"][bucket_name].append(file_name)
+                        src_path = os.path.join(self.base_dir, src)
+                        dest_path = os.path.join(self.base_dir, bucket_name, file_name)
+                        if os.path.exists(src_path):
+                            shutil.copy(src_path, dest_path)
+                        else:
+                            with open(dest_path, "w") as df:
+                                df.write("Simulated S3 file content")
+                    return make_prompt(f"upload: {src} to {dest}")
+                elif s3_cmd == "ls":
+                    output = []
+                    for b in self.aws_state["buckets"]:
+                        output.append(f"2026-07-19 20:00:00 {b}")
+                    return make_prompt("\r\n".join(output) if output else "No buckets found.")
+
+            if sub == "rds":
+                action = args[1]
+                if action == "create-db-instance":
+                    db_id = "devlab-db"
+                    if "--db-instance-identifier" in args:
+                        db_idx = args.index("--db-instance-identifier") + 1
+                        if db_idx < len(args):
+                            db_id = args[db_idx]
+                    self.aws_state["rds"].append(db_id)
+                    output_json = {
+                        "DBInstance": {
+                            "DBInstanceIdentifier": db_id,
+                            "DBInstanceClass": "db.t3.micro",
+                            "Engine": "postgres",
+                            "DBInstanceStatus": "creating"
+                        }
+                    }
+                    import json
+                    return make_prompt(json.dumps(output_json, indent=4))
+                elif action == "describe-db-instances":
+                    dbs = []
+                    for db in self.aws_state["rds"]:
+                        dbs.append({
+                            "DBInstanceIdentifier": db,
+                            "DBInstanceClass": "db.t3.micro",
+                            "Engine": "postgres",
+                            "DBInstanceStatus": "available"
+                        })
+                    import json
+                    return make_prompt(json.dumps({"DBInstances": dbs}, indent=4))
+
+            if sub == "elbv2":
+                action = args[1]
+                if action == "create-load-balancer":
+                    lb_name = "devlab-alb"
+                    if "--name" in args:
+                        lb_idx = args.index("--name") + 1
+                        if lb_idx < len(args):
+                            lb_name = args[lb_idx]
+                    self.aws_state["load_balancers"].append(lb_name)
+                    output_json = {
+                        "LoadBalancers": [
+                            {
+                                "LoadBalancerName": lb_name,
+                                "DNSName": "devlab-alb-123456789.us-east-1.elb.amazonaws.com",
+                                "State": {"Code": "active"}
+                            }
+                        ]
+                    }
+                    import json
+                    return make_prompt(json.dumps(output_json, indent=4))
+
+            if sub == "autoscaling":
+                action = args[1]
+                if action == "create-auto-scaling-group":
+                    asg_name = "devlab-asg"
+                    if "--auto-scaling-group-name" in args:
+                        asg_idx = args.index("--auto-scaling-group-name") + 1
+                        if asg_idx < len(args):
+                            asg_name = args[asg_idx]
+                    self.aws_state["asg"].append(asg_name)
+                    return make_prompt("Auto Scaling Group successfully created (simulated).")
+
+            if sub == "cloudwatch":
+                action = args[1]
+                if action == "put-metric-alarm":
+                    alarm_name = "devlab-cpu-alarm"
+                    if "--alarm-name" in args:
+                        alarm_idx = args.index("--alarm-name") + 1
+                        if alarm_idx < len(args):
+                            alarm_name = args[alarm_idx]
+                    self.aws_state["alarms"].append(alarm_name)
+                    return make_prompt("CloudWatch Alarm successfully created (simulated).")
+                elif action == "describe-alarms":
+                    alarms_list = []
+                    for al in self.aws_state["alarms"]:
+                        alarms_list.append({
+                            "AlarmName": al,
+                            "MetricName": "CPUUtilization",
+                            "StateValue": "OK"
+                        })
+                    import json
+                    return make_prompt(json.dumps({"MetricAlarms": alarms_list}, indent=4))
+
+            return make_prompt("AWS operation executed successfully (simulated).")
+
+        return super().execute_command(cmd_line)
+
+
+class AWSRuntime:
+    """
+    Manages isolated host-based workspace directories for AWS sandbox tasks.
+    """
+    def create_session(self, session_id: str) -> Dict[str, Any]:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"aws-{session_id}")
+        )
+        os.makedirs(session_dir, exist_ok=True)
+        try:
+            with open(os.path.join(session_dir, "playbook.yml"), "w") as f:
+                f.write(
+                    "---\n"
+                    "- name: Welcome\n"
+                    "  hosts: all\n"
+                    "  tasks:\n"
+                    "    - name: Print welcome\n"
+                    "      debug:\n"
+                    "        msg: \"Welcome to Ansible!\"\n"
+                )
+            with open(os.path.join(session_dir, "main.tf"), "w") as f:
+                f.write(
+                    "# Welcome to Terraform on AWS!\n"
+                    "provider \"aws\" {\n"
+                    "  region = \"us-east-1\"\n"
+                    "}\n"
+                )
+            return {"container_id": f"aws-{session_id}", "status": "running", "mode": "aws"}
+        except Exception as e:
+            logger.error(f"AWSRuntime failed to initialize workspace: {e}")
+            return {"container_id": f"simulated-{session_id}", "status": "running", "mode": "simulated"}
+
+    def stop_session(self, session_id: str, container_id: Optional[str] = None) -> None:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"aws-{session_id}")
+        )
+        if os.path.exists(session_dir):
+            try:
+                shutil.rmtree(session_dir, onerror=_remove_readonly)
+            except Exception as e:
+                logger.warning(f"Failed to remove AWS session directory {session_dir}: {e}")
+
+
 class AnsibleShell(GitShell):
     """
     A real host-based subshell that executes basic CLI utilities and
@@ -2656,12 +3037,20 @@ class LabRuntimeService:
         self.jenkins_runtime = JenkinsRuntime()
         self.terraform_runtime = TerraformRuntime()
         self.ansible_runtime = AnsibleRuntime()
+        self.aws_runtime = AWSRuntime()
 
     def create_lab(self, session_id: str, lab_name: str = "linux-basics") -> Dict[str, Any]:
         """
         Delegates lab initialization checks to custom Runtimes.
         """
-        if "ansible" in lab_name or "inventory-files" in lab_name or "ad-hoc-commands" in lab_name or "writing-playbooks" in lab_name or "variables-and-facts" in lab_name or "templates-and-jinja2" in lab_name or "ansible-galaxy" in lab_name or "tags-handlers-and" in lab_name:
+        if "aws" in lab_name or "iam-" in lab_name or "ec2-" in lab_name or "vpc-" in lab_name or "s3-" in lab_name or "rds-" in lab_name or "load-balancers-" in lab_name or "cloudwatch-" in lab_name:
+            res = self.aws_runtime.create_session(session_id)
+            if res["mode"] == "simulated":
+                self.simulated_sessions[session_id] = SimulatedShell(session_id)
+            else:
+                self.simulated_sessions[session_id] = AWSShell(session_id)
+            return res
+        elif "ansible" in lab_name or "inventory-files" in lab_name or "ad-hoc-commands" in lab_name or "writing-playbooks" in lab_name or "variables-and-facts" in lab_name or "templates-and-jinja2" in lab_name or "ansible-galaxy" in lab_name or "tags-handlers-and" in lab_name:
             res = self.ansible_runtime.create_session(session_id)
             if res["mode"] == "simulated":
                 self.simulated_sessions[session_id] = SimulatedShell(session_id)
@@ -2731,7 +3120,9 @@ class LabRuntimeService:
                 except Exception as e:
                     logger.warning(f"Failed to remove directory {shell.base_dir}: {e}")
 
-        if "ansible" in lab_name or "inventory-files" in lab_name or "ad-hoc-commands" in lab_name or "writing-playbooks" in lab_name or "variables-and-facts" in lab_name or "templates-and-jinja2" in lab_name or "ansible-galaxy" in lab_name or "tags-handlers-and" in lab_name:
+        if "aws" in lab_name or "iam-" in lab_name or "ec2-" in lab_name or "vpc-" in lab_name or "s3-" in lab_name or "rds-" in lab_name or "load-balancers-" in lab_name or "cloudwatch-" in lab_name:
+            self.aws_runtime.stop_session(session_id, container_id)
+        elif "ansible" in lab_name or "inventory-files" in lab_name or "ad-hoc-commands" in lab_name or "writing-playbooks" in lab_name or "variables-and-facts" in lab_name or "templates-and-jinja2" in lab_name or "ansible-galaxy" in lab_name or "tags-handlers-and" in lab_name:
             self.ansible_runtime.stop_session(session_id, container_id)
         elif "terraform" in lab_name or "variables-outputs" in lab_name or "state-management" in lab_name or "best-practices-terraform" in lab_name:
             self.terraform_runtime.stop_session(session_id, container_id)
@@ -2754,7 +3145,9 @@ class LabRuntimeService:
         if session_id in self.simulated_sessions:
             return self.simulated_sessions[session_id]
         if lab_name:
-            if "ansible" in lab_name or "inventory-files" in lab_name or "ad-hoc-commands" in lab_name or "writing-playbooks" in lab_name or "variables-and-facts" in lab_name or "templates-and-jinja2" in lab_name or "ansible-galaxy" in lab_name or "tags-handlers-and" in lab_name:
+            if "aws" in lab_name or "iam-" in lab_name or "ec2-" in lab_name or "vpc-" in lab_name or "s3-" in lab_name or "rds-" in lab_name or "load-balancers-" in lab_name or "cloudwatch-" in lab_name:
+                shell = AWSShell(session_id)
+            elif "ansible" in lab_name or "inventory-files" in lab_name or "ad-hoc-commands" in lab_name or "writing-playbooks" in lab_name or "variables-and-facts" in lab_name or "templates-and-jinja2" in lab_name or "ansible-galaxy" in lab_name or "tags-handlers-and" in lab_name:
                 shell = AnsibleShell(session_id)
             elif "terraform" in lab_name or "variables-outputs" in lab_name or "state-management" in lab_name or "best-practices-terraform" in lab_name:
                 shell = TerraformShell(session_id)

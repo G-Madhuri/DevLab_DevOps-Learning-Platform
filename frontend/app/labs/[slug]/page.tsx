@@ -165,6 +165,24 @@ export default function LabDetailsPage() {
             "Local and Remote backend configurations",
           ],
         };
+      case "aws":
+        return {
+          prerequisites: [
+            "Familiarity with networks routing and client server connections.",
+            "Basic understanding of command-line tools structures.",
+          ],
+          objectives: [
+            "Configure administrative keys and manage secure user privileges using IAM.",
+            "Orchestrate virtual compute resources and build secure VPC subnets.",
+            "Deploy highly available object repositories and postgres database clusters.",
+          ],
+          topics: [
+            "AWS Global Infrastructure Regions and Availability Zones",
+            "Identity Access Management users, policies and scopes",
+            "Elastic Compute Cloud virtual nodes provisionings",
+            "VPC Classless Inter-Domain Routing boundaries",
+          ],
+        };
       case "ansible":
         return {
           prerequisites: [

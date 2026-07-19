@@ -360,7 +360,7 @@ async def websocket_terminal(websocket: WebSocket, session_id: str):
 
     # Check simulated, git, actions, cicd or jenkins host shell
     sim_shell = None
-    if container_id and (container_id.startswith("simulated-") or container_id.startswith("git-") or container_id.startswith("actions-") or container_id.startswith("cicd-") or container_id.startswith("jenkins-") or container_id.startswith("terraform-") or container_id.startswith("ansible-")):
+    if container_id and (container_id.startswith("simulated-") or container_id.startswith("git-") or container_id.startswith("actions-") or container_id.startswith("cicd-") or container_id.startswith("jenkins-") or container_id.startswith("terraform-") or container_id.startswith("ansible-") or container_id.startswith("aws-")):
         sim_shell = runtime_service.get_session_shell(session_id, lab_name)
     
     # Fallback: if Docker is unavailable, always provide a simulated shell
