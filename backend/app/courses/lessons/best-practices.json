@@ -1,0 +1,302 @@
+{
+  "slug": "best-practices",
+  "title": "Best Practices",
+  "overview": {
+    "introduction": "Scale playbooks production environments by structuring variables scopes, checking syntax validity, and tracking files formats.",
+    "why_it_matters": "Understanding Best Practices allows developers to deploy environments reliably at high speed.",
+    "industry_usage": "Used by system administrators and platform engineering teams globally.",
+    "what_you_will_build": "An isolated sandbox folder deploying yaml playbooks and targets configs.",
+    "prerequisites": "Git course and Linux terminal fundamentals.",
+    "estimated_time": "30 mins",
+    "difficulty": "Medium",
+    "learning_outcomes": [
+      "Explain the main concepts of Best Practices.",
+      "Structure inventories, playbooks, templates, and roles.",
+      "Incorporate variables, tags, handlers, and conditionals logic.",
+      "Deploy and check state values on target nodes.",
+      "Adopt clean IT infrastructure provisioning workflows."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "Clean Code Standards",
+      "definition": "Splitting configurations variables files (group_vars/host_vars) and executing dry checks.",
+      "why_important": [
+        "Guarantees environment replication repeatibility.",
+        "Saves manual server setup configuration time.",
+        "Enforces security parameter boundaries."
+      ],
+      "explanation": "Detailed context regarding Best Practices. Structuring configurations as code blocks improves change transparency.",
+      "commands": [
+        {
+          "name": "mkdir",
+          "purpose": "Execute actions related to Best Practices.",
+          "syntax": "mkdir",
+          "example": "mkdir",
+          "expected_output": "Success!",
+          "output_explanation": "Confirms action step for Best Practices is processed."
+        }
+      ],
+      "pro_tip": "Run dry plan configurations using --check option to verify effects before provisioning targets.",
+      "best_practices": "Version control your playbooks and store credentials using encrypted Ansible Vault.",
+      "common_mistakes": "Forgetting YAML syntax spaces indentation rules causing invalid files errors.",
+      "real_world_usage": "IT operations teams launch thousands of web nodes in minutes using roles.",
+      "summary": "Best Practices configuration forms the building block of config management."
+    }
+  ],
+  "interactive_examples": [
+    {
+      "objective": "Define Best Practices parameters.",
+      "scenario": "Review local variables settings in workspace.",
+      "steps": [
+        {
+          "command": "pwd",
+          "expected_output": "/home/student",
+          "explanation": "Ensure you are in the correct home directory."
+        }
+      ],
+      "solution": "Verify tasks lists indentations and paths."
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Define configuration variables paths",
+      "definition": "Splitting configurations variables files (group_vars/host_vars) and executing dry checks.",
+      "explanation": "Understanding Define configuration variables paths is critical for configuring this step.",
+      "instruction": "Create standard group variables directories structure layout.",
+      "example": "mkdir -p group_vars host_vars",
+      "expected": "Success!",
+      "hint": "Check spelling and spacings of your commands carefully.",
+      "solution": "mkdir -p group_vars host_vars",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 2,
+      "title": "2. Display system diagnostics",
+      "definition": "Splitting configurations variables files (group_vars/host_vars) and executing dry checks.",
+      "explanation": "Understanding Display system diagnostics is critical for configuring this step.",
+      "instruction": "Inspect sandbox properties configurations.",
+      "example": "pwd",
+      "expected": "Success!",
+      "hint": "Confirm you are in the workspace folder.",
+      "solution": "pwd",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 3,
+      "title": "3. List directory contents",
+      "definition": "Splitting configurations variables files (group_vars/host_vars) and executing dry checks.",
+      "explanation": "Understanding List directory contents is critical for configuring this step.",
+      "instruction": "Confirm created hosts, templates, or playbooks configurations.",
+      "example": "ls -l",
+      "expected": "Success!",
+      "hint": "Run files list to verify existence.",
+      "solution": "ls -l",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 4,
+      "title": "4. Verify file content displays",
+      "definition": "Splitting configurations variables files (group_vars/host_vars) and executing dry checks.",
+      "explanation": "Understanding Verify file content displays is critical for configuring this step.",
+      "instruction": "Check the configured playbook.yml file content details.",
+      "example": "cat playbook.yml || cat hosts",
+      "expected": "Success!",
+      "hint": "Verify the playbook or inventory target configs are correctly saved.",
+      "solution": "cat playbook.yml || cat hosts",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 5,
+      "title": "5. Display Ansible module documentation",
+      "definition": "Splitting configurations variables files (group_vars/host_vars) and executing dry checks.",
+      "explanation": "Understanding Display Ansible module documentation is critical for configuring this step.",
+      "instruction": "Retrieve description properties for module configurations.",
+      "example": "ansible-doc ping",
+      "expected": "Success!",
+      "hint": "Use help docs reader subcommand.",
+      "solution": "ansible-doc ping",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 6,
+      "title": "6. Query inventory configuration",
+      "definition": "Splitting configurations variables files (group_vars/host_vars) and executing dry checks.",
+      "explanation": "Understanding Query inventory configuration is critical for configuring this step.",
+      "instruction": "Check list outcomes of configured target nodes.",
+      "example": "ansible-inventory -i hosts --list || echo 'No inventory yet'",
+      "expected": "Success!",
+      "hint": "Ensure hosts file has been defined first.",
+      "solution": "ansible-inventory -i hosts --list || echo 'No inventory yet'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 7,
+      "title": "7. Dry run playbook test",
+      "definition": "Splitting configurations variables files (group_vars/host_vars) and executing dry checks.",
+      "explanation": "Understanding Dry run playbook test is critical for configuring this step.",
+      "instruction": "Trigger playbook syntax validation checks.",
+      "example": "ansible-playbook -i hosts playbook.yml --syntax-check || echo 'No playbook yet'",
+      "expected": "Success!",
+      "hint": "Confirm the playbook.yml file has been written.",
+      "solution": "ansible-playbook -i hosts playbook.yml --syntax-check || echo 'No playbook yet'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 8,
+      "title": "8. Mini Challenge: Dry-run syntax checks",
+      "definition": "Splitting configurations variables files (group_vars/host_vars) and executing dry checks.",
+      "explanation": "Understanding Mini Challenge: Dry-run syntax checks is critical for configuring this step.",
+      "instruction": "Perform validation diagnostics on playbook syntax configurations using dry check CLI flags.",
+      "example": "ansible-playbook -i hosts playbook.yml --syntax-check",
+      "expected": "Mini Challenge Complete",
+      "hint": "Complete the mini challenge criteria to validate lesson progress.",
+      "solution": "ansible-playbook -i hosts playbook.yml --syntax-check",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    }
+  ],
+  "practice_exercises": [
+    {
+      "title": "Exercise: Explore Best Practices",
+      "description": "Try appending test targets variables and check syntax.",
+      "expected_outcome": "Valid configuration parameters verified."
+    }
+  ],
+  "quiz": [
+    {
+      "id": 1,
+      "question": "Question 1 for Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 1: Option A is correct according to Best Practices principles."
+    },
+    {
+      "id": 2,
+      "question": "Question 2 for Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 2: Option A is correct according to Best Practices principles."
+    },
+    {
+      "id": 3,
+      "question": "Question 3 for Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 3: Option A is correct according to Best Practices principles."
+    },
+    {
+      "id": 4,
+      "question": "Question 4 for Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 4: Option A is correct according to Best Practices principles."
+    },
+    {
+      "id": 5,
+      "question": "Question 5 for Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 5: Option A is correct according to Best Practices principles."
+    },
+    {
+      "id": 6,
+      "question": "Question 6 for Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 6: Option A is correct according to Best Practices principles."
+    },
+    {
+      "id": 7,
+      "question": "Question 7 for Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 7: Option A is correct according to Best Practices principles."
+    },
+    {
+      "id": 8,
+      "question": "Question 8 for Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 8: Option A is correct according to Best Practices principles."
+    },
+    {
+      "id": 9,
+      "question": "Question 9 for Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 9: Option A is correct according to Best Practices principles."
+    },
+    {
+      "id": 10,
+      "question": "Question 10 for Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 10: Option A is correct according to Best Practices principles."
+    }
+  ],
+  "resources": [
+    {
+      "title": "Official Best Practices Documentation",
+      "url": "https://docs.ansible.com/ansible/latest/user_guide/playbooks_best_practices.html"
+    }
+  ]
+}

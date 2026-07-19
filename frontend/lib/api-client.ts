@@ -133,7 +133,7 @@ apiClient.interceptors.response.use(
 
       if (url.includes("/labs/categories")) {
         return Promise.resolve({
-          data: ["Linux", "Docker", "Kubernetes", "Terraform", "AWS", "Azure"],
+          data: ["Linux", "Docker", "Kubernetes", "Git", "GitHub Actions", "CI/CD", "Jenkins", "Terraform", "Ansible", "AWS", "Azure"],
           status: 200,
           statusText: "OK",
           headers: {},

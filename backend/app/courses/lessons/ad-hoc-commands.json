@@ -1,0 +1,302 @@
+{
+  "slug": "ad-hoc-commands",
+  "title": "Ad-hoc Commands",
+  "overview": {
+    "introduction": "Ad-hoc commands execute quick tasks on remote servers without defining playbooks, ideal for operations like triggering server reboot or checking disk spaces.",
+    "why_it_matters": "Understanding Ad-hoc Commands allows developers to deploy environments reliably at high speed.",
+    "industry_usage": "Used by system administrators and platform engineering teams globally.",
+    "what_you_will_build": "An isolated sandbox folder deploying yaml playbooks and targets configs.",
+    "prerequisites": "Git course and Linux terminal fundamentals.",
+    "estimated_time": "30 mins",
+    "difficulty": "Beginner",
+    "learning_outcomes": [
+      "Explain the main concepts of Ad-hoc Commands.",
+      "Structure inventories, playbooks, templates, and roles.",
+      "Incorporate variables, tags, handlers, and conditionals logic.",
+      "Deploy and check state values on target nodes.",
+      "Adopt clean IT infrastructure provisioning workflows."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "Single-Module CLI Invocation",
+      "definition": "Running individual task modules directly on target host groupings via command line options.",
+      "why_important": [
+        "Guarantees environment replication repeatibility.",
+        "Saves manual server setup configuration time.",
+        "Enforces security parameter boundaries."
+      ],
+      "explanation": "Detailed context regarding Ad-hoc Commands. Structuring configurations as code blocks improves change transparency.",
+      "commands": [
+        {
+          "name": "ansible",
+          "purpose": "Execute actions related to Ad-hoc Commands.",
+          "syntax": "ansible",
+          "example": "ansible",
+          "expected_output": "Success!",
+          "output_explanation": "Confirms action step for Ad-hoc Commands is processed."
+        }
+      ],
+      "pro_tip": "Run dry plan configurations using --check option to verify effects before provisioning targets.",
+      "best_practices": "Version control your playbooks and store credentials using encrypted Ansible Vault.",
+      "common_mistakes": "Forgetting YAML syntax spaces indentation rules causing invalid files errors.",
+      "real_world_usage": "IT operations teams launch thousands of web nodes in minutes using roles.",
+      "summary": "Ad-hoc Commands configuration forms the building block of config management."
+    }
+  ],
+  "interactive_examples": [
+    {
+      "objective": "Define Ad-hoc Commands parameters.",
+      "scenario": "Review local variables settings in workspace.",
+      "steps": [
+        {
+          "command": "pwd",
+          "expected_output": "/home/student",
+          "explanation": "Ensure you are in the correct home directory."
+        }
+      ],
+      "solution": "Verify tasks lists indentations and paths."
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Ping all hosts in inventory",
+      "definition": "Running individual task modules directly on target host groupings via command line options.",
+      "explanation": "Understanding Ping all hosts in inventory is critical for configuring this step.",
+      "instruction": "Run the ad-hoc ping module to verify SSH/Local target connectivity.",
+      "example": "ansible all -i hosts -m ping",
+      "expected": "Success!",
+      "hint": "Check spelling and spacings of your commands carefully.",
+      "solution": "ansible all -i hosts -m ping",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 2,
+      "title": "2. Display system diagnostics",
+      "definition": "Running individual task modules directly on target host groupings via command line options.",
+      "explanation": "Understanding Display system diagnostics is critical for configuring this step.",
+      "instruction": "Inspect sandbox properties configurations.",
+      "example": "pwd",
+      "expected": "Success!",
+      "hint": "Confirm you are in the workspace folder.",
+      "solution": "pwd",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 3,
+      "title": "3. List directory contents",
+      "definition": "Running individual task modules directly on target host groupings via command line options.",
+      "explanation": "Understanding List directory contents is critical for configuring this step.",
+      "instruction": "Confirm created hosts, templates, or playbooks configurations.",
+      "example": "ls -l",
+      "expected": "Success!",
+      "hint": "Run files list to verify existence.",
+      "solution": "ls -l",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 4,
+      "title": "4. Verify file content displays",
+      "definition": "Running individual task modules directly on target host groupings via command line options.",
+      "explanation": "Understanding Verify file content displays is critical for configuring this step.",
+      "instruction": "Check the configured playbook.yml file content details.",
+      "example": "cat playbook.yml || cat hosts",
+      "expected": "Success!",
+      "hint": "Verify the playbook or inventory target configs are correctly saved.",
+      "solution": "cat playbook.yml || cat hosts",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 5,
+      "title": "5. Display Ansible module documentation",
+      "definition": "Running individual task modules directly on target host groupings via command line options.",
+      "explanation": "Understanding Display Ansible module documentation is critical for configuring this step.",
+      "instruction": "Retrieve description properties for module configurations.",
+      "example": "ansible-doc ping",
+      "expected": "Success!",
+      "hint": "Use help docs reader subcommand.",
+      "solution": "ansible-doc ping",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 6,
+      "title": "6. Query inventory configuration",
+      "definition": "Running individual task modules directly on target host groupings via command line options.",
+      "explanation": "Understanding Query inventory configuration is critical for configuring this step.",
+      "instruction": "Check list outcomes of configured target nodes.",
+      "example": "ansible-inventory -i hosts --list || echo 'No inventory yet'",
+      "expected": "Success!",
+      "hint": "Ensure hosts file has been defined first.",
+      "solution": "ansible-inventory -i hosts --list || echo 'No inventory yet'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 7,
+      "title": "7. Dry run playbook test",
+      "definition": "Running individual task modules directly on target host groupings via command line options.",
+      "explanation": "Understanding Dry run playbook test is critical for configuring this step.",
+      "instruction": "Trigger playbook syntax validation checks.",
+      "example": "ansible-playbook -i hosts playbook.yml --syntax-check || echo 'No playbook yet'",
+      "expected": "Success!",
+      "hint": "Confirm the playbook.yml file has been written.",
+      "solution": "ansible-playbook -i hosts playbook.yml --syntax-check || echo 'No playbook yet'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 8,
+      "title": "8. Mini Challenge: Check server uptime",
+      "definition": "Running individual task modules directly on target host groupings via command line options.",
+      "explanation": "Understanding Mini Challenge: Check server uptime is critical for configuring this step.",
+      "instruction": "Execute the shell task module ad-hoc configuration passing 'uptime' as arguments parameter.",
+      "example": "ansible all -i hosts -m shell -a \"uptime\"",
+      "expected": "Mini Challenge Complete",
+      "hint": "Complete the mini challenge criteria to validate lesson progress.",
+      "solution": "ansible all -i hosts -m shell -a \"uptime\"",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    }
+  ],
+  "practice_exercises": [
+    {
+      "title": "Exercise: Explore Ad-hoc Commands",
+      "description": "Try appending test targets variables and check syntax.",
+      "expected_outcome": "Valid configuration parameters verified."
+    }
+  ],
+  "quiz": [
+    {
+      "id": 1,
+      "question": "Question 1 for Ad-hoc Commands: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 1: Option A is correct according to Ad-hoc Commands principles."
+    },
+    {
+      "id": 2,
+      "question": "Question 2 for Ad-hoc Commands: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 2: Option A is correct according to Ad-hoc Commands principles."
+    },
+    {
+      "id": 3,
+      "question": "Question 3 for Ad-hoc Commands: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 3: Option A is correct according to Ad-hoc Commands principles."
+    },
+    {
+      "id": 4,
+      "question": "Question 4 for Ad-hoc Commands: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 4: Option A is correct according to Ad-hoc Commands principles."
+    },
+    {
+      "id": 5,
+      "question": "Question 5 for Ad-hoc Commands: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 5: Option A is correct according to Ad-hoc Commands principles."
+    },
+    {
+      "id": 6,
+      "question": "Question 6 for Ad-hoc Commands: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 6: Option A is correct according to Ad-hoc Commands principles."
+    },
+    {
+      "id": 7,
+      "question": "Question 7 for Ad-hoc Commands: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 7: Option A is correct according to Ad-hoc Commands principles."
+    },
+    {
+      "id": 8,
+      "question": "Question 8 for Ad-hoc Commands: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 8: Option A is correct according to Ad-hoc Commands principles."
+    },
+    {
+      "id": 9,
+      "question": "Question 9 for Ad-hoc Commands: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 9: Option A is correct according to Ad-hoc Commands principles."
+    },
+    {
+      "id": 10,
+      "question": "Question 10 for Ad-hoc Commands: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 10: Option A is correct according to Ad-hoc Commands principles."
+    }
+  ],
+  "resources": [
+    {
+      "title": "Official Ad-hoc Commands Documentation",
+      "url": "https://docs.ansible.com/ansible/latest/user_guide/intro_adhoc.html"
+    }
+  ]
+}

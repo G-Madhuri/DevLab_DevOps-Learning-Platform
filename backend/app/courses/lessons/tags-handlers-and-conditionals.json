@@ -1,0 +1,302 @@
+{
+  "slug": "tags-handlers-and-conditionals",
+  "title": "Tags, Handlers & Conditionals",
+  "overview": {
+    "introduction": "Conditionals execute tasks only when specific logic is met; handlers run only when triggered by changes notification; tags allow running subset tasks.",
+    "why_it_matters": "Understanding Tags, Handlers & Conditionals allows developers to deploy environments reliably at high speed.",
+    "industry_usage": "Used by system administrators and platform engineering teams globally.",
+    "what_you_will_build": "An isolated sandbox folder deploying yaml playbooks and targets configs.",
+    "prerequisites": "Git course and Linux terminal fundamentals.",
+    "estimated_time": "30 mins",
+    "difficulty": "Medium",
+    "learning_outcomes": [
+      "Explain the main concepts of Tags, Handlers & Conditionals.",
+      "Structure inventories, playbooks, templates, and roles.",
+      "Incorporate variables, tags, handlers, and conditionals logic.",
+      "Deploy and check state values on target nodes.",
+      "Adopt clean IT infrastructure provisioning workflows."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "Task Flow Logic Filters",
+      "definition": "Applying conditionals logic keys (when), tags tags, and handlers (notify) to optimize playbook cycles.",
+      "why_important": [
+        "Guarantees environment replication repeatibility.",
+        "Saves manual server setup configuration time.",
+        "Enforces security parameter boundaries."
+      ],
+      "explanation": "Detailed context regarding Tags, Handlers & Conditionals. Structuring configurations as code blocks improves change transparency.",
+      "commands": [
+        {
+          "name": "echo",
+          "purpose": "Execute actions related to Tags, Handlers & Conditionals.",
+          "syntax": "echo",
+          "example": "echo",
+          "expected_output": "Success!",
+          "output_explanation": "Confirms action step for Tags, Handlers & Conditionals is processed."
+        }
+      ],
+      "pro_tip": "Run dry plan configurations using --check option to verify effects before provisioning targets.",
+      "best_practices": "Version control your playbooks and store credentials using encrypted Ansible Vault.",
+      "common_mistakes": "Forgetting YAML syntax spaces indentation rules causing invalid files errors.",
+      "real_world_usage": "IT operations teams launch thousands of web nodes in minutes using roles.",
+      "summary": "Tags, Handlers & Conditionals configuration forms the building block of config management."
+    }
+  ],
+  "interactive_examples": [
+    {
+      "objective": "Define Tags, Handlers & Conditionals parameters.",
+      "scenario": "Review local variables settings in workspace.",
+      "steps": [
+        {
+          "command": "pwd",
+          "expected_output": "/home/student",
+          "explanation": "Ensure you are in the correct home directory."
+        }
+      ],
+      "solution": "Verify tasks lists indentations and paths."
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Configure tagged execution play",
+      "definition": "Applying conditionals logic keys (when), tags tags, and handlers (notify) to optimize playbook cycles.",
+      "explanation": "Understanding Configure tagged execution play is critical for configuring this step.",
+      "instruction": "Create a playbook task mapping a custom tag labels configuration.",
+      "example": "echo -e '---\n- name: Handlers Play\n  hosts: all\n  tasks:\n    - name: Task tag\n      debug:\n        msg: \"Tagged task\"\n      tags: install' > playbook.yml",
+      "expected": "Success!",
+      "hint": "Check spelling and spacings of your commands carefully.",
+      "solution": "echo -e '---\n- name: Handlers Play\n  hosts: all\n  tasks:\n    - name: Task tag\n      debug:\n        msg: \"Tagged task\"\n      tags: install' > playbook.yml",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 2,
+      "title": "2. Display system diagnostics",
+      "definition": "Applying conditionals logic keys (when), tags tags, and handlers (notify) to optimize playbook cycles.",
+      "explanation": "Understanding Display system diagnostics is critical for configuring this step.",
+      "instruction": "Inspect sandbox properties configurations.",
+      "example": "pwd",
+      "expected": "Success!",
+      "hint": "Confirm you are in the workspace folder.",
+      "solution": "pwd",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 3,
+      "title": "3. List directory contents",
+      "definition": "Applying conditionals logic keys (when), tags tags, and handlers (notify) to optimize playbook cycles.",
+      "explanation": "Understanding List directory contents is critical for configuring this step.",
+      "instruction": "Confirm created hosts, templates, or playbooks configurations.",
+      "example": "ls -l",
+      "expected": "Success!",
+      "hint": "Run files list to verify existence.",
+      "solution": "ls -l",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 4,
+      "title": "4. Verify file content displays",
+      "definition": "Applying conditionals logic keys (when), tags tags, and handlers (notify) to optimize playbook cycles.",
+      "explanation": "Understanding Verify file content displays is critical for configuring this step.",
+      "instruction": "Check the configured playbook.yml file content details.",
+      "example": "cat playbook.yml || cat hosts",
+      "expected": "Success!",
+      "hint": "Verify the playbook or inventory target configs are correctly saved.",
+      "solution": "cat playbook.yml || cat hosts",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 5,
+      "title": "5. Display Ansible module documentation",
+      "definition": "Applying conditionals logic keys (when), tags tags, and handlers (notify) to optimize playbook cycles.",
+      "explanation": "Understanding Display Ansible module documentation is critical for configuring this step.",
+      "instruction": "Retrieve description properties for module configurations.",
+      "example": "ansible-doc ping",
+      "expected": "Success!",
+      "hint": "Use help docs reader subcommand.",
+      "solution": "ansible-doc ping",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 6,
+      "title": "6. Query inventory configuration",
+      "definition": "Applying conditionals logic keys (when), tags tags, and handlers (notify) to optimize playbook cycles.",
+      "explanation": "Understanding Query inventory configuration is critical for configuring this step.",
+      "instruction": "Check list outcomes of configured target nodes.",
+      "example": "ansible-inventory -i hosts --list || echo 'No inventory yet'",
+      "expected": "Success!",
+      "hint": "Ensure hosts file has been defined first.",
+      "solution": "ansible-inventory -i hosts --list || echo 'No inventory yet'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 7,
+      "title": "7. Dry run playbook test",
+      "definition": "Applying conditionals logic keys (when), tags tags, and handlers (notify) to optimize playbook cycles.",
+      "explanation": "Understanding Dry run playbook test is critical for configuring this step.",
+      "instruction": "Trigger playbook syntax validation checks.",
+      "example": "ansible-playbook -i hosts playbook.yml --syntax-check || echo 'No playbook yet'",
+      "expected": "Success!",
+      "hint": "Confirm the playbook.yml file has been written.",
+      "solution": "ansible-playbook -i hosts playbook.yml --syntax-check || echo 'No playbook yet'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 8,
+      "title": "8. Mini Challenge: Configure notification handlers",
+      "definition": "Applying conditionals logic keys (when), tags tags, and handlers (notify) to optimize playbook cycles.",
+      "explanation": "Understanding Mini Challenge: Configure notification handlers is critical for configuring this step.",
+      "instruction": "Add a task notifying a restart handler action on playbook state modifications.",
+      "example": "echo -e '---\n- name: Handler Play\n  hosts: all\n  tasks:\n    - name: Run task\n      debug:\n        msg: \"Triggering handler\"\n      notify: Restart server\n  handlers:\n    - name: Restart server\n      debug:\n        msg: \"Server restarted\"' > playbook.yml && ansible-playbook -i hosts playbook.yml",
+      "expected": "Mini Challenge Complete",
+      "hint": "Complete the mini challenge criteria to validate lesson progress.",
+      "solution": "echo -e '---\n- name: Handler Play\n  hosts: all\n  tasks:\n    - name: Run task\n      debug:\n        msg: \"Triggering handler\"\n      notify: Restart server\n  handlers:\n    - name: Restart server\n      debug:\n        msg: \"Server restarted\"' > playbook.yml && ansible-playbook -i hosts playbook.yml",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    }
+  ],
+  "practice_exercises": [
+    {
+      "title": "Exercise: Explore Tags, Handlers & Conditionals",
+      "description": "Try appending test targets variables and check syntax.",
+      "expected_outcome": "Valid configuration parameters verified."
+    }
+  ],
+  "quiz": [
+    {
+      "id": 1,
+      "question": "Question 1 for Tags, Handlers & Conditionals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 1: Option A is correct according to Tags, Handlers & Conditionals principles."
+    },
+    {
+      "id": 2,
+      "question": "Question 2 for Tags, Handlers & Conditionals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 2: Option A is correct according to Tags, Handlers & Conditionals principles."
+    },
+    {
+      "id": 3,
+      "question": "Question 3 for Tags, Handlers & Conditionals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 3: Option A is correct according to Tags, Handlers & Conditionals principles."
+    },
+    {
+      "id": 4,
+      "question": "Question 4 for Tags, Handlers & Conditionals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 4: Option A is correct according to Tags, Handlers & Conditionals principles."
+    },
+    {
+      "id": 5,
+      "question": "Question 5 for Tags, Handlers & Conditionals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 5: Option A is correct according to Tags, Handlers & Conditionals principles."
+    },
+    {
+      "id": 6,
+      "question": "Question 6 for Tags, Handlers & Conditionals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 6: Option A is correct according to Tags, Handlers & Conditionals principles."
+    },
+    {
+      "id": 7,
+      "question": "Question 7 for Tags, Handlers & Conditionals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 7: Option A is correct according to Tags, Handlers & Conditionals principles."
+    },
+    {
+      "id": 8,
+      "question": "Question 8 for Tags, Handlers & Conditionals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 8: Option A is correct according to Tags, Handlers & Conditionals principles."
+    },
+    {
+      "id": 9,
+      "question": "Question 9 for Tags, Handlers & Conditionals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 9: Option A is correct according to Tags, Handlers & Conditionals principles."
+    },
+    {
+      "id": 10,
+      "question": "Question 10 for Tags, Handlers & Conditionals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 10: Option A is correct according to Tags, Handlers & Conditionals principles."
+    }
+  ],
+  "resources": [
+    {
+      "title": "Official Tags, Handlers & Conditionals Documentation",
+      "url": "https://docs.ansible.com/ansible/latest/user_guide/playbooks_handlers.html"
+    }
+  ]
+}

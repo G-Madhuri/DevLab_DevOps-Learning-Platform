@@ -165,6 +165,94 @@ export default function LabDetailsPage() {
             "Local and Remote backend configurations",
           ],
         };
+      case "ansible":
+        return {
+          prerequisites: [
+            "Linux terminal interface familiarity.",
+            "Basic understanding of YAML syntax layout.",
+          ],
+          objectives: [
+            "Create push-based automation plays targeting inventory host groups.",
+            "Write structured playbooks utilizing modules, handlers, and conditionals.",
+            "Implement reusable system templates using Jinja2 syntax expressions.",
+          ],
+          topics: [
+            "INI hosts inventory setups",
+            "Playbooks execution using ansible-playbook",
+            "Dynamic variables variables and fact gathering",
+            "Modular scaling with Ansible Roles and Galaxy",
+          ],
+        };
+      case "jenkins":
+        return {
+          prerequisites: [
+            "Basic git repository flow concepts.",
+            "General CI/CD automated deployment architectures.",
+          ],
+          objectives: [
+            "Define declarative build-and-test stages using Jenkinsfiles.",
+            "Configure log pruning best practices to optimize master node loads.",
+            "Securely inject credentials and manage distributed build agents.",
+          ],
+          topics: [
+            "Freestyle build jobs vs Pipeline as Code",
+            "Jenkinsfile Declarative vs Scripted paradigm",
+            "Credential store credential bindings",
+            "Distributed builds and agent node labels",
+          ],
+        };
+      case "git":
+        return {
+          prerequisites: [
+            "Familiarity with text editors and directory structures.",
+          ],
+          objectives: [
+            "Master staging area actions, commit history logs, and branch merges.",
+            "Solve branching merge conflicts and recover deleted commits.",
+            "Synchronize local changes with remote repositories and team workflows.",
+          ],
+          topics: [
+            "Commit history graph navigations",
+            "Branch pointers management and merging conflicts",
+            "Advanced reflogs, stashes, and tags",
+            "Remote sync commands (fetch, pull, push)",
+          ],
+        };
+      case "github-actions":
+        return {
+          prerequisites: [
+            "Basic git branching and repository setup.",
+            "Familiarity with YAML structures.",
+          ],
+          objectives: [
+            "Design event-triggered build workflows on the GitHub runner pools.",
+            "Run testing suites and save artifacts using upload actions.",
+            "Deploy secure release jobs utilizing environment secrets.",
+          ],
+          topics: [
+            "Workflow execution triggers",
+            "GitHub Actions Runner environments",
+            "Build artifacts storage systems",
+            "Runner Secrets security keys",
+          ],
+        };
+      case "cicd":
+        return {
+          prerequisites: [
+            "Basic Linux, Git, and containerization knowledge.",
+          ],
+          objectives: [
+            "Build automated CI pipeline gates validating code checkins.",
+            "Implement automated compilation, unit testing, and linting stages.",
+            "Create repeatable continuous delivery deployment policies.",
+          ],
+          topics: [
+            "Continuous Integration syntax verification",
+            "Automated test suite executions",
+            "Continuous Delivery release packaging",
+            "Continuous Deployment rollbacks strategies",
+          ],
+        };
       default:
         return defaultSyllabus;
     }

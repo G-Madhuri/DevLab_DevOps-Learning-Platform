@@ -405,23 +405,87 @@
     "id": "ansible",
     "title": "Ansible",
     "description": "Configure and automate system deployments via declarative Ansible Playbooks and Roles.",
-    "icon": "book-open",
+    "icon": "shield",
     "difficulty": "Beginner",
-    "coming_soon": true,
+    "coming_soon": false,
     "courses": [
       {
-        "slug": "ansible-playbooks-for-beginners",
-        "title": "Ansible Playbooks for Beginners",
-        "description": "Write declarative Playbooks to manage system updates and package installations.",
+        "slug": "introduction-to-ansible",
+        "title": "Introduction to Ansible",
+        "description": "Learn the primary push-based configuration management concepts of Ansible.",
         "difficulty": "Beginner",
-        "duration": "45 minutes"
+        "duration": "30 minutes"
       },
       {
-        "slug": "ansible-roles-and-galaxy",
-        "title": "Ansible Roles & Galaxy",
-        "description": "Re-engineer tasks, handlers, vars, and templates into modular, reusable Ansible Roles.",
+        "slug": "inventory-files-and-hosts",
+        "title": "Inventory Files & Hosts",
+        "description": "Structure target host groups, INI properties, and connection variables.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "ad-hoc-commands",
+        "title": "Ad-hoc Commands",
+        "description": "Trigger quick module execution scripts directly on target node groupings.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "writing-playbooks",
+        "title": "Writing Playbooks",
+        "description": "Deploy stateful configuration states using structured YAML playbook definitions.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "variables-and-facts",
+        "title": "Variables & Facts",
+        "description": "Declare custom play variables and query dynamically gathered host system facts.",
         "difficulty": "Intermediate",
-        "duration": "60 minutes"
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "templates-and-jinja2",
+        "title": "Templates & Jinja2",
+        "description": "Compile dynamic text configuration files using the Jinja2 rendering engine.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "roles",
+        "title": "Roles",
+        "description": "Organize tasks, templates, handlers, and variables into modular roles path structures.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "ansible-galaxy",
+        "title": "Ansible Galaxy",
+        "description": "Import and configure shared community roles utilizing Ansible Galaxy CLI.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "tags-handlers-and-conditionals",
+        "title": "Tags, Handlers & Conditionals",
+        "description": "Incorporate task tags, conditional when blocks, and event notify handlers.",
+        "difficulty": "Advanced",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "best-practices",
+        "title": "Best Practices",
+        "description": "Organize group_vars variable scopes and perform syntax validations.",
+        "difficulty": "Advanced",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "ansible-capstone-project",
+        "title": "Ansible Capstone Project",
+        "description": "Deliver a complete multi-role web services automation deployment workflow.",
+        "difficulty": "Advanced",
+        "duration": "45 minutes",
+        "is_capstone": true
       }
     ]
   },
