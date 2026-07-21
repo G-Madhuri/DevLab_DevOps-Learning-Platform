@@ -2342,6 +2342,383 @@ class TerraformRuntime(BaseRuntime):
                 logger.warning(f"Failed to remove Terraform session directory {session_dir}: {e}")
 
 
+class AzureShell(GitShell):
+    """
+    A real host-based subshell that executes basic CLI utilities and
+    simulates Azure CLI (az) commands inside the session's workspace.
+    """
+    def __init__(self, session_id: str):
+        self.session_id = session_id
+        self.base_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"azure-{session_id}")
+        )
+        os.makedirs(self.base_dir, exist_ok=True)
+        self.cwd = "/"
+        self.history = []
+        self.azure_state = {
+            "groups": [],
+            "vms": [],
+            "vnets": [],
+            "subnets": [],
+            "storage_accounts": [],
+            "blobs": {},
+            "sql_servers": [],
+            "sql_dbs": [],
+            "load_balancers": [],
+            "vmss": [],
+            "alerts": [],
+            "nsgs": [],
+            "nsg_rules": []
+        }
+
+    def execute_command(self, cmd_line: str) -> str:
+        cmd_line = cmd_line.strip()
+        if not cmd_line:
+            return ""
+
+        self.history.append(cmd_line)
+        parts = cmd_line.split()
+        cmd = parts[0]
+        args = parts[1:]
+
+        def make_prompt(output_text: str = "") -> str:
+            suffix = "\r\n" if output_text and not output_text.endswith("\r\n") else ""
+            return f"{output_text}{suffix}student@devlab-azure:$ "
+
+        # Whitelist safe commands (including az, ssh, curl, terraform)
+        azure_cmds = ["az", "ssh", "curl", "terraform"]
+        if cmd not in ["git", "ls", "cat", "echo", "touch", "mkdir", "rm", "pwd", "clear"] + azure_cmds:
+            return make_prompt(f"bash: {cmd}: command not allowed in Azure labs.")
+
+        if cmd == "pwd":
+            return make_prompt("/")
+
+        if cmd == "terraform":
+            if not args:
+                return make_prompt("Usage: terraform <subcommand> [options]")
+            sub = args[0]
+            if sub == "init":
+                dot_tf = os.path.join(self.base_dir, ".terraform")
+                os.makedirs(dot_tf, exist_ok=True)
+                return make_prompt("Initializing provider plugins...\n- Sourced hashicorp/azurerm (simulated)\nTerraform successfully initialized!")
+            elif sub == "plan":
+                return make_prompt("Plan: 8 to add, 0 to change, 0 to destroy.")
+            elif sub == "apply":
+                state_file = os.path.join(self.base_dir, "terraform.tfstate")
+                with open(state_file, "w") as sf:
+                    sf.write('{"version": 4, "resources": []}')
+                return make_prompt("Apply complete! Resources: 8 added, 0 changed, 0 destroyed.")
+
+        if cmd == "ssh":
+            return make_prompt("Connection to 127.0.0.1 closed.\r\nstudent@devlab-azure:$ ")
+
+        if cmd == "curl":
+            return make_prompt("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\nWelcome to Azure Production Web App!")
+
+        if cmd == "az":
+            if not args:
+                return make_prompt("Usage: az [group | vm | network | storage | sql | monitor | account] [subcommand]")
+
+            sub = args[0]
+            if sub == "--version":
+                return make_prompt("azure-cli/2.50.0 Python/3.11.5 Windows/10 azure-core/1.28.0")
+
+            if sub == "account":
+                import json
+                return make_prompt(json.dumps([
+                    {
+                        "id": "00000000-0000-0000-0000-000000000000",
+                        "name": "DevLab Azure Subscription",
+                        "state": "Enabled",
+                        "user": {"name": "student@devlab.io", "type": "user"}
+                    }
+                ], indent=4))
+
+            if sub == "group":
+                import json
+                action = args[1] if len(args) > 1 else ""
+                if action == "create":
+                    rg_name = "devlab-rg"
+                    if "--name" in args:
+                        rg_name = args[args.index("--name") + 1]
+                    self.azure_state["groups"].append(rg_name)
+                    return make_prompt(json.dumps({
+                        "id": f"/subscriptions/0000/resourceGroups/{rg_name}",
+                        "location": "eastus",
+                        "name": rg_name,
+                        "properties": {"provisioningState": "Succeeded"}
+                    }, indent=4))
+                elif action == "list":
+                    rg_list = []
+                    for g in self.azure_state["groups"]:
+                        rg_list.append({
+                            "id": f"/subscriptions/0000/resourceGroups/{g}",
+                            "location": "eastus",
+                            "name": g,
+                            "properties": {"provisioningState": "Succeeded"}
+                        })
+                    return make_prompt(json.dumps(rg_list, indent=4))
+
+            if sub == "vm":
+                import json
+                action = args[1] if len(args) > 1 else ""
+                if action == "create":
+                    vm_name = "devlab-vm"
+                    if "--name" in args:
+                        vm_name = args[args.index("--name") + 1]
+                    self.azure_state["vms"].append(vm_name)
+                    return make_prompt(json.dumps({
+                        "fqdns": "",
+                        "id": f"/subscriptions/0000/resourceGroups/devlab-rg/providers/Microsoft.Compute/virtualMachines/{vm_name}",
+                        "location": "eastus",
+                        "macAddress": "00-0D-3A-1B-2C-3D",
+                        "powerState": "VM running",
+                        "privateIpAddress": "10.0.1.4",
+                        "publicIpAddress": "52.170.1.1",
+                        "resourceGroup": "devlab-rg"
+                    }, indent=4))
+                elif action == "list":
+                    vms_list = []
+                    for v in self.azure_state["vms"]:
+                        vms_list.append({
+                            "id": f"/subscriptions/0000/resourceGroups/devlab-rg/providers/Microsoft.Compute/virtualMachines/{v}",
+                            "name": v,
+                            "powerState": "VM running",
+                            "resourceGroup": "devlab-rg"
+                        })
+                    return make_prompt(json.dumps(vms_list, indent=4))
+
+            if sub == "network":
+                import json
+                service = args[1] if len(args) > 1 else ""
+                action = args[2] if len(args) > 2 else ""
+                if service == "vnet":
+                    if action == "create":
+                        vnet_name = "devlab-vnet"
+                        if "--name" in args:
+                            vnet_name = args[args.index("--name") + 1]
+                        self.azure_state["vnets"].append(vnet_name)
+                        return make_prompt(json.dumps({
+                            "newVNet": {
+                                "addressSpace": {"addressPrefixes": ["10.0.0.0/16"]},
+                                "id": f"/subscriptions/0000/resourceGroups/devlab-rg/providers/Microsoft.Network/virtualNetworks/{vnet_name}",
+                                "name": vnet_name,
+                                "provisioningState": "Succeeded"
+                            }
+                        }, indent=4))
+                    elif action == "subnet" and len(args) > 3 and args[3] == "create":
+                        subnet_name = "devlab-subnet"
+                        if "--name" in args:
+                            subnet_name = args[args.index("--name") + 1]
+                        self.azure_state["subnets"].append(subnet_name)
+                        return make_prompt(json.dumps({
+                            "addressPrefix": "10.0.1.0/24",
+                            "id": f"/subscriptions/0000/resourceGroups/devlab-rg/providers/Microsoft.Network/virtualNetworks/devlab-vnet/subnets/{subnet_name}",
+                            "name": subnet_name,
+                            "provisioningState": "Succeeded"
+                        }, indent=4))
+                elif service == "lb":
+                    if action == "create":
+                        lb_name = "devlab-lb"
+                        if "--name" in args:
+                            lb_name = args[args.index("--name") + 1]
+                        self.azure_state["load_balancers"].append(lb_name)
+                        return make_prompt(json.dumps({
+                            "LoadBalancer": {
+                                "id": f"/subscriptions/0000/resourceGroups/devlab-rg/providers/Microsoft.Network/loadBalancers/{lb_name}",
+                                "name": lb_name,
+                                "provisioningState": "Succeeded"
+                            }
+                        }, indent=4))
+                elif service == "nsg":
+                    if action == "create":
+                        nsg_name = "devlab-nsg"
+                        if "--name" in args:
+                            nsg_name = args[args.index("--name") + 1]
+                        self.azure_state["nsgs"].append(nsg_name)
+                        return make_prompt(json.dumps({
+                            "NewNSG": {
+                                "id": f"/subscriptions/0000/resourceGroups/devlab-rg/providers/Microsoft.Network/networkSecurityGroups/{nsg_name}",
+                                "name": nsg_name,
+                                "provisioningState": "Succeeded"
+                            }
+                        }, indent=4))
+                    elif action == "rule" and len(args) > 3 and args[3] == "create":
+                        rule_name = "AllowHTTP"
+                        if "--name" in args:
+                            rule_name = args[args.index("--name") + 1]
+                        self.azure_state["nsg_rules"].append(rule_name)
+                        return make_prompt(json.dumps({
+                            "access": "Allow",
+                            "name": rule_name,
+                            "priority": 100,
+                            "provisioningState": "Succeeded"
+                        }, indent=4))
+
+            if sub == "storage":
+                import json
+                service = args[1] if len(args) > 1 else ""
+                action = args[2] if len(args) > 2 else ""
+                if service == "account":
+                    if action == "create":
+                        acc_name = "devlabstorage"
+                        if "--name" in args:
+                            acc_name = args[args.index("--name") + 1]
+                        self.azure_state["storage_accounts"].append(acc_name)
+                        os.makedirs(os.path.join(self.base_dir, acc_name), exist_ok=True)
+                        return make_prompt(json.dumps({
+                            "id": f"/subscriptions/0000/resourceGroups/devlab-rg/providers/Microsoft.Storage/storageAccounts/{acc_name}",
+                            "name": acc_name,
+                            "primaryEndpoints": {"blob": f"https://{acc_name}.blob.core.windows.net/"},
+                            "provisioningState": "Succeeded"
+                        }, indent=4))
+                    elif action == "list":
+                        acc_list = []
+                        for sa in self.azure_state["storage_accounts"]:
+                            acc_list.append({
+                                "id": f"/subscriptions/0000/resourceGroups/devlab-rg/providers/Microsoft.Storage/storageAccounts/{sa}",
+                                "name": sa,
+                                "provisioningState": "Succeeded"
+                            })
+                        return make_prompt(json.dumps(acc_list, indent=4))
+                elif service == "blob":
+                    if action == "upload":
+                        container = "artifacts"
+                        if "--container-name" in args:
+                            container = args[args.index("--container-name") + 1]
+                        file_src = ""
+                        if "--file" in args:
+                            file_src = args[args.index("--file") + 1]
+                        blob_name = file_src
+                        if "--name" in args:
+                            blob_name = args[args.index("--name") + 1]
+                        if container not in self.azure_state["blobs"]:
+                            self.azure_state["blobs"][container] = []
+                        self.azure_state["blobs"][container].append(blob_name)
+                        os.makedirs(os.path.join(self.base_dir, container), exist_ok=True)
+                        src_path = os.path.join(self.base_dir, file_src)
+                        dest_path = os.path.join(self.base_dir, container, blob_name)
+                        if os.path.exists(src_path):
+                            shutil.copy(src_path, dest_path)
+                        else:
+                            with open(dest_path, "w") as df:
+                                df.write("Simulated Azure Blob content")
+                        return make_prompt(json.dumps({"finished": True, "name": blob_name}, indent=4))
+
+            if sub == "sql":
+                import json
+                service = args[1] if len(args) > 1 else ""
+                action = args[2] if len(args) > 2 else ""
+                if service == "server" and action == "create":
+                    srv_name = "devlab-sqlserver"
+                    if "--name" in args:
+                        srv_name = args[args.index("--name") + 1]
+                    self.azure_state["sql_servers"].append(srv_name)
+                    return make_prompt(json.dumps({
+                        "fullyQualifiedDomainName": f"{srv_name}.database.windows.net",
+                        "id": f"/subscriptions/0000/resourceGroups/devlab-rg/providers/Microsoft.Sql/servers/{srv_name}",
+                        "name": srv_name,
+                        "state": "Ready"
+                    }, indent=4))
+                elif service == "db" and action == "create":
+                    db_name = "devlab-db"
+                    if "--name" in args:
+                        db_name = args[args.index("--name") + 1]
+                    self.azure_state["sql_dbs"].append(db_name)
+                    return make_prompt(json.dumps({
+                        "databaseId": "00000000-0000-0000-0000-000000000000",
+                        "id": f"/subscriptions/0000/resourceGroups/devlab-rg/providers/Microsoft.Sql/servers/devlab-sqlserver/databases/{db_name}",
+                        "name": db_name,
+                        "status": "Online"
+                    }, indent=4))
+
+            if sub == "vmss":
+                import json
+                action = args[1] if len(args) > 1 else ""
+                if action == "create":
+                    vmss_name = "devlab-vmss"
+                    if "--name" in args:
+                        vmss_name = args[args.index("--name") + 1]
+                    self.azure_state["vmss"].append(vmss_name)
+                    return make_prompt(json.dumps({
+                        "id": f"/subscriptions/0000/resourceGroups/devlab-rg/providers/Microsoft.Compute/virtualMachineScaleSets/{vmss_name}",
+                        "name": vmss_name,
+                        "provisioningState": "Succeeded"
+                    }, indent=4))
+
+            if sub == "monitor":
+                import json
+                service = args[1] if len(args) > 1 else ""
+                if service == "metrics":
+                    action = args[3] if len(args) > 3 else ""
+                    if action == "create":
+                        alert_name = "devlab-cpu-alert"
+                        if "--name" in args:
+                            alert_name = args[args.index("--name") + 1]
+                        self.azure_state["alerts"].append(alert_name)
+                        return make_prompt(json.dumps({
+                            "id": f"/subscriptions/0000/resourceGroups/devlab-rg/providers/Microsoft.Insights/metricAlerts/{alert_name}",
+                            "name": alert_name,
+                            "properties": {"enabled": True}
+                        }, indent=4))
+                    elif action == "list":
+                        alert_list = []
+                        for a in self.azure_state["alerts"]:
+                            alert_list.append({
+                                "id": f"/subscriptions/0000/resourceGroups/devlab-rg/providers/Microsoft.Insights/metricAlerts/{a}",
+                                "name": a,
+                                "properties": {"enabled": True}
+                            })
+                        return make_prompt(json.dumps(alert_list, indent=4))
+
+            return make_prompt("Azure operation executed successfully (simulated).")
+
+        return super().execute_command(cmd_line)
+
+
+class AzureRuntime:
+    """
+    Manages isolated host-based workspace directories for Azure sandbox tasks.
+    """
+    def create_session(self, session_id: str) -> Dict[str, Any]:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"azure-{session_id}")
+        )
+        os.makedirs(session_dir, exist_ok=True)
+        try:
+            with open(os.path.join(session_dir, "playbook.yml"), "w") as f:
+                f.write(
+                    "---\n"
+                    "- name: Welcome\n"
+                    "  hosts: all\n"
+                    "  tasks:\n"
+                    "    - name: Print welcome\n"
+                    "      debug:\n"
+                    "        msg: \"Welcome to Azure!\"\n"
+                )
+            with open(os.path.join(session_dir, "main.tf"), "w") as f:
+                f.write(
+                    "# Welcome to Terraform on Azure!\n"
+                    "provider \"azurerm\" {\n"
+                    "  features {}\n"
+                    "}\n"
+                )
+            return {"container_id": f"azure-{session_id}", "status": "running", "mode": "azure"}
+        except Exception as e:
+            logger.error(f"AzureRuntime failed to initialize workspace: {e}")
+            return {"container_id": f"simulated-{session_id}", "status": "running", "mode": "simulated"}
+
+    def stop_session(self, session_id: str, container_id: Optional[str] = None) -> None:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"azure-{session_id}")
+        )
+        if os.path.exists(session_dir):
+            try:
+                shutil.rmtree(session_dir, onerror=_remove_readonly)
+            except Exception as e:
+                logger.warning(f"Failed to remove Azure session directory {session_dir}: {e}")
+
+
 class AWSShell(GitShell):
     """
     A real host-based subshell that executes basic CLI utilities and
@@ -3038,12 +3415,20 @@ class LabRuntimeService:
         self.terraform_runtime = TerraformRuntime()
         self.ansible_runtime = AnsibleRuntime()
         self.aws_runtime = AWSRuntime()
+        self.azure_runtime = AzureRuntime()
 
     def create_lab(self, session_id: str, lab_name: str = "linux-basics") -> Dict[str, Any]:
         """
         Delegates lab initialization checks to custom Runtimes.
         """
-        if "aws" in lab_name or "iam-" in lab_name or "ec2-" in lab_name or "vpc-" in lab_name or "s3-" in lab_name or "rds-" in lab_name or "load-balancers-" in lab_name or "cloudwatch-" in lab_name:
+        if "azure" in lab_name or "resource-groups" in lab_name or "virtual-machines" in lab_name or "virtual-networks" in lab_name or "storage-accounts" in lab_name or "sql-database" in lab_name or "scale-sets" in lab_name or "azure-monitor" in lab_name:
+            res = self.azure_runtime.create_session(session_id)
+            if res["mode"] == "simulated":
+                self.simulated_sessions[session_id] = SimulatedShell(session_id)
+            else:
+                self.simulated_sessions[session_id] = AzureShell(session_id)
+            return res
+        elif "aws" in lab_name or "iam-" in lab_name or "ec2-" in lab_name or "vpc-" in lab_name or "s3-" in lab_name or "rds-" in lab_name or "load-balancers-" in lab_name or "cloudwatch-" in lab_name:
             res = self.aws_runtime.create_session(session_id)
             if res["mode"] == "simulated":
                 self.simulated_sessions[session_id] = SimulatedShell(session_id)
@@ -3120,7 +3505,9 @@ class LabRuntimeService:
                 except Exception as e:
                     logger.warning(f"Failed to remove directory {shell.base_dir}: {e}")
 
-        if "aws" in lab_name or "iam-" in lab_name or "ec2-" in lab_name or "vpc-" in lab_name or "s3-" in lab_name or "rds-" in lab_name or "load-balancers-" in lab_name or "cloudwatch-" in lab_name:
+        if "azure" in lab_name or "resource-groups" in lab_name or "virtual-machines" in lab_name or "virtual-networks" in lab_name or "storage-accounts" in lab_name or "sql-database" in lab_name or "scale-sets" in lab_name or "azure-monitor" in lab_name:
+            self.azure_runtime.stop_session(session_id, container_id)
+        elif "aws" in lab_name or "iam-" in lab_name or "ec2-" in lab_name or "vpc-" in lab_name or "s3-" in lab_name or "rds-" in lab_name or "load-balancers-" in lab_name or "cloudwatch-" in lab_name:
             self.aws_runtime.stop_session(session_id, container_id)
         elif "ansible" in lab_name or "inventory-files" in lab_name or "ad-hoc-commands" in lab_name or "writing-playbooks" in lab_name or "variables-and-facts" in lab_name or "templates-and-jinja2" in lab_name or "ansible-galaxy" in lab_name or "tags-handlers-and" in lab_name:
             self.ansible_runtime.stop_session(session_id, container_id)
@@ -3145,7 +3532,9 @@ class LabRuntimeService:
         if session_id in self.simulated_sessions:
             return self.simulated_sessions[session_id]
         if lab_name:
-            if "aws" in lab_name or "iam-" in lab_name or "ec2-" in lab_name or "vpc-" in lab_name or "s3-" in lab_name or "rds-" in lab_name or "load-balancers-" in lab_name or "cloudwatch-" in lab_name:
+            if "azure" in lab_name or "resource-groups" in lab_name or "virtual-machines" in lab_name or "virtual-networks" in lab_name or "storage-accounts" in lab_name or "sql-database" in lab_name or "scale-sets" in lab_name or "azure-monitor" in lab_name:
+                shell = AzureShell(session_id)
+            elif "aws" in lab_name or "iam-" in lab_name or "ec2-" in lab_name or "vpc-" in lab_name or "s3-" in lab_name or "rds-" in lab_name or "load-balancers-" in lab_name or "cloudwatch-" in lab_name:
                 shell = AWSShell(session_id)
             elif "ansible" in lab_name or "inventory-files" in lab_name or "ad-hoc-commands" in lab_name or "writing-playbooks" in lab_name or "variables-and-facts" in lab_name or "templates-and-jinja2" in lab_name or "ansible-galaxy" in lab_name or "tags-handlers-and" in lab_name:
                 shell = AnsibleShell(session_id)

@@ -178,9 +178,27 @@ export default function LabDetailsPage() {
           ],
           topics: [
             "AWS Global Infrastructure Regions and Availability Zones",
-            "Identity Access Management users, policies and scopes",
-            "Elastic Compute Cloud virtual nodes provisionings",
-            "VPC Classless Inter-Domain Routing boundaries",
+            "IAM users creation and security policy groups",
+            "EC2 instances provisioning and VPC subnets networking",
+            "S3 buckets storage, RDS databases, and CloudWatch alerts",
+          ],
+        };
+      case "azure":
+        return {
+          prerequisites: [
+            "Familiarity with cloud computing concepts.",
+            "Basic Linux terminal command-line operations.",
+          ],
+          objectives: [
+            "Manage logical Resource Groups boundaries and configure RBAC access.",
+            "Provision Azure Virtual Machines, custom VNets, subnets, and Network Security Groups.",
+            "Deploy Storage Accounts, Blob containers, Azure SQL, and VM Scale Sets.",
+          ],
+          topics: [
+            "Azure Global Infrastructure and Geography",
+            "Resource Groups management and lifecycles",
+            "Azure VM compute and VNet network provisioning",
+            "Azure SQL, Storage Accounts, and Azure Monitor alerting",
           ],
         };
       case "ansible":
