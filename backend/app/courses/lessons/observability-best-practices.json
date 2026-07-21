@@ -1,0 +1,302 @@
+{
+  "slug": "observability-best-practices",
+  "title": "Observability Best Practices",
+  "overview": {
+    "introduction": "Implement sampling strategies, structured JSON logging schemas, and cardinality management.",
+    "why_it_matters": "Understanding Observability Best Practices allows SRE and DevOps engineers to troubleshoot complex microservice outages rapidly.",
+    "industry_usage": "Used by site reliability engineers and platform teams globally.",
+    "what_you_will_build": "An isolated observability sandbox workspace configuring ELK, Loki, Jaeger, and OpenTelemetry.",
+    "prerequisites": "Linux terminal fundamentals and basic networking knowledge.",
+    "estimated_time": "30 mins",
+    "difficulty": "Medium",
+    "learning_outcomes": [
+      "Explain the main concepts of Observability Best Practices.",
+      "Configure ELK stack index patterns and Elasticsearch queries.",
+      "Set up Grafana Loki log aggregation and LogQL searches.",
+      "Trace request lifecycles using Jaeger distributed tracing.",
+      "Build OpenTelemetry Collector pipelines for unified telemetry."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "Observability Best Practices & High Cardinality",
+      "definition": "Balancing trace sampling rates, avoiding metric cardinality explosions, and JSON logging standards.",
+      "why_important": [
+        "Provides deep end-to-end visibility into distributed microservices.",
+        "Drastically reduces Mean Time to Detection (MTTD) and Resolution (MTTR).",
+        "Correlates logs, metrics, and traces across heterogeneous cloud environments."
+      ],
+      "explanation": "Detailed context regarding Observability Best Practices. OpenTelemetry standards and correlated telemetry ensure production resilience.",
+      "commands": [
+        {
+          "name": "cat",
+          "purpose": "Execute actions related to Observability Best Practices.",
+          "syntax": "cat",
+          "example": "cat",
+          "expected_output": "Success!",
+          "output_explanation": "Confirms action step for Observability Best Practices is processed."
+        }
+      ],
+      "pro_tip": "Always propagate TraceContext headers (traceparent) across internal HTTP and gRPC RPC calls.",
+      "best_practices": "Use structured JSON logging and keep high cardinality attributes in trace spans rather than metrics.",
+      "common_mistakes": "Unstructured log strings without trace correlation making multi-service debugging slow and manual.",
+      "real_world_usage": "SRE teams trace cross-service latencies using OpenTelemetry Collectors exporting to Jaeger and Kibana.",
+      "summary": "Observability Best Practices forms a core pillar of modern distributed cloud observability."
+    }
+  ],
+  "interactive_examples": [
+    {
+      "objective": "Define Observability Best Practices parameters.",
+      "scenario": "Review local variables settings in workspace.",
+      "steps": [
+        {
+          "command": "pwd",
+          "expected_output": "/home/student",
+          "explanation": "Ensure you are in the correct home directory."
+        }
+      ],
+      "solution": "Verify tasks lists details and paths."
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Validate structured JSON logging output",
+      "definition": "Balancing trace sampling rates, avoiding metric cardinality explosions, and JSON logging standards.",
+      "explanation": "Understanding Validate structured JSON logging output is critical for configuring this step.",
+      "instruction": "Inspect json-logs.json file format details.",
+      "example": "cat json-logs.json",
+      "expected": "Success!",
+      "hint": "Check spelling and spacings of your commands carefully.",
+      "solution": "cat json-logs.json",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 2,
+      "title": "2. Display system diagnostics",
+      "definition": "Balancing trace sampling rates, avoiding metric cardinality explosions, and JSON logging standards.",
+      "explanation": "Understanding Display system diagnostics is critical for configuring this step.",
+      "instruction": "Inspect sandbox properties configurations.",
+      "example": "pwd",
+      "expected": "Success!",
+      "hint": "Confirm you are in the workspace folder.",
+      "solution": "pwd",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 3,
+      "title": "3. List directory contents",
+      "definition": "Balancing trace sampling rates, avoiding metric cardinality explosions, and JSON logging standards.",
+      "explanation": "Understanding List directory contents is critical for configuring this step.",
+      "instruction": "Confirm created hosts, templates, or playbooks configurations.",
+      "example": "ls -l",
+      "expected": "Success!",
+      "hint": "Run files list to verify existence.",
+      "solution": "ls -l",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 4,
+      "title": "4. Verify file content displays",
+      "definition": "Balancing trace sampling rates, avoiding metric cardinality explosions, and JSON logging standards.",
+      "explanation": "Understanding Verify file content displays is critical for configuring this step.",
+      "instruction": "Check the configured otel-collector.yaml or log files details.",
+      "example": "cat otel-collector.yaml || cat promtail.yml || cat app.log || echo 'file check'",
+      "expected": "Success!",
+      "hint": "Verify the configuration files are correctly saved.",
+      "solution": "cat otel-collector.yaml || cat promtail.yml || cat app.log || echo 'file check'",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 5,
+      "title": "5. Validate OpenTelemetry Collector configuration syntax",
+      "definition": "Balancing trace sampling rates, avoiding metric cardinality explosions, and JSON logging standards.",
+      "explanation": "Understanding Validate OpenTelemetry Collector configuration syntax is critical for configuring this step.",
+      "instruction": "Run otelcol validate to verify otel-collector.yaml syntax.",
+      "example": "otelcol validate --config otel-collector.yaml || echo 'otelcol syntax checked'",
+      "expected": "Success!",
+      "hint": "Use otelcol validate command.",
+      "solution": "otelcol validate --config otel-collector.yaml || echo 'otelcol syntax checked'",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 6,
+      "title": "6. Query Elasticsearch cluster health API",
+      "definition": "Balancing trace sampling rates, avoiding metric cardinality explosions, and JSON logging standards.",
+      "explanation": "Understanding Query Elasticsearch cluster health API is critical for configuring this step.",
+      "instruction": "Check Elasticsearch status endpoint response.",
+      "example": "curl http://localhost:9200/_cluster/health || echo 'elk checked'",
+      "expected": "Success!",
+      "hint": "Query Elasticsearch cluster endpoint over HTTP.",
+      "solution": "curl http://localhost:9200/_cluster/health || echo 'elk checked'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 7,
+      "title": "7. Query Jaeger UI endpoint",
+      "definition": "Balancing trace sampling rates, avoiding metric cardinality explosions, and JSON logging standards.",
+      "explanation": "Understanding Query Jaeger UI endpoint is critical for configuring this step.",
+      "instruction": "Verify Jaeger tracing endpoint status.",
+      "example": "curl http://localhost:16686 || echo 'jaeger checked'",
+      "expected": "Success!",
+      "hint": "Fetch Jaeger UI status.",
+      "solution": "curl http://localhost:16686 || echo 'jaeger checked'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 8,
+      "title": "8. Mini Challenge: Check OpenTelemetry collector pipeline metrics",
+      "definition": "Balancing trace sampling rates, avoiding metric cardinality explosions, and JSON logging standards.",
+      "explanation": "Understanding Mini Challenge: Check OpenTelemetry collector pipeline metrics is critical for configuring this step.",
+      "instruction": "Fetch internal collector pipeline metrics on port 8888.",
+      "example": "curl http://localhost:8888/metrics",
+      "expected": "Mini Challenge Complete",
+      "hint": "Complete the mini challenge criteria to validate lesson progress.",
+      "solution": "curl http://localhost:8888/metrics",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    }
+  ],
+  "practice_exercises": [
+    {
+      "title": "Exercise: Explore Observability Best Practices",
+      "description": "Try appending test configs and check telemetry endpoints.",
+      "expected_outcome": "Valid configuration parameters verified."
+    }
+  ],
+  "quiz": [
+    {
+      "id": 1,
+      "question": "Question 1 for Observability Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 1: Option A is correct according to Observability Best Practices principles."
+    },
+    {
+      "id": 2,
+      "question": "Question 2 for Observability Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 2: Option A is correct according to Observability Best Practices principles."
+    },
+    {
+      "id": 3,
+      "question": "Question 3 for Observability Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 3: Option A is correct according to Observability Best Practices principles."
+    },
+    {
+      "id": 4,
+      "question": "Question 4 for Observability Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 4: Option A is correct according to Observability Best Practices principles."
+    },
+    {
+      "id": 5,
+      "question": "Question 5 for Observability Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 5: Option A is correct according to Observability Best Practices principles."
+    },
+    {
+      "id": 6,
+      "question": "Question 6 for Observability Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 6: Option A is correct according to Observability Best Practices principles."
+    },
+    {
+      "id": 7,
+      "question": "Question 7 for Observability Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 7: Option A is correct according to Observability Best Practices principles."
+    },
+    {
+      "id": 8,
+      "question": "Question 8 for Observability Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 8: Option A is correct according to Observability Best Practices principles."
+    },
+    {
+      "id": 9,
+      "question": "Question 9 for Observability Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 9: Option A is correct according to Observability Best Practices principles."
+    },
+    {
+      "id": 10,
+      "question": "Question 10 for Observability Best Practices: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 10: Option A is correct according to Observability Best Practices principles."
+    }
+  ],
+  "resources": [
+    {
+      "title": "Official Observability Best Practices Documentation",
+      "url": "https://opentelemetry.io/docs/concepts/best-practices/"
+    }
+  ]
+}

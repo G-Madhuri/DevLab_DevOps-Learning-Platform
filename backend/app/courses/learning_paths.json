@@ -514,9 +514,16 @@
       "docker-fundamentals",
       "multi-container-with-docker-compose",
       "docker-networking-deep-dive",
-      "optimizing-dockerfiles",
-      "monitoring",
-      "observability"
+      "observability-fundamentals",
+      "centralized-logging-with-elk",
+      "log-aggregation-with-loki",
+      "distributed-tracing-with-jaeger",
+      "opentelemetry-fundamentals",
+      "correlating-logs-metrics-and-traces",
+      "observability-for-kubernetes",
+      "observability-best-practices",
+      "troubleshooting-production-systems",
+      "observability-capstone-project"
     ]
   },
   {

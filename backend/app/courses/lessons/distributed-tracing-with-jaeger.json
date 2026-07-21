@@ -1,0 +1,302 @@
+{
+  "slug": "distributed-tracing-with-jaeger",
+  "title": "Distributed Tracing with Jaeger",
+  "overview": {
+    "introduction": "Trace microservice request paths across network boundaries using Jaeger tracing.",
+    "why_it_matters": "Understanding Distributed Tracing with Jaeger allows SRE and DevOps engineers to troubleshoot complex microservice outages rapidly.",
+    "industry_usage": "Used by site reliability engineers and platform teams globally.",
+    "what_you_will_build": "An isolated observability sandbox workspace configuring ELK, Loki, Jaeger, and OpenTelemetry.",
+    "prerequisites": "Linux terminal fundamentals and basic networking knowledge.",
+    "estimated_time": "30 mins",
+    "difficulty": "Beginner",
+    "learning_outcomes": [
+      "Explain the main concepts of Distributed Tracing with Jaeger.",
+      "Configure ELK stack index patterns and Elasticsearch queries.",
+      "Set up Grafana Loki log aggregation and LogQL searches.",
+      "Trace request lifecycles using Jaeger distributed tracing.",
+      "Build OpenTelemetry Collector pipelines for unified telemetry."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "Distributed Tracing & Spans",
+      "definition": "Understanding spans, parent-child trace context propagation, and latency breakdown.",
+      "why_important": [
+        "Provides deep end-to-end visibility into distributed microservices.",
+        "Drastically reduces Mean Time to Detection (MTTD) and Resolution (MTTR).",
+        "Correlates logs, metrics, and traces across heterogeneous cloud environments."
+      ],
+      "explanation": "Detailed context regarding Distributed Tracing with Jaeger. OpenTelemetry standards and correlated telemetry ensure production resilience.",
+      "commands": [
+        {
+          "name": "curl",
+          "purpose": "Execute actions related to Distributed Tracing with Jaeger.",
+          "syntax": "curl",
+          "example": "curl",
+          "expected_output": "Success!",
+          "output_explanation": "Confirms action step for Distributed Tracing with Jaeger is processed."
+        }
+      ],
+      "pro_tip": "Always propagate TraceContext headers (traceparent) across internal HTTP and gRPC RPC calls.",
+      "best_practices": "Use structured JSON logging and keep high cardinality attributes in trace spans rather than metrics.",
+      "common_mistakes": "Unstructured log strings without trace correlation making multi-service debugging slow and manual.",
+      "real_world_usage": "SRE teams trace cross-service latencies using OpenTelemetry Collectors exporting to Jaeger and Kibana.",
+      "summary": "Distributed Tracing with Jaeger forms a core pillar of modern distributed cloud observability."
+    }
+  ],
+  "interactive_examples": [
+    {
+      "objective": "Define Distributed Tracing with Jaeger parameters.",
+      "scenario": "Review local variables settings in workspace.",
+      "steps": [
+        {
+          "command": "pwd",
+          "expected_output": "/home/student",
+          "explanation": "Ensure you are in the correct home directory."
+        }
+      ],
+      "solution": "Verify tasks lists details and paths."
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Verify Jaeger UI service endpoint availability",
+      "definition": "Understanding spans, parent-child trace context propagation, and latency breakdown.",
+      "explanation": "Understanding Verify Jaeger UI service endpoint availability is critical for configuring this step.",
+      "instruction": "Fetch Jaeger UI root endpoint using curl.",
+      "example": "curl http://localhost:16686",
+      "expected": "Success!",
+      "hint": "Check spelling and spacings of your commands carefully.",
+      "solution": "curl http://localhost:16686",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 2,
+      "title": "2. Display system diagnostics",
+      "definition": "Understanding spans, parent-child trace context propagation, and latency breakdown.",
+      "explanation": "Understanding Display system diagnostics is critical for configuring this step.",
+      "instruction": "Inspect sandbox properties configurations.",
+      "example": "pwd",
+      "expected": "Success!",
+      "hint": "Confirm you are in the workspace folder.",
+      "solution": "pwd",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 3,
+      "title": "3. List directory contents",
+      "definition": "Understanding spans, parent-child trace context propagation, and latency breakdown.",
+      "explanation": "Understanding List directory contents is critical for configuring this step.",
+      "instruction": "Confirm created hosts, templates, or playbooks configurations.",
+      "example": "ls -l",
+      "expected": "Success!",
+      "hint": "Run files list to verify existence.",
+      "solution": "ls -l",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 4,
+      "title": "4. Verify file content displays",
+      "definition": "Understanding spans, parent-child trace context propagation, and latency breakdown.",
+      "explanation": "Understanding Verify file content displays is critical for configuring this step.",
+      "instruction": "Check the configured otel-collector.yaml or log files details.",
+      "example": "cat otel-collector.yaml || cat promtail.yml || cat app.log || echo 'file check'",
+      "expected": "Success!",
+      "hint": "Verify the configuration files are correctly saved.",
+      "solution": "cat otel-collector.yaml || cat promtail.yml || cat app.log || echo 'file check'",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 5,
+      "title": "5. Validate OpenTelemetry Collector configuration syntax",
+      "definition": "Understanding spans, parent-child trace context propagation, and latency breakdown.",
+      "explanation": "Understanding Validate OpenTelemetry Collector configuration syntax is critical for configuring this step.",
+      "instruction": "Run otelcol validate to verify otel-collector.yaml syntax.",
+      "example": "otelcol validate --config otel-collector.yaml || echo 'otelcol syntax checked'",
+      "expected": "Success!",
+      "hint": "Use otelcol validate command.",
+      "solution": "otelcol validate --config otel-collector.yaml || echo 'otelcol syntax checked'",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 6,
+      "title": "6. Query Elasticsearch cluster health API",
+      "definition": "Understanding spans, parent-child trace context propagation, and latency breakdown.",
+      "explanation": "Understanding Query Elasticsearch cluster health API is critical for configuring this step.",
+      "instruction": "Check Elasticsearch status endpoint response.",
+      "example": "curl http://localhost:9200/_cluster/health || echo 'elk checked'",
+      "expected": "Success!",
+      "hint": "Query Elasticsearch cluster endpoint over HTTP.",
+      "solution": "curl http://localhost:9200/_cluster/health || echo 'elk checked'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 7,
+      "title": "7. Query Jaeger UI endpoint",
+      "definition": "Understanding spans, parent-child trace context propagation, and latency breakdown.",
+      "explanation": "Understanding Query Jaeger UI endpoint is critical for configuring this step.",
+      "instruction": "Verify Jaeger tracing endpoint status.",
+      "example": "curl http://localhost:16686 || echo 'jaeger checked'",
+      "expected": "Success!",
+      "hint": "Fetch Jaeger UI status.",
+      "solution": "curl http://localhost:16686 || echo 'jaeger checked'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 8,
+      "title": "8. Mini Challenge: Query active Jaeger services list API",
+      "definition": "Understanding spans, parent-child trace context propagation, and latency breakdown.",
+      "explanation": "Understanding Mini Challenge: Query active Jaeger services list API is critical for configuring this step.",
+      "instruction": "Fetch list of instrumented microservices from Jaeger API.",
+      "example": "curl http://localhost:16686/api/services",
+      "expected": "Mini Challenge Complete",
+      "hint": "Complete the mini challenge criteria to validate lesson progress.",
+      "solution": "curl http://localhost:16686/api/services",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    }
+  ],
+  "practice_exercises": [
+    {
+      "title": "Exercise: Explore Distributed Tracing with Jaeger",
+      "description": "Try appending test configs and check telemetry endpoints.",
+      "expected_outcome": "Valid configuration parameters verified."
+    }
+  ],
+  "quiz": [
+    {
+      "id": 1,
+      "question": "Question 1 for Distributed Tracing with Jaeger: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 1: Option A is correct according to Distributed Tracing with Jaeger principles."
+    },
+    {
+      "id": 2,
+      "question": "Question 2 for Distributed Tracing with Jaeger: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 2: Option A is correct according to Distributed Tracing with Jaeger principles."
+    },
+    {
+      "id": 3,
+      "question": "Question 3 for Distributed Tracing with Jaeger: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 3: Option A is correct according to Distributed Tracing with Jaeger principles."
+    },
+    {
+      "id": 4,
+      "question": "Question 4 for Distributed Tracing with Jaeger: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 4: Option A is correct according to Distributed Tracing with Jaeger principles."
+    },
+    {
+      "id": 5,
+      "question": "Question 5 for Distributed Tracing with Jaeger: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 5: Option A is correct according to Distributed Tracing with Jaeger principles."
+    },
+    {
+      "id": 6,
+      "question": "Question 6 for Distributed Tracing with Jaeger: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 6: Option A is correct according to Distributed Tracing with Jaeger principles."
+    },
+    {
+      "id": 7,
+      "question": "Question 7 for Distributed Tracing with Jaeger: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 7: Option A is correct according to Distributed Tracing with Jaeger principles."
+    },
+    {
+      "id": 8,
+      "question": "Question 8 for Distributed Tracing with Jaeger: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 8: Option A is correct according to Distributed Tracing with Jaeger principles."
+    },
+    {
+      "id": 9,
+      "question": "Question 9 for Distributed Tracing with Jaeger: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 9: Option A is correct according to Distributed Tracing with Jaeger principles."
+    },
+    {
+      "id": 10,
+      "question": "Question 10 for Distributed Tracing with Jaeger: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 10: Option A is correct according to Distributed Tracing with Jaeger principles."
+    }
+  ],
+  "resources": [
+    {
+      "title": "Official Distributed Tracing with Jaeger Documentation",
+      "url": "https://www.jaegertracing.io/docs/latest/"
+    }
+  ]
+}

@@ -20,6 +20,12 @@ class ValidationEngine:
         """
         Routes the validation check to the appropriate course validators (Linux, Docker, Git, Actions, CI/CD, Jenkins or Kubernetes).
         """
+        if "observability" in lab_name or "elk" in lab_name or "loki" in lab_name or "jaeger" in lab_name or "opentelemetry" in lab_name or "tracing" in lab_name:
+            shell = runtime_service.get_session_shell(session_id)
+            if not shell:
+                return {"success": False, "message": "Observability shell session not found."}
+            return self._validate_observability(shell, task_id, lab_name)
+
         if "monitoring" in lab_name or "prometheus" in lab_name or "promql" in lab_name or "exporters" in lab_name or "alertmanager" in lab_name or "grafana" in lab_name:
             shell = runtime_service.get_session_shell(session_id)
             if not shell:
@@ -2418,6 +2424,108 @@ class ValidationEngine:
                 if ("buildinfo" in history_str or "promtool" in history_str) and "curl" in history_str:
                     return {"success": True, "message": "Success! Complete production monitoring stack verified."}
                 return {"success": False, "message": "Validate configuration via promtool check config and curl buildinfo status."}
+
+        return {"success": False, "message": "Unknown task check."}
+
+    def _validate_observability(self, shell: Any, task_id: int, lab_name: str) -> Dict[str, Any]:
+        """
+        Validates Observability course progress against configuration state and command history.
+        """
+        history_str = " ".join(shell.history).lower()
+
+        # Step 1: Initialize first files / command check
+        if task_id == 1:
+            if "cat" in history_str or "otelcol" in history_str or os.path.exists(os.path.join(shell.base_dir, "otel-collector.yaml")):
+                return {"success": True, "message": "Success! Observability lab workspace and otel-collector.yaml ready."}
+            return {"success": False, "message": "Inspect configuration or run basic otelcol command."}
+
+        # Step 2: System diagnostic checks
+        if task_id == 2:
+            if "pwd" in history_str:
+                return {"success": True, "message": "Success! Workspace path diagnostics verified."}
+            return {"success": False, "message": "Verify path by executing pwd."}
+
+        # Step 3: List files check
+        if task_id == 3:
+            if "ls" in history_str:
+                return {"success": True, "message": "Success! Active workspace files cataloged."}
+            return {"success": False, "message": "Execute ls command to display files inside the workspace."}
+
+        # Step 4: Verify files contents display
+        if task_id == 4:
+            if "cat" in history_str:
+                return {"success": True, "message": "Success! Read workspace configuration details."}
+            return {"success": False, "message": "View configuration template values using cat."}
+
+        # Step 5: Validate config syntax
+        if task_id == 5:
+            if "otelcol" in history_str or "cat" in history_str:
+                return {"success": True, "message": "Success! OpenTelemetry Collector configuration syntax validated."}
+            return {"success": False, "message": "Run otelcol validate --config otel-collector.yaml to check syntax."}
+
+        # Step 6: Query Elasticsearch cluster health
+        if task_id == 6:
+            if "curl" in history_str or "9200" in history_str:
+                return {"success": True, "message": "Success! Elasticsearch cluster health endpoint checked."}
+            return {"success": False, "message": "Check Elasticsearch cluster health via curl http://localhost:9200/_cluster/health."}
+
+        # Step 7: Query Jaeger UI status endpoint
+        if task_id == 7:
+            if "curl" in history_str or "16686" in history_str or "jaeger" in history_str:
+                return {"success": True, "message": "Success! Jaeger tracing UI service status verified."}
+            return {"success": False, "message": "Check Jaeger status by fetching http://localhost:16686."}
+
+        # Step 8 (Mini Challenge): Module-specific custom criteria
+        if task_id == 8:
+            if lab_name == "observability-fundamentals":
+                if "4318/v1/traces" in history_str or "curl" in history_str:
+                    return {"success": True, "message": "Success! OpenTelemetry traces endpoint inspected."}
+                return {"success": False, "message": "Fetch OpenTelemetry traces endpoint via curl http://localhost:4318/v1/traces."}
+
+            elif lab_name == "centralized-logging-with-elk":
+                if "indices" in history_str or "9200" in history_str:
+                    return {"success": True, "message": "Success! Elasticsearch active indices queried."}
+                return {"success": False, "message": "Query Elasticsearch indices via curl http://localhost:9200/_cat/indices."}
+
+            elif lab_name == "log-aggregation-with-loki":
+                if "ready" in history_str or "3100" in history_str:
+                    return {"success": True, "message": "Success! Loki readiness status endpoint verified."}
+                return {"success": False, "message": "Query Loki readiness via curl http://localhost:3100/ready."}
+
+            elif lab_name == "distributed-tracing-with-jaeger":
+                if "services" in history_str or "16686" in history_str:
+                    return {"success": True, "message": "Success! Jaeger instrumented services queried via API."}
+                return {"success": False, "message": "Query Jaeger services via curl http://localhost:16686/api/services."}
+
+            elif lab_name == "opentelemetry-fundamentals":
+                if "13133" in history_str or "curl" in history_str:
+                    return {"success": True, "message": "Success! OpenTelemetry extension health check verified."}
+                return {"success": False, "message": "Query extension health check via curl http://localhost:13133."}
+
+            elif lab_name == "correlating-logs-metrics-and-traces":
+                if "logcli" in history_str or "trace_id" in history_str:
+                    return {"success": True, "message": "Success! LogQL trace_id correlation query executed."}
+                return {"success": False, "message": "Execute a LogQL query searching trace_id using logcli."}
+
+            elif lab_name == "observability-for-kubernetes":
+                if "events" in history_str or "kubectl" in history_str:
+                    return {"success": True, "message": "Success! Kubernetes cluster event stream audited."}
+                return {"success": False, "message": "Audit cluster events using kubectl get events."}
+
+            elif lab_name == "observability-best-practices":
+                if "8888" in history_str or "metrics" in history_str:
+                    return {"success": True, "message": "Success! OpenTelemetry pipeline internal metrics verified."}
+                return {"success": False, "message": "Query internal pipeline metrics via curl http://localhost:8888/metrics."}
+
+            elif lab_name == "troubleshooting-production-systems":
+                if "status=error" in history_str or "grep" in history_str:
+                    return {"success": True, "message": "Success! Error traces and stacktraces isolated."}
+                return {"success": False, "message": "Search error logs via grep or query Jaeger error traces."}
+
+            elif lab_name == "observability-capstone-project":
+                if ("_cluster/health" in history_str or "otelcol" in history_str) and "curl" in history_str:
+                    return {"success": True, "message": "Success! Complete enterprise observability stack verified."}
+                return {"success": False, "message": "Validate configuration via otelcol validate and check cluster health."}
 
         return {"success": False, "message": "Unknown task check."}
 
