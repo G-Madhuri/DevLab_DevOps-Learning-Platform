@@ -127,9 +127,16 @@
       "provisioners",
       "workspaces",
       "remote-state-concepts",
-      "best-practices-terraform",
-      "terraform-capstone-project",
-      "monitoring"
+      "monitoring-fundamentals",
+      "prometheus-basics",
+      "promql-queries",
+      "exporters-and-metrics-collection",
+      "alertmanager",
+      "grafana-dashboards",
+      "monitoring-kubernetes",
+      "monitoring-docker",
+      "monitoring-best-practices",
+      "monitoring-capstone-project"
     ]
   },
   {

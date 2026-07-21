@@ -801,21 +801,78 @@
     "description": "Scrape node metrics, query timeseries alerts, and configure dashboard visualizations using Prometheus.",
     "icon": "bar-chart",
     "difficulty": "Intermediate",
-    "coming_soon": true,
+    "coming_soon": false,
     "courses": [
+      {
+        "slug": "monitoring-fundamentals",
+        "title": "Monitoring Fundamentals",
+        "description": "Learn core observability pillars (Metrics, Logs, Traces) and SLA/SLO/SLI measurement basics.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
       {
         "slug": "prometheus-basics",
         "title": "Prometheus Basics",
-        "description": "Scrape node metrics and write basic PromQL syntax to review system indicators.",
-        "difficulty": "Intermediate",
-        "duration": "60 minutes"
+        "description": "Configure Prometheus server scrape targets, TSDB storage engine, and command line tools.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
       },
       {
-        "slug": "grafana-visualization",
-        "title": "Grafana Visualization",
-        "description": "Author telemetry dashboards using Prometheus metrics and define dynamic alert hooks.",
+        "slug": "promql-queries",
+        "title": "PromQL Queries",
+        "description": "Write PromQL expressions to filter time series metrics, calculate rates, and aggregate data.",
         "difficulty": "Beginner",
-        "duration": "45 minutes"
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "exporters-and-metrics-collection",
+        "title": "Exporters & Metrics Collection",
+        "description": "Instrument Linux hosts and application services using Node Exporter and custom metrics libraries.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "alertmanager",
+        "title": "Alertmanager",
+        "description": "Configure Alertmanager routing trees, silences, grouping, and notification channels.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "grafana-dashboards",
+        "title": "Grafana Dashboards",
+        "description": "Build interactive Grafana dashboards, configure Prometheus data sources, panels, and variables.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "monitoring-kubernetes",
+        "title": "Monitoring Kubernetes",
+        "description": "Monitor Kubernetes clusters using Prometheus Operator, kube-state-metrics, and Node Problem Detector.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "monitoring-docker",
+        "title": "Monitoring Docker",
+        "description": "Track Docker container resource usage using cAdvisor metrics collector.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "monitoring-best-practices",
+        "title": "Monitoring Best Practices",
+        "description": "Adopt monitoring best practices, recording rules, alert thresholds tuning, and alerting hygiene.",
+        "difficulty": "Advanced",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "monitoring-capstone-project",
+        "title": "Monitoring Capstone Project",
+        "description": "Orchestrate a complete production monitoring stack with Prometheus, Grafana, Alertmanager, and Node Exporter.",
+        "difficulty": "Advanced",
+        "duration": "45 minutes",
+        "is_capstone": true
       }
     ]
   },

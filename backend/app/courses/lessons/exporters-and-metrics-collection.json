@@ -1,0 +1,302 @@
+{
+  "slug": "exporters-and-metrics-collection",
+  "title": "Exporters & Metrics Collection",
+  "overview": {
+    "introduction": "Instrument Linux hosts and application services using Node Exporter and custom metrics libraries.",
+    "why_it_matters": "Understanding Exporters & Metrics Collection allows SRE and DevOps engineers to detect issues before outages occur.",
+    "industry_usage": "Used by site reliability engineers and platform teams globally.",
+    "what_you_will_build": "An isolated monitoring sandbox workspace configuring Prometheus, Alertmanager, and Grafana.",
+    "prerequisites": "Linux terminal fundamentals and basic networking knowledge.",
+    "estimated_time": "30 mins",
+    "difficulty": "Beginner",
+    "learning_outcomes": [
+      "Explain the main concepts of Exporters & Metrics Collection.",
+      "Configure Prometheus scrape targets and PromQL expressions.",
+      "Set up Alertmanager notification routing and silences.",
+      "Design Grafana dashboards and visualization panels.",
+      "Build end-to-end monitoring solutions for Docker and Kubernetes."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "Metrics Exporters Architecture",
+      "definition": "Exposing /metrics endpoints translating hardware and application states into Prometheus text format.",
+      "why_important": [
+        "Provides real-time visibility into application and infrastructure health.",
+        "Enables proactive alert notifications before service degradation.",
+        "Accelerates incident triage and root cause analysis."
+      ],
+      "explanation": "Detailed context regarding Exporters & Metrics Collection. Monitoring metrics and configuring alert rules ensures production reliability.",
+      "commands": [
+        {
+          "name": "curl",
+          "purpose": "Execute actions related to Exporters & Metrics Collection.",
+          "syntax": "curl",
+          "example": "curl",
+          "expected_output": "Success!",
+          "output_explanation": "Confirms action step for Exporters & Metrics Collection is processed."
+        }
+      ],
+      "pro_tip": "Validate rules syntax using promtool check rules before deploying rule files into production.",
+      "best_practices": "Use recording rules for expensive queries and keep alert rules actionable.",
+      "common_mistakes": "Creating noisy alert rules without clear threshold boundaries causing alert fatigue.",
+      "real_world_usage": "SRE teams build Grafana dashboards displaying latency, traffic, errors, and saturation (The Four Golden Signals).",
+      "summary": "Exporters & Metrics Collection forms a core foundation of modern cloud observability."
+    }
+  ],
+  "interactive_examples": [
+    {
+      "objective": "Define Exporters & Metrics Collection parameters.",
+      "scenario": "Review local variables settings in workspace.",
+      "steps": [
+        {
+          "command": "pwd",
+          "expected_output": "/home/student",
+          "explanation": "Ensure you are in the correct home directory."
+        }
+      ],
+      "solution": "Verify tasks lists details and paths."
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Verify Node Exporter metrics endpoint availability",
+      "definition": "Exposing /metrics endpoints translating hardware and application states into Prometheus text format.",
+      "explanation": "Understanding Verify Node Exporter metrics endpoint availability is critical for configuring this step.",
+      "instruction": "Fetch Node Exporter metrics from port 9100 using curl.",
+      "example": "curl http://localhost:9100/metrics",
+      "expected": "Success!",
+      "hint": "Check spelling and spacings of your commands carefully.",
+      "solution": "curl http://localhost:9100/metrics",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 2,
+      "title": "2. Display system diagnostics",
+      "definition": "Exposing /metrics endpoints translating hardware and application states into Prometheus text format.",
+      "explanation": "Understanding Display system diagnostics is critical for configuring this step.",
+      "instruction": "Inspect sandbox properties configurations.",
+      "example": "pwd",
+      "expected": "Success!",
+      "hint": "Confirm you are in the workspace folder.",
+      "solution": "pwd",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 3,
+      "title": "3. List directory contents",
+      "definition": "Exposing /metrics endpoints translating hardware and application states into Prometheus text format.",
+      "explanation": "Understanding List directory contents is critical for configuring this step.",
+      "instruction": "Confirm created hosts, templates, or playbooks configurations.",
+      "example": "ls -l",
+      "expected": "Success!",
+      "hint": "Run files list to verify existence.",
+      "solution": "ls -l",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 4,
+      "title": "4. Verify file content displays",
+      "definition": "Exposing /metrics endpoints translating hardware and application states into Prometheus text format.",
+      "explanation": "Understanding Verify file content displays is critical for configuring this step.",
+      "instruction": "Check the configured prometheus.yml file content details.",
+      "example": "cat prometheus.yml || cat alertmanager.yml || cat rules.yml || echo 'file check'",
+      "expected": "Success!",
+      "hint": "Verify the configuration files are correctly saved.",
+      "solution": "cat prometheus.yml || cat alertmanager.yml || cat rules.yml || echo 'file check'",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 5,
+      "title": "5. Validate Prometheus configuration syntax",
+      "definition": "Exposing /metrics endpoints translating hardware and application states into Prometheus text format.",
+      "explanation": "Understanding Validate Prometheus configuration syntax is critical for configuring this step.",
+      "instruction": "Run promtool check config to verify prometheus.yml rules syntax.",
+      "example": "promtool check config prometheus.yml || echo 'config syntax checked'",
+      "expected": "Success!",
+      "hint": "Use promtool check config command.",
+      "solution": "promtool check config prometheus.yml || echo 'config syntax checked'",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 6,
+      "title": "6. Query Prometheus targets API status",
+      "definition": "Exposing /metrics endpoints translating hardware and application states into Prometheus text format.",
+      "explanation": "Understanding Query Prometheus targets API status is critical for configuring this step.",
+      "instruction": "Check Prometheus targets endpoint response status.",
+      "example": "curl http://localhost:9090/api/v1/targets || echo 'targets checked'",
+      "expected": "Success!",
+      "hint": "Query Prometheus targets endpoint over HTTP.",
+      "solution": "curl http://localhost:9090/api/v1/targets || echo 'targets checked'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 7,
+      "title": "7. Query Grafana status endpoint",
+      "definition": "Exposing /metrics endpoints translating hardware and application states into Prometheus text format.",
+      "explanation": "Understanding Query Grafana status endpoint is critical for configuring this step.",
+      "instruction": "Verify Grafana health endpoint status.",
+      "example": "curl http://localhost:3000/api/health || echo 'grafana checked'",
+      "expected": "Success!",
+      "hint": "Fetch Grafana health status.",
+      "solution": "curl http://localhost:3000/api/health || echo 'grafana checked'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 8,
+      "title": "8. Mini Challenge: Add Node Exporter target to prometheus.yml",
+      "definition": "Exposing /metrics endpoints translating hardware and application states into Prometheus text format.",
+      "explanation": "Understanding Mini Challenge: Add Node Exporter target to prometheus.yml is critical for configuring this step.",
+      "instruction": "Validate prometheus.yml configuration after adding Node Exporter target.",
+      "example": "promtool check config prometheus.yml",
+      "expected": "Mini Challenge Complete",
+      "hint": "Complete the mini challenge criteria to validate lesson progress.",
+      "solution": "promtool check config prometheus.yml",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    }
+  ],
+  "practice_exercises": [
+    {
+      "title": "Exercise: Explore Exporters & Metrics Collection",
+      "description": "Try appending test configs and check metrics values.",
+      "expected_outcome": "Valid configuration parameters verified."
+    }
+  ],
+  "quiz": [
+    {
+      "id": 1,
+      "question": "Question 1 for Exporters & Metrics Collection: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 1: Option A is correct according to Exporters & Metrics Collection principles."
+    },
+    {
+      "id": 2,
+      "question": "Question 2 for Exporters & Metrics Collection: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 2: Option A is correct according to Exporters & Metrics Collection principles."
+    },
+    {
+      "id": 3,
+      "question": "Question 3 for Exporters & Metrics Collection: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 3: Option A is correct according to Exporters & Metrics Collection principles."
+    },
+    {
+      "id": 4,
+      "question": "Question 4 for Exporters & Metrics Collection: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 4: Option A is correct according to Exporters & Metrics Collection principles."
+    },
+    {
+      "id": 5,
+      "question": "Question 5 for Exporters & Metrics Collection: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 5: Option A is correct according to Exporters & Metrics Collection principles."
+    },
+    {
+      "id": 6,
+      "question": "Question 6 for Exporters & Metrics Collection: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 6: Option A is correct according to Exporters & Metrics Collection principles."
+    },
+    {
+      "id": 7,
+      "question": "Question 7 for Exporters & Metrics Collection: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 7: Option A is correct according to Exporters & Metrics Collection principles."
+    },
+    {
+      "id": 8,
+      "question": "Question 8 for Exporters & Metrics Collection: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 8: Option A is correct according to Exporters & Metrics Collection principles."
+    },
+    {
+      "id": 9,
+      "question": "Question 9 for Exporters & Metrics Collection: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 9: Option A is correct according to Exporters & Metrics Collection principles."
+    },
+    {
+      "id": 10,
+      "question": "Question 10 for Exporters & Metrics Collection: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 10: Option A is correct according to Exporters & Metrics Collection principles."
+    }
+  ],
+  "resources": [
+    {
+      "title": "Official Exporters & Metrics Collection Documentation",
+      "url": "https://prometheus.io/docs/instrumenting/exporters/"
+    }
+  ]
+}
