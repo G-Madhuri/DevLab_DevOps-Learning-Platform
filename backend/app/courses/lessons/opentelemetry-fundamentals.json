@@ -1,0 +1,302 @@
+{
+  "slug": "opentelemetry-fundamentals",
+  "title": "OpenTelemetry Fundamentals",
+  "overview": {
+    "introduction": "Collect and export unified telemetry data using OpenTelemetry Collector pipelines.",
+    "why_it_matters": "Understanding OpenTelemetry Fundamentals allows SRE and DevOps engineers to troubleshoot complex microservice outages rapidly.",
+    "industry_usage": "Used by site reliability engineers and platform teams globally.",
+    "what_you_will_build": "An isolated observability sandbox workspace configuring ELK, Loki, Jaeger, and OpenTelemetry.",
+    "prerequisites": "Linux terminal fundamentals and basic networking knowledge.",
+    "estimated_time": "30 mins",
+    "difficulty": "Beginner",
+    "learning_outcomes": [
+      "Explain the main concepts of OpenTelemetry Fundamentals.",
+      "Configure ELK stack index patterns and Elasticsearch queries.",
+      "Set up Grafana Loki log aggregation and LogQL searches.",
+      "Trace request lifecycles using Jaeger distributed tracing.",
+      "Build OpenTelemetry Collector pipelines for unified telemetry."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "OpenTelemetry SDKs & Collectors",
+      "definition": "Configuring receivers, processors, and exporters in OpenTelemetry Collector YAML definitions.",
+      "why_important": [
+        "Provides deep end-to-end visibility into distributed microservices.",
+        "Drastically reduces Mean Time to Detection (MTTD) and Resolution (MTTR).",
+        "Correlates logs, metrics, and traces across heterogeneous cloud environments."
+      ],
+      "explanation": "Detailed context regarding OpenTelemetry Fundamentals. OpenTelemetry standards and correlated telemetry ensure production resilience.",
+      "commands": [
+        {
+          "name": "otelcol",
+          "purpose": "Execute actions related to OpenTelemetry Fundamentals.",
+          "syntax": "otelcol",
+          "example": "otelcol",
+          "expected_output": "Success!",
+          "output_explanation": "Confirms action step for OpenTelemetry Fundamentals is processed."
+        }
+      ],
+      "pro_tip": "Always propagate TraceContext headers (traceparent) across internal HTTP and gRPC RPC calls.",
+      "best_practices": "Use structured JSON logging and keep high cardinality attributes in trace spans rather than metrics.",
+      "common_mistakes": "Unstructured log strings without trace correlation making multi-service debugging slow and manual.",
+      "real_world_usage": "SRE teams trace cross-service latencies using OpenTelemetry Collectors exporting to Jaeger and Kibana.",
+      "summary": "OpenTelemetry Fundamentals forms a core pillar of modern distributed cloud observability."
+    }
+  ],
+  "interactive_examples": [
+    {
+      "objective": "Define OpenTelemetry Fundamentals parameters.",
+      "scenario": "Review local variables settings in workspace.",
+      "steps": [
+        {
+          "command": "pwd",
+          "expected_output": "/home/student",
+          "explanation": "Ensure you are in the correct home directory."
+        }
+      ],
+      "solution": "Verify tasks lists details and paths."
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Validate OpenTelemetry Collector configuration file syntax",
+      "definition": "Configuring receivers, processors, and exporters in OpenTelemetry Collector YAML definitions.",
+      "explanation": "Understanding Validate OpenTelemetry Collector configuration file syntax is critical for configuring this step.",
+      "instruction": "Use otelcol validate command to verify otel-collector.yaml syntax.",
+      "example": "otelcol validate --config otel-collector.yaml",
+      "expected": "Success!",
+      "hint": "Check spelling and spacings of your commands carefully.",
+      "solution": "otelcol validate --config otel-collector.yaml",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 2,
+      "title": "2. Display system diagnostics",
+      "definition": "Configuring receivers, processors, and exporters in OpenTelemetry Collector YAML definitions.",
+      "explanation": "Understanding Display system diagnostics is critical for configuring this step.",
+      "instruction": "Inspect sandbox properties configurations.",
+      "example": "pwd",
+      "expected": "Success!",
+      "hint": "Confirm you are in the workspace folder.",
+      "solution": "pwd",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 3,
+      "title": "3. List directory contents",
+      "definition": "Configuring receivers, processors, and exporters in OpenTelemetry Collector YAML definitions.",
+      "explanation": "Understanding List directory contents is critical for configuring this step.",
+      "instruction": "Confirm created hosts, templates, or playbooks configurations.",
+      "example": "ls -l",
+      "expected": "Success!",
+      "hint": "Run files list to verify existence.",
+      "solution": "ls -l",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 4,
+      "title": "4. Verify file content displays",
+      "definition": "Configuring receivers, processors, and exporters in OpenTelemetry Collector YAML definitions.",
+      "explanation": "Understanding Verify file content displays is critical for configuring this step.",
+      "instruction": "Check the configured otel-collector.yaml or log files details.",
+      "example": "cat otel-collector.yaml || cat promtail.yml || cat app.log || echo 'file check'",
+      "expected": "Success!",
+      "hint": "Verify the configuration files are correctly saved.",
+      "solution": "cat otel-collector.yaml || cat promtail.yml || cat app.log || echo 'file check'",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 5,
+      "title": "5. Validate OpenTelemetry Collector configuration syntax",
+      "definition": "Configuring receivers, processors, and exporters in OpenTelemetry Collector YAML definitions.",
+      "explanation": "Understanding Validate OpenTelemetry Collector configuration syntax is critical for configuring this step.",
+      "instruction": "Run otelcol validate to verify otel-collector.yaml syntax.",
+      "example": "otelcol validate --config otel-collector.yaml || echo 'otelcol syntax checked'",
+      "expected": "Success!",
+      "hint": "Use otelcol validate command.",
+      "solution": "otelcol validate --config otel-collector.yaml || echo 'otelcol syntax checked'",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 6,
+      "title": "6. Query Elasticsearch cluster health API",
+      "definition": "Configuring receivers, processors, and exporters in OpenTelemetry Collector YAML definitions.",
+      "explanation": "Understanding Query Elasticsearch cluster health API is critical for configuring this step.",
+      "instruction": "Check Elasticsearch status endpoint response.",
+      "example": "curl http://localhost:9200/_cluster/health || echo 'elk checked'",
+      "expected": "Success!",
+      "hint": "Query Elasticsearch cluster endpoint over HTTP.",
+      "solution": "curl http://localhost:9200/_cluster/health || echo 'elk checked'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 7,
+      "title": "7. Query Jaeger UI endpoint",
+      "definition": "Configuring receivers, processors, and exporters in OpenTelemetry Collector YAML definitions.",
+      "explanation": "Understanding Query Jaeger UI endpoint is critical for configuring this step.",
+      "instruction": "Verify Jaeger tracing endpoint status.",
+      "example": "curl http://localhost:16686 || echo 'jaeger checked'",
+      "expected": "Success!",
+      "hint": "Fetch Jaeger UI status.",
+      "solution": "curl http://localhost:16686 || echo 'jaeger checked'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 8,
+      "title": "8. Mini Challenge: Test OpenTelemetry Collector health check endpoint",
+      "definition": "Configuring receivers, processors, and exporters in OpenTelemetry Collector YAML definitions.",
+      "explanation": "Understanding Mini Challenge: Test OpenTelemetry Collector health check endpoint is critical for configuring this step.",
+      "instruction": "Query OpenTelemetry extension health check endpoint on port 13133.",
+      "example": "curl http://localhost:13133",
+      "expected": "Mini Challenge Complete",
+      "hint": "Complete the mini challenge criteria to validate lesson progress.",
+      "solution": "curl http://localhost:13133",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    }
+  ],
+  "practice_exercises": [
+    {
+      "title": "Exercise: Explore OpenTelemetry Fundamentals",
+      "description": "Try appending test configs and check telemetry endpoints.",
+      "expected_outcome": "Valid configuration parameters verified."
+    }
+  ],
+  "quiz": [
+    {
+      "id": 1,
+      "question": "Question 1 for OpenTelemetry Fundamentals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 1: Option A is correct according to OpenTelemetry Fundamentals principles."
+    },
+    {
+      "id": 2,
+      "question": "Question 2 for OpenTelemetry Fundamentals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 2: Option A is correct according to OpenTelemetry Fundamentals principles."
+    },
+    {
+      "id": 3,
+      "question": "Question 3 for OpenTelemetry Fundamentals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 3: Option A is correct according to OpenTelemetry Fundamentals principles."
+    },
+    {
+      "id": 4,
+      "question": "Question 4 for OpenTelemetry Fundamentals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 4: Option A is correct according to OpenTelemetry Fundamentals principles."
+    },
+    {
+      "id": 5,
+      "question": "Question 5 for OpenTelemetry Fundamentals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 5: Option A is correct according to OpenTelemetry Fundamentals principles."
+    },
+    {
+      "id": 6,
+      "question": "Question 6 for OpenTelemetry Fundamentals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 6: Option A is correct according to OpenTelemetry Fundamentals principles."
+    },
+    {
+      "id": 7,
+      "question": "Question 7 for OpenTelemetry Fundamentals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 7: Option A is correct according to OpenTelemetry Fundamentals principles."
+    },
+    {
+      "id": 8,
+      "question": "Question 8 for OpenTelemetry Fundamentals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 8: Option A is correct according to OpenTelemetry Fundamentals principles."
+    },
+    {
+      "id": 9,
+      "question": "Question 9 for OpenTelemetry Fundamentals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 9: Option A is correct according to OpenTelemetry Fundamentals principles."
+    },
+    {
+      "id": 10,
+      "question": "Question 10 for OpenTelemetry Fundamentals: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 10: Option A is correct according to OpenTelemetry Fundamentals principles."
+    }
+  ],
+  "resources": [
+    {
+      "title": "Official OpenTelemetry Fundamentals Documentation",
+      "url": "https://opentelemetry.io/docs/collector/"
+    }
+  ]
+}

@@ -2342,6 +2342,155 @@ class TerraformRuntime(BaseRuntime):
                 logger.warning(f"Failed to remove Terraform session directory {session_dir}: {e}")
 
 
+class ObservabilityShell(GitShell):
+    """
+    A real host-based subshell that executes basic CLI utilities and
+    simulates ELK, Loki, Jaeger, and OpenTelemetry collector commands.
+    """
+    def __init__(self, session_id: str):
+        self.session_id = session_id
+        self.base_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"observability-{session_id}")
+        )
+        os.makedirs(self.base_dir, exist_ok=True)
+        self.cwd = "/"
+        self.history = []
+        self.observability_state = {
+            "configs": ["otel-collector.yaml", "promtail.yml", "loki.yml"],
+            "indices": ["app-logs-2026", "sys-logs-2026"],
+            "services": ["web-frontend", "checkoutservice", "payment-api"]
+        }
+
+    def execute_command(self, cmd_line: str) -> str:
+        cmd_line = cmd_line.strip()
+        if not cmd_line:
+            return ""
+
+        self.history.append(cmd_line)
+        parts = cmd_line.split()
+        cmd = parts[0]
+        args = parts[1:]
+
+        def make_prompt(output_text: str = "") -> str:
+            suffix = "\r\n" if output_text and not output_text.endswith("\r\n") else ""
+            return f"{output_text}{suffix}student@devlab-observability:$ "
+
+        # Whitelist safe observability CLI tools
+        obs_cmds = ["otelcol", "logcli", "jaeger", "promtail", "loki", "kubectl", "docker", "curl", "grep", "ssh"]
+        if cmd not in ["git", "ls", "cat", "echo", "touch", "mkdir", "rm", "pwd", "clear"] + obs_cmds:
+            return make_prompt(f"bash: {cmd}: command not allowed in Observability labs.")
+
+        if cmd == "pwd":
+            return make_prompt("/")
+
+        if cmd == "otelcol":
+            if "validate" in args or "--config" in args:
+                return make_prompt("Validating otel-collector.yaml  SUCCESS\n  Receivers: [otlp], Processors: [batch], Exporters: [logging, otlp/jaeger] validated.")
+            return make_prompt("OpenTelemetry Collector v0.88.0")
+
+        if cmd == "logcli":
+            return make_prompt('http://localhost:3100/loki/api/v1/query_range\n2026-07-21T20:00:01Z [INFO] trace_id=4a8f9102c7b span_id=00f21a HTTP GET /api/v1/checkout 200 OK 45ms\n2026-07-21T20:00:03Z [ERROR] trace_id=4a8f9102c7b span_id=00f21b Connection refused to payment-gateway:50051')
+
+        if cmd == "kubectl":
+            if "logs" in args:
+                return make_prompt("2026-07-21T20:00:01Z [INFO] trace_id=4a8f9102c7b span_id=00f21a HTTP GET /api/v1/checkout 200 OK 45ms\n2026-07-21T20:00:03Z [ERROR] trace_id=4a8f9102c7b span_id=00f21b Connection refused to payment-gateway:50051")
+            elif "get" in args and "events" in args:
+                return make_prompt("LAST SEEN   TYPE      REASON              OBJECT                  MESSAGE\n2m          Warning   Unhealthy           pod/web-app-7d9e        Liveness probe failed: HTTP probe failed with statuscode 500")
+            return make_prompt("kubectl CLI (simulated observability context)")
+
+        if cmd == "grep":
+            if "error" in " ".join(args).lower():
+                return make_prompt("2026-07-21T20:00:03Z [ERROR] trace_id=4a8f9102c7b span_id=00f21b ConnectionRefusedError: Failed to connect to payment-gateway:50051 at CheckoutService.processPayment (checkout.js:42)")
+            return make_prompt("grep executed successfully.")
+
+        if cmd == "curl":
+            import json
+            url_target = " ".join(args).lower()
+            if "9200/_cluster/health" in url_target:
+                return make_prompt('{"cluster_name": "devlab-elk", "status": "green", "number_of_nodes": 3, "active_primary_shards": 12}')
+            elif "9200/_cat/indices" in url_target:
+                return make_prompt("green open app-logs-2026 5 1 14258 0 12.4mb\ngreen open sys-logs-2026 5 1 8920 0 8.1mb")
+            elif "3100/ready" in url_target:
+                return make_prompt("ready")
+            elif "16686/api/services" in url_target:
+                return make_prompt(json.dumps({"data": ["web-frontend", "checkoutservice", "payment-api"], "total": 3}, indent=2))
+            elif "16686/api/traces" in url_target:
+                return make_prompt(json.dumps({"data": [{"traceID": "4a8f9102c7b", "spans": [{"traceID": "4a8f9102c7b", "spanID": "00f21a", "operationName": "HTTP GET /checkout", "duration": 45000}]}]}, indent=2))
+            elif "16686" in url_target:
+                return make_prompt("<!DOCTYPE html><html><head><title>Jaeger UI</title></head><body><h1>Jaeger UI</h1></body></html>")
+            elif "4318/v1/traces" in url_target:
+                return make_prompt('{"partialSuccess": {}}')
+            elif "13133" in url_target:
+                return make_prompt('{"status": "Server available", "upSince": "2026-07-21T00:00:00Z"}')
+            elif "8888/metrics" in url_target:
+                return make_prompt("# HELP otelcol_receiver_accepted_spans Number of spans successfully received.\n# TYPE otelcol_receiver_accepted_spans counter\notelcol_receiver_accepted_spans{receiver=\"otlp\"} 15420")
+            return make_prompt("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"status\": \"observability telemetry engine active\"}")
+
+        return super().execute_command(cmd_line)
+
+
+class ObservabilityRuntime:
+    """
+    Manages isolated host-based workspace directories for Observability sandbox tasks.
+    """
+    def create_session(self, session_id: str) -> Dict[str, Any]:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"observability-{session_id}")
+        )
+        os.makedirs(session_dir, exist_ok=True)
+        try:
+            with open(os.path.join(session_dir, "otel-collector.yaml"), "w") as f:
+                f.write(
+                    "receivers:\n"
+                    "  otlp:\n"
+                    "    protocols:\n"
+                    "      grpc:\n"
+                    "      http:\n"
+                    "exporters:\n"
+                    "  logging:\n"
+                    "    verbosity: detailed\n"
+                    "  otlp/jaeger:\n"
+                    "    endpoint: jaeger:4317\n"
+                    "service:\n"
+                    "  pipelines:\n"
+                    "    traces:\n"
+                    "      receivers: [otlp]\n"
+                    "      exporters: [logging, otlp/jaeger]\n"
+                )
+            with open(os.path.join(session_dir, "promtail.yml"), "w") as f:
+                f.write(
+                    "server:\n"
+                    "  http_listen_port: 9080\n"
+                    "positions:\n"
+                    "  filename: /tmp/positions.yaml\n"
+                    "clients:\n"
+                    "  - url: http://localhost:3100/loki/api/v1/push\n"
+                )
+            with open(os.path.join(session_dir, "app.log"), "w") as f:
+                f.write(
+                    "2026-07-21T20:00:01Z [INFO] trace_id=4a8f9102c7b span_id=00f21a HTTP GET /api/v1/checkout 200 OK 45ms\n"
+                    "2026-07-21T20:00:03Z [ERROR] trace_id=4a8f9102c7b span_id=00f21b ConnectionRefusedError: Failed to connect to payment-gateway:50051 at CheckoutService.processPayment (checkout.js:42)\n"
+                )
+            with open(os.path.join(session_dir, "json-logs.json"), "w") as f:
+                f.write(
+                    '{"timestamp": "2026-07-21T20:00:01Z", "level": "INFO", "trace_id": "4a8f9102c7b", "service": "web-frontend", "message": "Request completed"}\n'
+                )
+            return {"container_id": f"observability-{session_id}", "status": "running", "mode": "observability"}
+        except Exception as e:
+            logger.error(f"ObservabilityRuntime failed to initialize workspace: {e}")
+            return {"container_id": f"simulated-{session_id}", "status": "running", "mode": "simulated"}
+
+    def stop_session(self, session_id: str, container_id: Optional[str] = None) -> None:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"observability-{session_id}")
+        )
+        if os.path.exists(session_dir):
+            try:
+                shutil.rmtree(session_dir, onerror=_remove_readonly)
+            except Exception as e:
+                logger.warning(f"Failed to remove Observability session directory {session_dir}: {e}")
+
+
 class MonitoringShell(GitShell):
     """
     A real host-based subshell that executes basic CLI utilities and
@@ -3570,12 +3719,20 @@ class LabRuntimeService:
         self.aws_runtime = AWSRuntime()
         self.azure_runtime = AzureRuntime()
         self.monitoring_runtime = MonitoringRuntime()
+        self.observability_runtime = ObservabilityRuntime()
 
     def create_lab(self, session_id: str, lab_name: str = "linux-basics") -> Dict[str, Any]:
         """
         Delegates lab initialization checks to custom Runtimes.
         """
-        if "monitoring" in lab_name or "prometheus" in lab_name or "promql" in lab_name or "exporters" in lab_name or "alertmanager" in lab_name or "grafana" in lab_name:
+        if "observability" in lab_name or "elk" in lab_name or "loki" in lab_name or "jaeger" in lab_name or "opentelemetry" in lab_name or "tracing" in lab_name:
+            res = self.observability_runtime.create_session(session_id)
+            if res["mode"] == "simulated":
+                self.simulated_sessions[session_id] = SimulatedShell(session_id)
+            else:
+                self.simulated_sessions[session_id] = ObservabilityShell(session_id)
+            return res
+        elif "monitoring" in lab_name or "prometheus" in lab_name or "promql" in lab_name or "exporters" in lab_name or "alertmanager" in lab_name or "grafana" in lab_name:
             res = self.monitoring_runtime.create_session(session_id)
             if res["mode"] == "simulated":
                 self.simulated_sessions[session_id] = SimulatedShell(session_id)
@@ -3666,7 +3823,9 @@ class LabRuntimeService:
                 except Exception as e:
                     logger.warning(f"Failed to remove directory {shell.base_dir}: {e}")
 
-        if "monitoring" in lab_name or "prometheus" in lab_name or "promql" in lab_name or "exporters" in lab_name or "alertmanager" in lab_name or "grafana" in lab_name:
+        if "observability" in lab_name or "elk" in lab_name or "loki" in lab_name or "jaeger" in lab_name or "opentelemetry" in lab_name or "tracing" in lab_name:
+            self.observability_runtime.stop_session(session_id, container_id)
+        elif "monitoring" in lab_name or "prometheus" in lab_name or "promql" in lab_name or "exporters" in lab_name or "alertmanager" in lab_name or "grafana" in lab_name:
             self.monitoring_runtime.stop_session(session_id, container_id)
         elif "azure" in lab_name or "resource-groups" in lab_name or "virtual-machines" in lab_name or "virtual-networks" in lab_name or "storage-accounts" in lab_name or "sql-database" in lab_name or "scale-sets" in lab_name or "azure-monitor" in lab_name:
             self.azure_runtime.stop_session(session_id, container_id)
@@ -3695,7 +3854,9 @@ class LabRuntimeService:
         if session_id in self.simulated_sessions:
             return self.simulated_sessions[session_id]
         if lab_name:
-            if "monitoring" in lab_name or "prometheus" in lab_name or "promql" in lab_name or "exporters" in lab_name or "alertmanager" in lab_name or "grafana" in lab_name:
+            if "observability" in lab_name or "elk" in lab_name or "loki" in lab_name or "jaeger" in lab_name or "opentelemetry" in lab_name or "tracing" in lab_name:
+                shell = ObservabilityShell(session_id)
+            elif "monitoring" in lab_name or "prometheus" in lab_name or "promql" in lab_name or "exporters" in lab_name or "alertmanager" in lab_name or "grafana" in lab_name:
                 shell = MonitoringShell(session_id)
             elif "azure" in lab_name or "resource-groups" in lab_name or "virtual-machines" in lab_name or "virtual-networks" in lab_name or "storage-accounts" in lab_name or "sql-database" in lab_name or "scale-sets" in lab_name or "azure-monitor" in lab_name:
                 shell = AzureShell(session_id)

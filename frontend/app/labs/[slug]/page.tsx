@@ -183,6 +183,24 @@ export default function LabDetailsPage() {
             "S3 buckets storage, RDS databases, and CloudWatch alerts",
           ],
         };
+      case "observability":
+        return {
+          prerequisites: [
+            "Basic Linux terminal command-line operations.",
+            "Understanding of HTTP/gRPC networking protocols.",
+          ],
+          objectives: [
+            "Configure Elasticsearch indices, Logstash pipelines, and Kibana log search patterns.",
+            "Set up Grafana Loki log aggregation and LogQL stream queries.",
+            "Trace cross-service microservices request flows using Jaeger and OpenTelemetry Collectors.",
+          ],
+          topics: [
+            "Observability pillars: Metrics, Logs, and Distributed Tracing",
+            "ELK Stack centralized log indexing and Kibana dashboards",
+            "Grafana Loki container log streams aggregation",
+            "Jaeger distributed tracing context propagation and OpenTelemetry pipelines",
+          ],
+        };
       case "monitoring":
         return {
           prerequisites: [

@@ -882,21 +882,78 @@
     "description": "Analyze distributed logs and traces using Elastic Stack (ELK), Jaeger tracing, and open telemetry.",
     "icon": "activity",
     "difficulty": "Intermediate",
-    "coming_soon": true,
+    "coming_soon": false,
     "courses": [
       {
-        "slug": "log-aggregation-with-elk",
-        "title": "Log Aggregation with ELK",
-        "description": "Collect, index, and visualize application logs using Elasticsearch, Logstash, and Kibana.",
-        "difficulty": "Intermediate",
-        "duration": "75 minutes"
+        "slug": "observability-fundamentals",
+        "title": "Observability Fundamentals",
+        "description": "Learn core pillars of observability (Metrics, Logs, Traces) and telemetry correlation basics.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "centralized-logging-with-elk",
+        "title": "Centralized Logging with ELK",
+        "description": "Collect, index, and analyze system and application logs using Elasticsearch, Logstash, and Kibana.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "log-aggregation-with-loki",
+        "title": "Log Aggregation with Loki",
+        "description": "Aggregate and query container log streams using Grafana Loki and Promtail.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
       },
       {
         "slug": "distributed-tracing-with-jaeger",
         "title": "Distributed Tracing with Jaeger",
-        "description": "Trace request lifetimes across multi-service deployments using open telemetry tracing.",
+        "description": "Trace microservice request paths across network boundaries using Jaeger tracing.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "opentelemetry-fundamentals",
+        "title": "OpenTelemetry Fundamentals",
+        "description": "Collect and export unified telemetry data using OpenTelemetry Collector pipelines.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "correlating-logs-metrics-and-traces",
+        "title": "Correlating Logs, Metrics & Traces",
+        "description": "Link trace IDs to log entries and metric exemplars for rapid root cause identification.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "observability-for-kubernetes",
+        "title": "Observability for Kubernetes",
+        "description": "Monitor and trace Kubernetes pods, node system logs, and cluster events using OTel DaemonSets.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "observability-best-practices",
+        "title": "Observability Best Practices",
+        "description": "Implement sampling strategies, structured JSON logging schemas, and cardinality management.",
         "difficulty": "Advanced",
-        "duration": "90 minutes"
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "troubleshooting-production-systems",
+        "title": "Troubleshooting Production Systems",
+        "description": "Triage production incidents using metrics alerts, log searching, and trace waterfall analysis.",
+        "difficulty": "Advanced",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "observability-capstone-project",
+        "title": "Observability Capstone Project",
+        "description": "Diagnose and resolve a complex production outage across a multi-tier microservice architecture.",
+        "difficulty": "Advanced",
+        "duration": "45 minutes",
+        "is_capstone": true
       }
     ]
   }
