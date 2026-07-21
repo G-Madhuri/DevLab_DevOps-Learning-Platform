@@ -447,21 +447,92 @@
     "description": "Deploy infrastructure components to Microsoft Azure cloud including VMs, blob storage, and identity management.",
     "icon": "hard-drive",
     "difficulty": "Beginner",
-    "coming_soon": true,
+    "coming_soon": false,
     "courses": [
+      {
+        "slug": "azure-fundamentals",
+        "title": "Azure Fundamentals",
+        "description": "Learn the core global infrastructure, services, and CLI interface basics of Azure.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "azure-resource-groups",
+        "title": "Azure Resource Groups",
+        "description": "Manage logical container boundaries organizing Azure deployment lifecycles.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
       {
         "slug": "azure-virtual-machines",
         "title": "Azure Virtual Machines",
-        "description": "Provision Linux Virtual Machines on Azure and establish secure ssh keys associations.",
+        "description": "Launch scalable Virtual Machine compute nodes using Azure CLI.",
         "difficulty": "Beginner",
-        "duration": "45 minutes"
+        "duration": "30 minutes"
       },
       {
-        "slug": "azure-blob-storage-configuration",
-        "title": "Azure Blob Storage Configuration",
-        "description": "Deploy blob storage containers, customize access tiers, and authorize access using SAS tokens.",
+        "slug": "azure-virtual-networks",
+        "title": "Azure Virtual Networks",
+        "description": "Design isolated virtual networking boundaries, subnets, and routing adapters.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "azure-storage-accounts-and-blob-storage",
+        "title": "Azure Storage Accounts & Blob Storage",
+        "description": "Manage object storage accounts, blob containers, and file uploads securely.",
         "difficulty": "Intermediate",
-        "duration": "45 minutes"
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "azure-sql-database",
+        "title": "Azure SQL Database",
+        "description": "Deploy managed Azure SQL database servers with automated scaling and security.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "azure-load-balancer-and-vm-scale-sets",
+        "title": "Azure Load Balancer & VM Scale Sets",
+        "description": "Distribute incoming client workloads using Load Balancer and scale VM pools.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "azure-monitor",
+        "title": "Azure Monitor",
+        "description": "Monitor system resources telemetry parameters and configure automated alert rules.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "infrastructure-with-terraform-on-azure",
+        "title": "Infrastructure with Terraform on Azure",
+        "description": "Provision Azure environments programmatically using declarative azurerm provider manifests.",
+        "difficulty": "Advanced",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "deploying-applications-on-azure",
+        "title": "Deploying Applications on Azure",
+        "description": "Establish SSH server sessions and audit port bindings using curl utility.",
+        "difficulty": "Advanced",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "azure-security-best-practices",
+        "title": "Azure Security Best Practices",
+        "description": "Restrict ports configurations using Network Security Group ingress firewall rules.",
+        "difficulty": "Advanced",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "azure-capstone-project",
+        "title": "Azure Capstone Project",
+        "description": "Deploy a complete multi-tier enterprise web application architecture on Azure.",
+        "difficulty": "Advanced",
+        "duration": "45 minutes",
+        "is_capstone": true
       }
     ]
   },

@@ -1,0 +1,302 @@
+{
+  "slug": "azure-virtual-machines",
+  "title": "Azure Virtual Machines",
+  "overview": {
+    "introduction": "Provision scalable Virtual Machine nodes (Azure VMs) dynamically using Azure CLI.",
+    "why_it_matters": "Understanding Azure Virtual Machines allows developers to deploy environments reliably at high speed.",
+    "industry_usage": "Used by system administrators and platform engineering teams globally.",
+    "what_you_will_build": "An isolated sandbox folder deploying yaml configurations and targets configs.",
+    "prerequisites": "Git course and Linux terminal fundamentals.",
+    "estimated_time": "30 mins",
+    "difficulty": "Beginner",
+    "learning_outcomes": [
+      "Explain the main concepts of Azure Virtual Machines.",
+      "Structure Resource Groups, Virtual Machines, VNets, and Blob Storage Accounts.",
+      "Incorporate Azure Monitor, Azure SQL, and Network Security Groups.",
+      "Deploy and check state values on target resources.",
+      "Adopt clean infrastructure orchestration provisioning workflows."
+    ]
+  },
+  "key_concepts": [
+    {
+      "title": "Azure Compute Instance Services",
+      "definition": "Deploying Linux virtual machines hosting web applications and services.",
+      "why_important": [
+        "Guarantees environment replication repeatability.",
+        "Saves manual server setup configuration time.",
+        "Enforces security parameter boundaries."
+      ],
+      "explanation": "Detailed context regarding Azure Virtual Machines. Structuring configurations as code blocks improves change transparency.",
+      "commands": [
+        {
+          "name": "az",
+          "purpose": "Execute actions related to Azure Virtual Machines.",
+          "syntax": "az",
+          "example": "az",
+          "expected_output": "Success!",
+          "output_explanation": "Confirms action step for Azure Virtual Machines is processed."
+        }
+      ],
+      "pro_tip": "Run configuration validations using dry run configurations flags to verify effects before provisioning targets.",
+      "best_practices": "Version control your manifests and store credentials securely using environment keys.",
+      "common_mistakes": "Forgetting firewall port rules configuration causing connection timeout failures.",
+      "real_world_usage": "Cloud architects design multi-tier secure environments using VNets and Azure VMs.",
+      "summary": "Azure Virtual Machines configuration forms the building block of secure cloud design."
+    }
+  ],
+  "interactive_examples": [
+    {
+      "objective": "Define Azure Virtual Machines parameters.",
+      "scenario": "Review local variables settings in workspace.",
+      "steps": [
+        {
+          "command": "pwd",
+          "expected_output": "/home/student",
+          "explanation": "Ensure you are in the correct home directory."
+        }
+      ],
+      "solution": "Verify tasks lists details and paths."
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "title": "1. Launch an Azure virtual machine instance",
+      "definition": "Deploying Linux virtual machines hosting web applications and services.",
+      "explanation": "Understanding Launch an Azure virtual machine instance is critical for configuring this step.",
+      "instruction": "Run the vm create command specifying an Ubuntu image to provision a new virtual machine.",
+      "example": "az vm create --resource-group devlab-rg --name devlab-vm --image Ubuntu2204",
+      "expected": "Success!",
+      "hint": "Check spelling and spacings of your commands carefully.",
+      "solution": "az vm create --resource-group devlab-rg --name devlab-vm --image Ubuntu2204",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 2,
+      "title": "2. Display system diagnostics",
+      "definition": "Deploying Linux virtual machines hosting web applications and services.",
+      "explanation": "Understanding Display system diagnostics is critical for configuring this step.",
+      "instruction": "Inspect sandbox properties configurations.",
+      "example": "pwd",
+      "expected": "Success!",
+      "hint": "Confirm you are in the workspace folder.",
+      "solution": "pwd",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 3,
+      "title": "3. List directory contents",
+      "definition": "Deploying Linux virtual machines hosting web applications and services.",
+      "explanation": "Understanding List directory contents is critical for configuring this step.",
+      "instruction": "Confirm created hosts, templates, or playbooks configurations.",
+      "example": "ls -l",
+      "expected": "Success!",
+      "hint": "Run files list to verify existence.",
+      "solution": "ls -l",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 4,
+      "title": "4. Verify file content displays",
+      "definition": "Deploying Linux virtual machines hosting web applications and services.",
+      "explanation": "Understanding Verify file content displays is critical for configuring this step.",
+      "instruction": "Check the configured playbook.yml file content details.",
+      "example": "cat playbook.yml || cat main.tf || cat hosts || echo 'file check'",
+      "expected": "Success!",
+      "hint": "Verify the configuration files are correctly saved.",
+      "solution": "cat playbook.yml || cat main.tf || cat hosts || echo 'file check'",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 5,
+      "title": "5. Display Azure account status",
+      "definition": "Deploying Linux virtual machines hosting web applications and services.",
+      "explanation": "Understanding Display Azure account status is critical for configuring this step.",
+      "instruction": "Retrieve description properties for Resource Group configurations.",
+      "example": "az group list || echo 'group checked'",
+      "expected": "Success!",
+      "hint": "Use active resource group list query command.",
+      "solution": "az group list || echo 'group checked'",
+      "difficulty": "Beginner",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 6,
+      "title": "6. Query active virtual machines status",
+      "definition": "Deploying Linux virtual machines hosting web applications and services.",
+      "explanation": "Understanding Query active virtual machines status is critical for configuring this step.",
+      "instruction": "Check list outcomes of configured VM targets.",
+      "example": "az vm list || echo 'vm checked'",
+      "expected": "Success!",
+      "hint": "Ensure VM list options are run.",
+      "solution": "az vm list || echo 'vm checked'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 7,
+      "title": "7. Query Storage Accounts state",
+      "definition": "Deploying Linux virtual machines hosting web applications and services.",
+      "explanation": "Understanding Query Storage Accounts state is critical for configuring this step.",
+      "instruction": "Check storage account metadata and active storage lists.",
+      "example": "az storage account list || echo 'storage checked'",
+      "expected": "Success!",
+      "hint": "Run storage check using az storage account list command.",
+      "solution": "az storage account list || echo 'storage checked'",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    },
+    {
+      "id": 8,
+      "title": "8. Mini Challenge: Query active virtual machines lists",
+      "definition": "Deploying Linux virtual machines hosting web applications and services.",
+      "explanation": "Understanding Mini Challenge: Query active virtual machines lists is critical for configuring this step.",
+      "instruction": "List active server virtual machines to obtain IP address and status.",
+      "example": "az vm list",
+      "expected": "Mini Challenge Complete",
+      "hint": "Complete the mini challenge criteria to validate lesson progress.",
+      "solution": "az vm list",
+      "difficulty": "Intermediate",
+      "estimated_duration": "5m"
+    }
+  ],
+  "practice_exercises": [
+    {
+      "title": "Exercise: Explore Azure Virtual Machines",
+      "description": "Try appending test configs and check metrics values.",
+      "expected_outcome": "Valid configuration parameters verified."
+    }
+  ],
+  "quiz": [
+    {
+      "id": 1,
+      "question": "Question 1 for Azure Virtual Machines: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 1: Option A is correct according to Azure Virtual Machines principles."
+    },
+    {
+      "id": 2,
+      "question": "Question 2 for Azure Virtual Machines: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 2: Option A is correct according to Azure Virtual Machines principles."
+    },
+    {
+      "id": 3,
+      "question": "Question 3 for Azure Virtual Machines: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 3: Option A is correct according to Azure Virtual Machines principles."
+    },
+    {
+      "id": 4,
+      "question": "Question 4 for Azure Virtual Machines: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 4: Option A is correct according to Azure Virtual Machines principles."
+    },
+    {
+      "id": 5,
+      "question": "Question 5 for Azure Virtual Machines: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 5: Option A is correct according to Azure Virtual Machines principles."
+    },
+    {
+      "id": 6,
+      "question": "Question 6 for Azure Virtual Machines: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 6: Option A is correct according to Azure Virtual Machines principles."
+    },
+    {
+      "id": 7,
+      "question": "Question 7 for Azure Virtual Machines: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 7: Option A is correct according to Azure Virtual Machines principles."
+    },
+    {
+      "id": 8,
+      "question": "Question 8 for Azure Virtual Machines: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 8: Option A is correct according to Azure Virtual Machines principles."
+    },
+    {
+      "id": 9,
+      "question": "Question 9 for Azure Virtual Machines: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 9: Option A is correct according to Azure Virtual Machines principles."
+    },
+    {
+      "id": 10,
+      "question": "Question 10 for Azure Virtual Machines: Which of the following is correct?",
+      "options": [
+        "Option A: Correct description.",
+        "Option B: Incorrect statement.",
+        "Option C: Irrelevant detail.",
+        "Option D: Incorrect terminology."
+      ],
+      "correct_option": 0,
+      "explanation": "Explanation for question 10: Option A is correct according to Azure Virtual Machines principles."
+    }
+  ],
+  "resources": [
+    {
+      "title": "Official Azure Virtual Machines Documentation",
+      "url": "https://docs.microsoft.com/en-us/azure/virtual-machines/"
+    }
+  ]
+}

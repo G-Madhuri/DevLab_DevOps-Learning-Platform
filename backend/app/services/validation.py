@@ -20,6 +20,12 @@ class ValidationEngine:
         """
         Routes the validation check to the appropriate course validators (Linux, Docker, Git, Actions, CI/CD, Jenkins or Kubernetes).
         """
+        if "azure" in lab_name or "resource-groups" in lab_name or "virtual-machines" in lab_name or "virtual-networks" in lab_name or "storage-accounts" in lab_name or "sql-database" in lab_name or "scale-sets" in lab_name or "azure-monitor" in lab_name:
+            shell = runtime_service.get_session_shell(session_id)
+            if not shell:
+                return {"success": False, "message": "Azure shell session not found."}
+            return self._validate_azure(shell, task_id, lab_name)
+
         if "aws" in lab_name or "iam-" in lab_name or "ec2-" in lab_name or "vpc-" in lab_name or "s3-" in lab_name or "rds-" in lab_name or "load-balancers-" in lab_name or "cloudwatch-" in lab_name:
             shell = runtime_service.get_session_shell(session_id)
             if not shell:
@@ -2180,6 +2186,129 @@ class ValidationEngine:
                 state_file = os.path.join(shell.base_dir, "terraform.tfstate")
                 if os.path.exists(state_file) and "curl" in history_str:
                     return {"success": True, "message": "Success! Complete multi-tier architecture verified and deployed."}
+                return {"success": False, "message": "Apply infrastructure blueprints via terraform apply and curl verify output."}
+
+        return {"success": False, "message": "Unknown task check."}
+
+    def _validate_azure(self, shell: Any, task_id: int, lab_name: str) -> Dict[str, Any]:
+        """
+        Validates Azure course progress against simulated infrastructure state and command history.
+        """
+        history_str = " ".join(shell.history).lower()
+        state = getattr(shell, "azure_state", {})
+
+        # Step 1: Initialize first files / command check
+        if task_id == 1:
+            if lab_name == "azure-security-best-practices":
+                if "nsg create" in history_str or "nsg" in history_str:
+                    return {"success": True, "message": "Success! Network Security Group firewall initialized."}
+                return {"success": False, "message": "Create a new Network Security Group firewall by running az network nsg create."}
+            if "az" in history_str or "terraform" in history_str or os.path.exists(os.path.join(shell.base_dir, "main.tf")):
+                return {"success": True, "message": "Success! Azure lab workspace ready."}
+            return {"success": False, "message": "Run basic az configuration or terraform initialization command."}
+
+        # Step 2: System diagnostic checks
+        if task_id == 2:
+            if "pwd" in history_str:
+                return {"success": True, "message": "Success! Workspace path diagnostics verified."}
+            return {"success": False, "message": "Verify path by executing pwd."}
+
+        # Step 3: List files check
+        if task_id == 3:
+            if "ls" in history_str:
+                return {"success": True, "message": "Success! Active workspace files cataloged."}
+            return {"success": False, "message": "Execute ls command to display files inside the workspace."}
+
+        # Step 4: Verify files contents display
+        if task_id == 4:
+            if "cat" in history_str:
+                return {"success": True, "message": "Success! Read workspace parameters templates configuration details."}
+            return {"success": False, "message": "View local variables template configuration values using cat."}
+
+        # Step 5: Read Resource Group stats
+        if task_id == 5:
+            if "group" in history_str or len(state.get("groups", [])) > 0:
+                return {"success": True, "message": "Success! Sourced active Resource Group credentials information."}
+            return {"success": False, "message": "Run az group list to display active Resource Groups list."}
+
+        # Step 6: Query virtual machines
+        if task_id == 6:
+            if "vm" in history_str or len(state.get("vms", [])) > 0:
+                return {"success": True, "message": "Success! Sourced virtual machines compute records."}
+            return {"success": False, "message": "Query running virtual machines lists status by running az vm list."}
+
+        # Step 7: Query Storage Accounts status
+        if task_id == 7:
+            if "storage" in history_str or len(state.get("storage_accounts", [])) > 0:
+                return {"success": True, "message": "Success! Active Storage Accounts repositories audited."}
+            return {"success": False, "message": "List registered Storage Accounts by executing az storage account list."}
+
+        # Step 8 (Mini Challenge): Module-specific custom criteria
+        if task_id == 8:
+            if lab_name == "azure-fundamentals":
+                if "account" in history_str:
+                    return {"success": True, "message": "Success! Azure CLI subscription profile loaded."}
+                return {"success": False, "message": "Configure local subscription profile by executing az account list."}
+
+            elif lab_name == "azure-resource-groups":
+                if "devlab-rg" in state.get("groups", []) or "group create" in history_str:
+                    return {"success": True, "message": "Success! Resource Group 'devlab-rg' created successfully."}
+                return {"success": False, "message": "Create a new Resource Group named 'devlab-rg'."}
+
+            elif lab_name == "azure-virtual-machines":
+                if len(state.get("vms", [])) > 0 or "vm create" in history_str:
+                    return {"success": True, "message": "Success! Virtual Machine instance provisioned successfully."}
+                return {"success": False, "message": "Launch a new Virtual Machine node by running az vm create."}
+
+            elif lab_name == "azure-virtual-networks":
+                if len(state.get("subnets", [])) > 0 or "subnet create" in history_str:
+                    return {"success": True, "message": "Success! VNet subnet configuration partition added."}
+                return {"success": False, "message": "Create a VNet subnet partition using az network vnet subnet create."}
+
+            elif lab_name == "azure-storage-accounts-and-blob-storage":
+                has_uploaded = False
+                for c_name, files in state.get("blobs", {}).items():
+                    if "test.txt" in files:
+                        has_uploaded = True
+                        break
+                if has_uploaded or "blob upload" in history_str:
+                    return {"success": True, "message": "Success! Blob uploaded to storage account successfully."}
+                return {"success": False, "message": "Upload 'test.txt' to Blob container by executing az storage blob upload."}
+
+            elif lab_name == "azure-sql-database":
+                if len(state.get("sql_dbs", [])) > 0 or "sql db create" in history_str:
+                    return {"success": True, "message": "Success! Azure SQL Database instance deployed."}
+                return {"success": False, "message": "Create Azure SQL Database instances by running az sql db create."}
+
+            elif lab_name == "azure-load-balancer-and-vm-scale-sets":
+                if len(state.get("vmss", [])) > 0 or "vmss create" in history_str:
+                    return {"success": True, "message": "Success! Load balancers VM Scale Sets configured."}
+                return {"success": False, "message": "Create a VM Scale Set template by running az vmss create."}
+
+            elif lab_name == "azure-monitor":
+                if len(state.get("alerts", [])) > 0 or "alert" in history_str:
+                    return {"success": True, "message": "Success! Custom CPU telemetry monitoring alert rule defined."}
+                return {"success": False, "message": "Configure CPU metric threshold alerts using az monitor metrics alert create."}
+
+            elif lab_name == "infrastructure-with-terraform-on-azure":
+                if "plan" in history_str:
+                    return {"success": True, "message": "Success! Infrastructure configuration blueprint verified."}
+                return {"success": False, "message": "Verify resources addition plan maps by executing terraform plan."}
+
+            elif lab_name == "deploying-applications-on-azure":
+                if "curl" in history_str:
+                    return {"success": True, "message": "Success! Target web app port connections audited."}
+                return {"success": False, "message": "Check application response status by calling curl."}
+
+            elif lab_name == "azure-security-best-practices":
+                if len(state.get("nsg_rules", [])) > 0 or "rule create" in history_str:
+                    return {"success": True, "message": "Success! Port firewall ingress rule authorized on NSG."}
+                return {"success": False, "message": "Authorize port ingress traffic parameters on the NSG."}
+
+            elif lab_name == "azure-capstone-project":
+                state_file = os.path.join(shell.base_dir, "terraform.tfstate")
+                if os.path.exists(state_file) and "curl" in history_str:
+                    return {"success": True, "message": "Success! Complete multi-tier enterprise Azure architecture verified."}
                 return {"success": False, "message": "Apply infrastructure blueprints via terraform apply and curl verify output."}
 
         return {"success": False, "message": "Unknown task check."}
