@@ -20,6 +20,12 @@ class ValidationEngine:
         """
         Routes the validation check to the appropriate course validators (Linux, Docker, Git, Actions, CI/CD, Jenkins or Kubernetes).
         """
+        if "monitoring" in lab_name or "prometheus" in lab_name or "promql" in lab_name or "exporters" in lab_name or "alertmanager" in lab_name or "grafana" in lab_name:
+            shell = runtime_service.get_session_shell(session_id)
+            if not shell:
+                return {"success": False, "message": "Monitoring shell session not found."}
+            return self._validate_monitoring(shell, task_id, lab_name)
+
         if "azure" in lab_name or "resource-groups" in lab_name or "virtual-machines" in lab_name or "virtual-networks" in lab_name or "storage-accounts" in lab_name or "sql-database" in lab_name or "scale-sets" in lab_name or "azure-monitor" in lab_name:
             shell = runtime_service.get_session_shell(session_id)
             if not shell:
@@ -2310,6 +2316,108 @@ class ValidationEngine:
                 if os.path.exists(state_file) and "curl" in history_str:
                     return {"success": True, "message": "Success! Complete multi-tier enterprise Azure architecture verified."}
                 return {"success": False, "message": "Apply infrastructure blueprints via terraform apply and curl verify output."}
+
+        return {"success": False, "message": "Unknown task check."}
+
+    def _validate_monitoring(self, shell: Any, task_id: int, lab_name: str) -> Dict[str, Any]:
+        """
+        Validates Monitoring course progress against configuration state and command history.
+        """
+        history_str = " ".join(shell.history).lower()
+
+        # Step 1: Initialize first files / command check
+        if task_id == 1:
+            if "cat" in history_str or "promtool" in history_str or os.path.exists(os.path.join(shell.base_dir, "prometheus.yml")):
+                return {"success": True, "message": "Success! Monitoring lab workspace and prometheus.yml ready."}
+            return {"success": False, "message": "Inspect configuration or run basic prometheus command."}
+
+        # Step 2: System diagnostic checks
+        if task_id == 2:
+            if "pwd" in history_str:
+                return {"success": True, "message": "Success! Workspace path diagnostics verified."}
+            return {"success": False, "message": "Verify path by executing pwd."}
+
+        # Step 3: List files check
+        if task_id == 3:
+            if "ls" in history_str:
+                return {"success": True, "message": "Success! Active workspace files cataloged."}
+            return {"success": False, "message": "Execute ls command to display files inside the workspace."}
+
+        # Step 4: Verify files contents display
+        if task_id == 4:
+            if "cat" in history_str:
+                return {"success": True, "message": "Success! Read workspace parameters templates configuration details."}
+            return {"success": False, "message": "View configuration template values using cat."}
+
+        # Step 5: Validate config syntax
+        if task_id == 5:
+            if "promtool" in history_str or "amtool" in history_str or "cat" in history_str:
+                return {"success": True, "message": "Success! Configuration syntax checked via validation tools."}
+            return {"success": False, "message": "Run promtool check config prometheus.yml to validate syntax."}
+
+        # Step 6: Query Prometheus targets API status
+        if task_id == 6:
+            if "curl" in history_str or "targets" in history_str:
+                return {"success": True, "message": "Success! Sourced Prometheus targets endpoint status."}
+            return {"success": False, "message": "Query Prometheus targets by fetching http://localhost:9090/api/v1/targets."}
+
+        # Step 7: Query Grafana status endpoint
+        if task_id == 7:
+            if "curl" in history_str or "3000" in history_str or "grafana" in history_str:
+                return {"success": True, "message": "Success! Grafana health endpoint status verified."}
+            return {"success": False, "message": "Check Grafana status by fetching http://localhost:3000/api/health."}
+
+        # Step 8 (Mini Challenge): Module-specific custom criteria
+        if task_id == 8:
+            if lab_name == "monitoring-fundamentals":
+                if "9090/metrics" in history_str or "curl" in history_str:
+                    return {"success": True, "message": "Success! Prometheus metrics endpoint inspected."}
+                return {"success": False, "message": "Fetch Prometheus metrics by calling curl http://localhost:9090/metrics."}
+
+            elif lab_name == "prometheus-basics":
+                if "targets" in history_str or "promtool" in history_str:
+                    return {"success": True, "message": "Success! Prometheus active targets queried."}
+                return {"success": False, "message": "Query active targets via curl http://localhost:9090/api/v1/targets."}
+
+            elif lab_name == "promql-queries":
+                if "query" in history_str or "rate" in history_str or "memavailable" in history_str:
+                    return {"success": True, "message": "Success! PromQL time series query executed."}
+                return {"success": False, "message": "Execute a PromQL query via the Prometheus query API endpoint."}
+
+            elif lab_name == "exporters-and-metrics-collection":
+                if "promtool" in history_str or "9100" in history_str:
+                    return {"success": True, "message": "Success! Node Exporter scrape target configured and validated."}
+                return {"success": False, "message": "Validate updated scrape targets using promtool check config."}
+
+            elif lab_name == "alertmanager":
+                if "silence" in history_str or "amtool" in history_str:
+                    return {"success": True, "message": "Success! Alertmanager silences queried via amtool."}
+                return {"success": False, "message": "Query Alertmanager silences by executing amtool silence query."}
+
+            elif lab_name == "grafana-dashboards":
+                if "datasources" in history_str or "3000" in history_str:
+                    return {"success": True, "message": "Success! Grafana datasources list fetched via REST API."}
+                return {"success": False, "message": "Fetch Grafana datasources by calling curl http://localhost:3000/api/datasources."}
+
+            elif lab_name == "monitoring-kubernetes":
+                if "top nodes" in history_str or "kubectl" in history_str:
+                    return {"success": True, "message": "Success! Kubernetes node metrics audited."}
+                return {"success": False, "message": "Query Kubernetes nodes resource consumption using kubectl top nodes."}
+
+            elif lab_name == "monitoring-docker":
+                if "stats" in history_str or "docker" in history_str:
+                    return {"success": True, "message": "Success! Docker container stats stream audited."}
+                return {"success": False, "message": "View live container metrics by running docker stats."}
+
+            elif lab_name == "monitoring-best-practices":
+                if "rules" in history_str or "promtool" in history_str:
+                    return {"success": True, "message": "Success! Prometheus alert rules verified via API."}
+                return {"success": False, "message": "Query active rules via curl http://localhost:9090/api/v1/rules."}
+
+            elif lab_name == "monitoring-capstone-project":
+                if ("buildinfo" in history_str or "promtool" in history_str) and "curl" in history_str:
+                    return {"success": True, "message": "Success! Complete production monitoring stack verified."}
+                return {"success": False, "message": "Validate configuration via promtool check config and curl buildinfo status."}
 
         return {"success": False, "message": "Unknown task check."}
 

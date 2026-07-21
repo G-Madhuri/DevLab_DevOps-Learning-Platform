@@ -183,6 +183,24 @@ export default function LabDetailsPage() {
             "S3 buckets storage, RDS databases, and CloudWatch alerts",
           ],
         };
+      case "monitoring":
+        return {
+          prerequisites: [
+            "Basic Linux terminal command-line operations.",
+            "Understanding of client-server networking fundamentals.",
+          ],
+          objectives: [
+            "Configure Prometheus scrape targets, TSDB retention, and PromQL metrics queries.",
+            "Set up Alertmanager notification routing, silences, and severity labels.",
+            "Design dynamic Grafana dashboards, panels, and custom alert rules.",
+          ],
+          topics: [
+            "Observability metrics types (Counters, Gauges, Histograms)",
+            "Prometheus TSDB engine and PromQL expressions",
+            "Node Exporter and cAdvisor container metrics collection",
+            "Alertmanager notifications and Grafana visualization dashboards",
+          ],
+        };
       case "azure":
         return {
           prerequisites: [

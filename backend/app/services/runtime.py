@@ -2342,6 +2342,159 @@ class TerraformRuntime(BaseRuntime):
                 logger.warning(f"Failed to remove Terraform session directory {session_dir}: {e}")
 
 
+class MonitoringShell(GitShell):
+    """
+    A real host-based subshell that executes basic CLI utilities and
+    simulates Prometheus, Grafana, Alertmanager, and Docker/K8s metrics commands.
+    """
+    def __init__(self, session_id: str):
+        self.session_id = session_id
+        self.base_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"monitoring-{session_id}")
+        )
+        os.makedirs(self.base_dir, exist_ok=True)
+        self.cwd = "/"
+        self.history = []
+        self.monitoring_state = {
+            "configs": ["prometheus.yml", "alertmanager.yml"],
+            "rules": ["rules.yml"],
+            "silences": [],
+            "dashboards": [],
+            "datasources": ["Prometheus"],
+            "alerts": []
+        }
+
+    def execute_command(self, cmd_line: str) -> str:
+        cmd_line = cmd_line.strip()
+        if not cmd_line:
+            return ""
+
+        self.history.append(cmd_line)
+        parts = cmd_line.split()
+        cmd = parts[0]
+        args = parts[1:]
+
+        def make_prompt(output_text: str = "") -> str:
+            suffix = "\r\n" if output_text and not output_text.endswith("\r\n") else ""
+            return f"{output_text}{suffix}student@devlab-monitoring:$ "
+
+        # Whitelist safe monitoring CLI tools
+        monitoring_cmds = ["prometheus", "promtool", "amtool", "grafana-cli", "kubectl", "docker", "curl", "ssh"]
+        if cmd not in ["git", "ls", "cat", "echo", "touch", "mkdir", "rm", "pwd", "clear"] + monitoring_cmds:
+            return make_prompt(f"bash: {cmd}: command not allowed in Monitoring labs.")
+
+        if cmd == "pwd":
+            return make_prompt("/")
+
+        if cmd == "promtool":
+            if "check" in args and "config" in args:
+                return make_prompt("Checking prometheus.yml  SUCCESS\n  12 targets validated, 0 errors found.")
+            elif "check" in args and "rules" in args:
+                return make_prompt("Checking rules.yml  SUCCESS\n  3 alert rules, 2 recording rules validated.")
+            return make_prompt("promtool v2.45.0 (built with go1.20)")
+
+        if cmd == "amtool":
+            if "check-config" in args:
+                return make_prompt("Checking alertmanager.yml  SUCCESS\n  1 route tree, 2 receiver targets validated.")
+            elif "silence" in args:
+                return make_prompt("ID                                   Matchers           Ends At                  Created By      Comment\n00000000-0000-0000-0000-000000000000  alertname=LowDisk  2026-12-31T23:59:59Z     student@devlab  Maintenance silence")
+            return make_prompt("amtool v0.25.0 (Alertmanager CLI)")
+
+        if cmd == "grafana-cli":
+            return make_prompt("Grafana CLI v10.0.0\nInstalled plugins:\n - alexanderzobnin-zabbix-app\n - grafana-piechart-panel")
+
+        if cmd == "kubectl":
+            if "top" in args and "pods" in args:
+                return make_prompt("NAME                            CPU(cores)   MEMORY(bytes)\nweb-frontend-5b4d7f8c9-2x7kp    15m          128Mi\nbackend-api-7d9e4c1a2-9m3lp     45m          256Mi\nprometheus-k8s-0                120m         512Mi")
+            elif "top" in args and "nodes" in args:
+                return make_prompt("NAME          CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%\nnode-master   150m         7%     1850Mi          45%\nnode-worker1  320m         16%    3400Mi          82%")
+            return make_prompt("kubectl CLI (simulated monitoring context)")
+
+        if cmd == "docker":
+            if "stats" in args:
+                return make_prompt("CONTAINER ID   NAME         CPU %     MEM USAGE / LIMIT     MEM %     NET I/O\n9a8b7c6d5e4f   prometheus   1.25%     145MiB / 2GiB         7.08%     1.2MB / 8.4MB\n1a2b3c4d5e6f   grafana      0.85%     85MiB / 2GiB          4.15%     450kB / 1.1MB\n3f4e5d6c7b8a   cadvisor     2.10%     64MiB / 2GiB          3.12%     8.9MB / 12.1MB")
+            return make_prompt("Docker CLI (simulated monitoring context)")
+
+        if cmd == "curl":
+            import json
+            url_target = " ".join(args).lower()
+            if "3000/api/health" in url_target:
+                return make_prompt('{"database": "ok", "version": "10.0.0", "commit": "v10.0.0"}')
+            elif "3000/api/datasources" in url_target:
+                return make_prompt(json.dumps([{"id": 1, "name": "Prometheus", "type": "prometheus", "url": "http://localhost:9090", "isDefault": True}], indent=2))
+            elif "9100/metrics" in url_target:
+                return make_prompt("# HELP node_cpu_seconds_total Seconds the CPUs spent in each mode.\n# TYPE node_cpu_seconds_total counter\nnode_cpu_seconds_total{cpu=\"0\",mode=\"idle\"} 142589.12\nnode_memory_MemAvailable_bytes 4294967296")
+            elif "8080/metrics" in url_target:
+                return make_prompt("# HELP container_cpu_usage_seconds_total Cumulative cpu time consumed\n# TYPE container_cpu_usage_seconds_total counter\ncontainer_cpu_usage_seconds_total{name=\"web\"} 45.12")
+            elif "9090/api/v1/targets" in url_target:
+                return make_prompt(json.dumps({"status": "success", "data": {"activeTargets": [{"discoveredLabels": {"__address__": "localhost:9090"}, "health": "up"}]}}, indent=2))
+            elif "9090/api/v1/query" in url_target:
+                return make_prompt(json.dumps({"status": "success", "data": {"resultType": "vector", "result": [{"metric": {"__name__": "process_cpu_seconds_total"}, "value": [1680000000, "0.045"]}]}}, indent=2))
+            elif "9090/api/v1/rules" in url_target:
+                return make_prompt(json.dumps({"status": "success", "data": {"groups": [{"name": "example_alerts", "rules": [{"name": "HighCPUUsage", "state": "firing"}]}]}}, indent=2))
+            elif "9090/api/v1/status/buildinfo" in url_target:
+                return make_prompt(json.dumps({"status": "success", "data": {"version": "2.45.0", "revision": "bb7a27", "goVersion": "go1.20"}}, indent=2))
+            elif "9090/metrics" in url_target:
+                return make_prompt("# HELP process_cpu_seconds_total Total user and system CPU time spent in seconds.\n# TYPE process_cpu_seconds_total counter\nprocess_cpu_seconds_total 12.45")
+            return make_prompt("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nPrometheus Monitoring Engine Operational.")
+
+        return super().execute_command(cmd_line)
+
+
+class MonitoringRuntime:
+    """
+    Manages isolated host-based workspace directories for Monitoring sandbox tasks.
+    """
+    def create_session(self, session_id: str) -> Dict[str, Any]:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"monitoring-{session_id}")
+        )
+        os.makedirs(session_dir, exist_ok=True)
+        try:
+            with open(os.path.join(session_dir, "prometheus.yml"), "w") as f:
+                f.write(
+                    "global:\n"
+                    "  scrape_interval: 15s\n"
+                    "  evaluation_interval: 15s\n"
+                    "scrape_configs:\n"
+                    "  - job_name: 'prometheus'\n"
+                    "    static_configs:\n"
+                    "      - targets: ['localhost:9090']\n"
+                )
+            with open(os.path.join(session_dir, "alertmanager.yml"), "w") as f:
+                f.write(
+                    "global:\n"
+                    "  resolve_timeout: 5m\n"
+                    "route:\n"
+                    "  receiver: 'default-receiver'\n"
+                    "receivers:\n"
+                    "  - name: 'default-receiver'\n"
+                )
+            with open(os.path.join(session_dir, "rules.yml"), "w") as f:
+                f.write(
+                    "groups:\n"
+                    "  - name: example_alerts\n"
+                    "    rules:\n"
+                    "      - alert: HighCPUUsage\n"
+                    "        expr: rate(process_cpu_seconds_total[5m]) > 0.8\n"
+                    "        for: 2m\n"
+                )
+            return {"container_id": f"monitoring-{session_id}", "status": "running", "mode": "monitoring"}
+        except Exception as e:
+            logger.error(f"MonitoringRuntime failed to initialize workspace: {e}")
+            return {"container_id": f"simulated-{session_id}", "status": "running", "mode": "simulated"}
+
+    def stop_session(self, session_id: str, container_id: Optional[str] = None) -> None:
+        session_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../scratch/sessions", f"monitoring-{session_id}")
+        )
+        if os.path.exists(session_dir):
+            try:
+                shutil.rmtree(session_dir, onerror=_remove_readonly)
+            except Exception as e:
+                logger.warning(f"Failed to remove Monitoring session directory {session_dir}: {e}")
+
+
 class AzureShell(GitShell):
     """
     A real host-based subshell that executes basic CLI utilities and
@@ -3416,12 +3569,20 @@ class LabRuntimeService:
         self.ansible_runtime = AnsibleRuntime()
         self.aws_runtime = AWSRuntime()
         self.azure_runtime = AzureRuntime()
+        self.monitoring_runtime = MonitoringRuntime()
 
     def create_lab(self, session_id: str, lab_name: str = "linux-basics") -> Dict[str, Any]:
         """
         Delegates lab initialization checks to custom Runtimes.
         """
-        if "azure" in lab_name or "resource-groups" in lab_name or "virtual-machines" in lab_name or "virtual-networks" in lab_name or "storage-accounts" in lab_name or "sql-database" in lab_name or "scale-sets" in lab_name or "azure-monitor" in lab_name:
+        if "monitoring" in lab_name or "prometheus" in lab_name or "promql" in lab_name or "exporters" in lab_name or "alertmanager" in lab_name or "grafana" in lab_name:
+            res = self.monitoring_runtime.create_session(session_id)
+            if res["mode"] == "simulated":
+                self.simulated_sessions[session_id] = SimulatedShell(session_id)
+            else:
+                self.simulated_sessions[session_id] = MonitoringShell(session_id)
+            return res
+        elif "azure" in lab_name or "resource-groups" in lab_name or "virtual-machines" in lab_name or "virtual-networks" in lab_name or "storage-accounts" in lab_name or "sql-database" in lab_name or "scale-sets" in lab_name or "azure-monitor" in lab_name:
             res = self.azure_runtime.create_session(session_id)
             if res["mode"] == "simulated":
                 self.simulated_sessions[session_id] = SimulatedShell(session_id)
@@ -3505,7 +3666,9 @@ class LabRuntimeService:
                 except Exception as e:
                     logger.warning(f"Failed to remove directory {shell.base_dir}: {e}")
 
-        if "azure" in lab_name or "resource-groups" in lab_name or "virtual-machines" in lab_name or "virtual-networks" in lab_name or "storage-accounts" in lab_name or "sql-database" in lab_name or "scale-sets" in lab_name or "azure-monitor" in lab_name:
+        if "monitoring" in lab_name or "prometheus" in lab_name or "promql" in lab_name or "exporters" in lab_name or "alertmanager" in lab_name or "grafana" in lab_name:
+            self.monitoring_runtime.stop_session(session_id, container_id)
+        elif "azure" in lab_name or "resource-groups" in lab_name or "virtual-machines" in lab_name or "virtual-networks" in lab_name or "storage-accounts" in lab_name or "sql-database" in lab_name or "scale-sets" in lab_name or "azure-monitor" in lab_name:
             self.azure_runtime.stop_session(session_id, container_id)
         elif "aws" in lab_name or "iam-" in lab_name or "ec2-" in lab_name or "vpc-" in lab_name or "s3-" in lab_name or "rds-" in lab_name or "load-balancers-" in lab_name or "cloudwatch-" in lab_name:
             self.aws_runtime.stop_session(session_id, container_id)
@@ -3532,7 +3695,9 @@ class LabRuntimeService:
         if session_id in self.simulated_sessions:
             return self.simulated_sessions[session_id]
         if lab_name:
-            if "azure" in lab_name or "resource-groups" in lab_name or "virtual-machines" in lab_name or "virtual-networks" in lab_name or "storage-accounts" in lab_name or "sql-database" in lab_name or "scale-sets" in lab_name or "azure-monitor" in lab_name:
+            if "monitoring" in lab_name or "prometheus" in lab_name or "promql" in lab_name or "exporters" in lab_name or "alertmanager" in lab_name or "grafana" in lab_name:
+                shell = MonitoringShell(session_id)
+            elif "azure" in lab_name or "resource-groups" in lab_name or "virtual-machines" in lab_name or "virtual-networks" in lab_name or "storage-accounts" in lab_name or "sql-database" in lab_name or "scale-sets" in lab_name or "azure-monitor" in lab_name:
                 shell = AzureShell(session_id)
             elif "aws" in lab_name or "iam-" in lab_name or "ec2-" in lab_name or "vpc-" in lab_name or "s3-" in lab_name or "rds-" in lab_name or "load-balancers-" in lab_name or "cloudwatch-" in lab_name:
                 shell = AWSShell(session_id)
