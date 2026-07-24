@@ -43,4 +43,19 @@ export const labService = {
     const response = await apiClient.get(`/labs/learning-paths/detail/${pathId}`);
     return response.data;
   },
+  
+  async listCertificates(): Promise<any[]> {
+    const response = await apiClient.get("/labs/certificates/list");
+    return response.data;
+  },
+
+  async generateCourseCertificate(courseSlug: string): Promise<any> {
+    const response = await apiClient.post(`/labs/courses/${courseSlug}/certificate/generate`);
+    return response.data;
+  },
+
+  async listAchievements(): Promise<any> {
+    const response = await apiClient.get("/labs/achievements/list");
+    return response.data;
+  },
 };

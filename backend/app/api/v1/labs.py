@@ -281,3 +281,226 @@ def get_learning_path_detail(
         "progress": overall_progress,
         "courses_details": courses_details
     }
+
+
+@router.get("/certificates/list")
+def get_user_certificates(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Get all unlocked certificates for courses and academies completed by the user.
+    """
+    import hashlib
+    # 1. Fetch all completed courses
+    progress_records = db.query(CourseProgress).filter(
+        CourseProgress.user_id == current_user.id,
+        CourseProgress.percentage == 100
+    ).all()
+    completed_slugs = {p.course_slug: p.updated_at for p in progress_records}
+
+    # 2. Get academies and courses mapping
+    academies = course_engine.get_academies()
+    
+    certificates = []
+    
+    # Check individual course completions
+    for academy in academies:
+        academy_completed_count = 0
+        total_academy_courses = len(academy["courses"])
+        academy_completed_dates = []
+
+        for course in academy["courses"]:
+            if course["slug"] in completed_slugs:
+                completed_at = completed_slugs[course["slug"]]
+                academy_completed_count += 1
+                academy_completed_dates.append(completed_at)
+                
+                # Dynamic deterministic certificate ID
+                cert_id_seed = f"{current_user.id}:{course['slug']}"
+                cert_uuid = str(uuid.UUID(hashlib.md5(cert_id_seed.encode()).hexdigest()))
+                
+                certificates.append({
+                    "id": cert_uuid,
+                    "type": "course",
+                    "title": f"{course['title']} Certification",
+                    "recipient_name": current_user.name,
+                    "target_title": course["title"],
+                    "target_id": course["slug"],
+                    "category": academy["title"],
+                    "issue_date": completed_at.isoformat() if completed_at else None,
+                    "credential_id": cert_uuid[:8].upper()
+                })
+
+        # Check academy completion
+        if total_academy_courses > 0 and academy_completed_count == total_academy_courses:
+            # Academy certificate
+            cert_id_seed = f"{current_user.id}:{academy['id']}"
+            cert_uuid = str(uuid.UUID(hashlib.md5(cert_id_seed.encode()).hexdigest()))
+            latest_date = max(academy_completed_dates) if academy_completed_dates else None
+            
+            certificates.append({
+                "id": cert_uuid,
+                "type": "academy",
+                "title": f"{academy['title']} Academy Graduate",
+                "recipient_name": current_user.name,
+                "target_title": f"{academy['title']} Academy",
+                "target_id": academy["id"],
+                "category": academy["title"],
+                "issue_date": latest_date.isoformat() if latest_date else None,
+                "credential_id": cert_uuid[:8].upper()
+            })
+            
+    return certificates
+
+
+@router.post("/courses/{course_slug}/certificate/generate")
+def generate_course_certificate(
+    course_slug: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Generate certificate for completing a single course.
+    """
+    import hashlib
+    progress = db.query(CourseProgress).filter(
+        CourseProgress.user_id == current_user.id,
+        CourseProgress.course_slug == course_slug
+    ).first()
+    
+    if not progress or progress.percentage < 100:
+        raise HTTPException(status_code=400, detail="Complete this course to unlock its certificate.")
+        
+    cert_id_seed = f"{current_user.id}:{course_slug}"
+    cert_uuid = str(uuid.UUID(hashlib.md5(cert_id_seed.encode()).hexdigest()))
+    
+    # Get course title
+    academies = course_engine.get_academies()
+    course_title = course_slug.replace("-", " ").title()
+    category = "DevOps"
+    for a in academies:
+        for c in a["courses"]:
+            if c["slug"] == course_slug:
+                course_title = c["title"]
+                category = a["title"]
+                break
+                
+    return {
+        "success": True,
+        "message": f"Successfully generated {course_title} certificate!",
+        "certificate": {
+            "id": cert_uuid,
+            "type": "course",
+            "title": f"{course_title} Certification",
+            "recipient_name": current_user.name,
+            "target_title": course_title,
+            "target_id": course_slug,
+            "category": category,
+            "issue_date": progress.updated_at.isoformat() if progress.updated_at else None,
+            "credential_id": cert_uuid[:8].upper()
+        }
+    }
+
+
+@router.get("/achievements/list")
+def get_user_achievements(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Get all achievements, learning path badges, and daily learning streak milestones.
+    """
+    from app.services.user import user_service
+    import hashlib
+
+    # 1. Fetch user progress records
+    progress_records = db.query(CourseProgress).filter(
+        CourseProgress.user_id == current_user.id
+    ).all()
+    progress_map = {p.course_slug: p.percentage for p in progress_records}
+
+    # 2. Get all learning paths
+    paths = course_engine.get_learning_paths()
+    path_badges = []
+    
+    for path in paths:
+        path_courses = path.get("courses", [])
+        completed_count = 0
+        total_count = len(path_courses)
+        
+        for slug in path_courses:
+            if progress_map.get(slug, 0) == 100:
+                completed_count += 1
+            else:
+                # Check if this slug represents an academy (like "monitoring" or "observability")
+                academies = course_engine.get_academies()
+                academy = next((a for a in academies if a["id"] == slug), None)
+                if academy:
+                    all_completed = True
+                    for c in academy["courses"]:
+                        if progress_map.get(c["slug"], 0) < 100:
+                            all_completed = False
+                            break
+                    if all_completed and len(academy["courses"]) > 0:
+                        completed_count += 1
+                        
+        unlocked = (completed_count == total_count) if total_count > 0 else False
+        progress_pct = int((completed_count / total_count * 100)) if total_count > 0 else 0
+        
+        badge_id_seed = f"{current_user.id}:path:{path['id']}"
+        badge_uuid = str(uuid.UUID(hashlib.md5(badge_id_seed.encode()).hexdigest()))
+        
+        path_badges.append({
+            "id": badge_uuid,
+            "type": "learning_path",
+            "target_id": path["id"],
+            "title": f"{path['title']} Badge",
+            "description": f"Awarded for completing all courses in the {path['title']} learning path.",
+            "unlocked": unlocked,
+            "progress": progress_pct,
+            "completed_count": completed_count,
+            "total_count": total_count,
+            "icon": "award" if unlocked else "lock",
+            "rarity": "Legendary" if unlocked else "Epic" if progress_pct >= 50 else "Common"
+        })
+
+    # 3. Calculate streak and generate streak badges
+    streak = user_service.calculate_streak(db, current_user.id)
+    streak_milestones = [
+        {"days": 3, "title": "3-Day Novice Spark", "desc": "Keep the spark alive! Complete labs on 3 consecutive days."},
+        {"days": 7, "title": "7-Day Weekly Voyager", "desc": "Voyage on! Learn for 7 consecutive days."},
+        {"days": 15, "title": "15-Day Tech Grind", "desc": "Unstoppable! Maintain a 15-day streak of daily learning."},
+        {"days": 30, "title": "30-Day Streak Warrior", "desc": "Streak Warrior! Complete labs on 30 consecutive days."},
+        {"days": 50, "title": "50-Day DevOps Guru", "desc": "DevOps Guru! Maintain a 50-day learning streak."},
+        {"days": 100, "title": "100-Day Centurion Master", "desc": "Centurion Master! Complete labs on 100 consecutive days."},
+        {"days": 365, "title": "365-Day Legendary Champion", "desc": "Legendary DevOps Champion! Maintain a full year of daily grinds."}
+    ]
+    
+    streak_badges = []
+    for milestone in streak_milestones:
+        target = milestone["days"]
+        unlocked = streak >= target
+        progress_pct = min(100, int(streak / target * 100))
+        
+        badge_id_seed = f"{current_user.id}:streak:{target}"
+        badge_uuid = str(uuid.UUID(hashlib.md5(badge_id_seed.encode()).hexdigest()))
+        
+        streak_badges.append({
+            "id": badge_uuid,
+            "type": "streak",
+            "target_days": target,
+            "title": milestone["title"],
+            "description": milestone["desc"],
+            "unlocked": unlocked,
+            "progress": progress_pct,
+            "completed_count": streak,
+            "total_count": target,
+            "icon": "flame" if unlocked else "lock",
+            "rarity": "Legendary" if target >= 100 else "Rare" if target >= 30 else "Common"
+        })
+
+    return {
+        "streak": streak,
+        "badges": path_badges + streak_badges
+    }

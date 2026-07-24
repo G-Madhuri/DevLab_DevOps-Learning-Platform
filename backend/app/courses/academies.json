@@ -1,43 +1,5 @@
 [
   {
-    "id": "git",
-    "title": "Git",
-    "description": "Master local repositories, files staging, commit snapshots, branching strategies, stashing, tagging, and remote workflows.",
-    "icon": "git-branch",
-    "difficulty": "Beginner",
-    "coming_soon": false,
-    "courses": [
-      {
-        "slug": "git-fundamentals",
-        "title": "Git Fundamentals",
-        "description": "Learn the primary concepts, staging area, commit snapshots, and repository management.",
-        "difficulty": "Beginner",
-        "duration": "30 minutes"
-      },
-      {
-        "slug": "git-branching-and-merging",
-        "title": "Branching & Merging",
-        "description": "Deploy isolated environments using pointers, merge branches, and resolve conflicts.",
-        "difficulty": "Beginner",
-        "duration": "45 minutes"
-      },
-      {
-        "slug": "advanced-git",
-        "title": "Advanced Git",
-        "description": "Optimize logs history utilizing stashes, reflog recoveries, tags, and custom settings.",
-        "difficulty": "Intermediate",
-        "duration": "45 minutes"
-      },
-      {
-        "slug": "team-workflows",
-        "title": "Team Workflows",
-        "description": "Coordinate work across remote origins, sync branches, and resolve complex merge conflicts.",
-        "difficulty": "Advanced",
-        "duration": "60 minutes"
-      }
-    ]
-  },
-  {
     "id": "linux",
     "title": "Linux",
     "description": "Master files navigation, path routing, permissions security, shell scripting, networking, processes, and service management.",
@@ -84,6 +46,44 @@
     ]
   },
   {
+    "id": "git",
+    "title": "Git",
+    "description": "Master local repositories, files staging, commit snapshots, branching strategies, stashing, tagging, and remote workflows.",
+    "icon": "git-branch",
+    "difficulty": "Beginner",
+    "coming_soon": false,
+    "courses": [
+      {
+        "slug": "git-fundamentals",
+        "title": "Git Fundamentals",
+        "description": "Learn the primary concepts, staging area, commit snapshots, and repository management.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "git-branching-and-merging",
+        "title": "Branching & Merging",
+        "description": "Deploy isolated environments using pointers, merge branches, and resolve conflicts.",
+        "difficulty": "Beginner",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "advanced-git",
+        "title": "Advanced Git",
+        "description": "Optimize logs history utilizing stashes, reflog recoveries, tags, and custom settings.",
+        "difficulty": "Intermediate",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "team-workflows",
+        "title": "Team Workflows",
+        "description": "Coordinate work across remote origins, sync branches, and resolve complex merge conflicts.",
+        "difficulty": "Advanced",
+        "duration": "60 minutes"
+      }
+    ]
+  },
+  {
     "id": "docker",
     "title": "Docker",
     "description": "Master container packaging, networking, storage, volume management, and multi-container architectures.",
@@ -122,138 +122,260 @@
     ]
   },
   {
-    "id": "kubernetes",
-    "title": "Kubernetes",
-    "description": "Learn production-grade container orchestration, deployments, ingress, storage claims, and service discovery.",
-    "icon": "layers",
-    "difficulty": "Intermediate",
+    "id": "cicd",
+    "title": "CI/CD",
+    "description": "Master the principles of Continuous Integration, Continuous Delivery, and Continuous Deployment. Build clean automated gates and pipelines.",
+    "icon": "git-pull-request",
+    "difficulty": "Beginner",
     "coming_soon": false,
     "courses": [
       {
-        "slug": "kubernetes-fundamentals",
-        "title": "Kubernetes Fundamentals",
-        "description": "Learn the core components, control plane processes, and worker node architectures of Kubernetes.",
+        "slug": "introduction-to-cicd",
+        "title": "Introduction to CI/CD",
+        "description": "Learn the software delivery lifecycle, pipelines, and manual vs automated delivery principles.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "continuous-integration",
+        "title": "Continuous Integration",
+        "description": "Automate code checks, syntax rules, compilation validation, and unit testing scripts.",
         "difficulty": "Beginner",
         "duration": "45 minutes"
       },
       {
-        "slug": "kubernetes-pods",
-        "title": "Pods",
-        "description": "Deploy, inspect, and manage single and multi-container Pod workloads in Kubernetes namespaces.",
-        "difficulty": "Beginner",
-        "duration": "45 minutes"
-      },
-      {
-        "slug": "kubernetes-deployments",
-        "title": "Deployments",
-        "description": "Scale state-free container stacks, perform zero-downtime updates, and manage deployment rollbacks.",
-        "difficulty": "Beginner",
-        "duration": "45 minutes"
-      },
-      {
-        "slug": "kubernetes-replicasets",
-        "title": "ReplicaSets",
-        "description": "Understand how ReplicaSet controllers reconcile Pod instance counts automatically.",
-        "difficulty": "Beginner",
-        "duration": "45 minutes"
-      },
-      {
-        "slug": "kubernetes-services",
-        "title": "Services",
-        "description": "Expose application pods using stable ClusterIP, NodePort, and LoadBalancer configurations.",
-        "difficulty": "Beginner",
-        "duration": "45 minutes"
-      },
-      {
-        "slug": "kubernetes-namespaces",
-        "title": "Namespaces",
-        "description": "Organize and secure multiple independent project resources within the same Kubernetes cluster.",
-        "difficulty": "Beginner",
-        "duration": "45 minutes"
-      },
-      {
-        "slug": "kubernetes-configmaps",
-        "title": "ConfigMaps",
-        "description": "Decouple configurations variables from container images using ConfigMap stores.",
-        "difficulty": "Beginner",
-        "duration": "45 minutes"
-      },
-      {
-        "slug": "kubernetes-secrets",
-        "title": "Secrets",
-        "description": "Inject token variables, API keys, and database passwords securely using Secret models.",
-        "difficulty": "Beginner",
-        "duration": "45 minutes"
-      },
-      {
-        "slug": "kubernetes-persistent-volumes",
-        "title": "Persistent Volumes",
-        "description": "Define persistent cluster storage assets independent of individual Pod lifecycles.",
+        "slug": "continuous-delivery",
+        "title": "Continuous Delivery",
+        "description": "Package build iterations and maintain package registry releases behind manual approval checkpoints.",
         "difficulty": "Intermediate",
         "duration": "45 minutes"
       },
       {
-        "slug": "kubernetes-persistent-volume-claims",
-        "title": "Persistent Volume Claims",
-        "description": "Bind application resource requests dynamically to suitable Persistent Volumes.",
+        "slug": "continuous-deployment",
+        "title": "Continuous Deployment",
+        "description": "Automate final staging and production deployment gates safely without manual triggers.",
         "difficulty": "Intermediate",
         "duration": "45 minutes"
       },
       {
-        "slug": "kubernetes-ingress",
-        "title": "Ingress",
-        "description": "Route external L7 HTTP/HTTPS traffic to internal services using ingress routing rules.",
+        "slug": "building-a-complete-cicd-pipeline",
+        "title": "Building a Complete CI/CD Pipeline",
+        "description": "Orchestrate complex pipelines combining compile gates, test scripts, approvals, and rollbacks.",
+        "difficulty": "Advanced",
+        "duration": "60 minutes"
+      }
+    ]
+  },
+  {
+    "id": "github-actions",
+    "title": "GitHub Actions",
+    "description": "Master automated workflows, triggers, runners, continuous integration, artifact storage, and secure continuous deployment pipelines.",
+    "icon": "play",
+    "difficulty": "Beginner",
+    "coming_soon": false,
+    "courses": [
+      {
+        "slug": "github-actions-fundamentals",
+        "title": "GitHub Actions Fundamentals",
+        "description": "Learn workflows configurations, job parallelisms, triggers, and runner environments.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "building-ci-pipelines",
+        "title": "Building CI Pipelines",
+        "description": "Checkout code repositories, manage Node/Python setups, and run shell steps.",
+        "difficulty": "Beginner",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "testing-and-artifact-management",
+        "title": "Testing & Artifact Management",
+        "description": "Run tests and save output artifacts using upload-artifact actions.",
         "difficulty": "Intermediate",
         "duration": "45 minutes"
       },
       {
-        "slug": "kubernetes-rolling-updates",
-        "title": "Rolling Updates",
-        "description": "Perform updates and configure maxSurge and maxUnavailable values for deployments.",
+        "slug": "automated-deployments",
+        "title": "Automated Deployments",
+        "description": "Securely deploy release packages utilizing encrypted Secrets and environments.",
+        "difficulty": "Intermediate",
+        "duration": "60 minutes"
+      }
+    ]
+  },
+  {
+    "id": "jenkins",
+    "title": "Jenkins",
+    "description": "Master declarative and scripted build automation pipelines using the industry standard Jenkins automation server.",
+    "icon": "settings",
+    "difficulty": "Beginner",
+    "coming_soon": false,
+    "courses": [
+      {
+        "slug": "jenkins-fundamentals",
+        "title": "Jenkins Fundamentals",
+        "description": "Learn the main elements of Jenkins architecture including master, agent, and executors configurations.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "installing-and-configuring-jenkins",
+        "title": "Installing & Configuring Jenkins",
+        "description": "Install, run, and secure a Jenkins controller environment with basic plugins.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "freestyle-jobs",
+        "title": "Freestyle Jobs",
+        "description": "Configure graphical linear build tasks, build triggers, and file collections properties.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "pipeline-as-code-jenkinsfile",
+        "title": "Pipeline as Code (Jenkinsfile)",
+        "description": "Learn to declare multi-stage build pipelines committed as text alongside code.",
         "difficulty": "Intermediate",
         "duration": "45 minutes"
       },
       {
-        "slug": "kubernetes-jobs-and-cronjobs",
-        "title": "Jobs & CronJobs",
-        "description": "Run short-lived batch computations and schedule recurring cron tasks inside K8s.",
+        "slug": "declarative-vs-scripted-pipelines",
+        "title": "Declarative vs Scripted Pipelines",
+        "description": "Understand structured Declarative syntax and compare it to imperatively scripted Groovy node blocks.",
         "difficulty": "Intermediate",
         "duration": "45 minutes"
       },
       {
-        "slug": "kubernetes-resource-requests-and-limits",
-        "title": "Resource Requests & Limits",
-        "description": "Configure compute limits and requests to optimize CPU and RAM distribution models.",
+        "slug": "distributed-builds-and-agents",
+        "title": "Distributed Builds & Agents",
+        "description": "Distribute resource compile execution pipelines across isolated agent pools via node labels.",
         "difficulty": "Intermediate",
         "duration": "45 minutes"
       },
       {
-        "slug": "kubernetes-autoscaling-hpa",
-        "title": "Autoscaling (HPA)",
-        "description": "Scale deployment replicas dynamically based on real-time CPU utilization metrics.",
+        "slug": "credentials-and-secrets-management",
+        "title": "Credentials & Secrets Management",
+        "description": "Safely bind database logins, API keys, and SSH keys in runtime variables environments.",
+        "difficulty": "Intermediate",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "plugins-and-integrations",
+        "title": "Plugins & Integrations",
+        "description": "Integrate third-party build status reports, Slack messaging webhooks, and git events hooks.",
+        "difficulty": "Intermediate",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "building-a-complete-cicd-pipeline-jenkins",
+        "title": "Building a Complete CI/CD Pipeline",
+        "description": "Combine compilation steps, lint operations, automated unit tests, and final deployment rules.",
+        "difficulty": "Advanced",
+        "duration": "60 minutes"
+      },
+      {
+        "slug": "jenkins-best-practices",
+        "title": "Jenkins Best Practices",
+        "description": "Configure log file pruning rules and backup server details to reduce master loads.",
         "difficulty": "Advanced",
         "duration": "45 minutes"
       },
       {
-        "slug": "kubernetes-helm-basics",
-        "title": "Helm Basics",
-        "description": "Install, upgrade, roll back, and package Kubernetes applications using Helm Charts.",
-        "difficulty": "Advanced",
-        "duration": "45 minutes"
-      },
-      {
-        "slug": "kubernetes-production-best-practices",
-        "title": "Production Best Practices",
-        "description": "Configure liveness probes, readiness endpoints, security contexts, and resource quotas.",
-        "difficulty": "Advanced",
-        "duration": "45 minutes"
-      },
-      {
-        "slug": "kubernetes-capstone-project",
-        "title": "Capstone Project",
-        "description": "Deploy a complete multi-tier application stack with deployment modules, config sets, secrets, and PVCs.",
+        "slug": "jenkins-capstone-project",
+        "title": "Jenkins Capstone Project",
+        "description": "Deploy a multi-stage production deployment pipeline with artifacts archival and rollbacks.",
         "difficulty": "Advanced",
         "duration": "90 minutes",
+        "is_capstone": true
+      }
+    ]
+  },
+  {
+    "id": "ansible",
+    "title": "Ansible",
+    "description": "Configure and automate system deployments via declarative Ansible Playbooks and Roles.",
+    "icon": "shield",
+    "difficulty": "Beginner",
+    "coming_soon": false,
+    "courses": [
+      {
+        "slug": "introduction-to-ansible",
+        "title": "Introduction to Ansible",
+        "description": "Learn the primary push-based configuration management concepts of Ansible.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "inventory-files-and-hosts",
+        "title": "Inventory Files & Hosts",
+        "description": "Structure target host groups, INI properties, and connection variables.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "ad-hoc-commands",
+        "title": "Ad-hoc Commands",
+        "description": "Trigger quick module execution scripts directly on target node groupings.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "writing-playbooks",
+        "title": "Writing Playbooks",
+        "description": "Deploy stateful configuration states using structured YAML playbook definitions.",
+        "difficulty": "Beginner",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "variables-and-facts",
+        "title": "Variables & Facts",
+        "description": "Declare custom play variables and query dynamically gathered host system facts.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "templates-and-jinja2",
+        "title": "Templates & Jinja2",
+        "description": "Compile dynamic text configuration files using the Jinja2 rendering engine.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "roles",
+        "title": "Roles",
+        "description": "Organize tasks, templates, handlers, and variables into modular roles path structures.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "ansible-galaxy",
+        "title": "Ansible Galaxy",
+        "description": "Import and configure shared community roles utilizing Ansible Galaxy CLI.",
+        "difficulty": "Intermediate",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "tags-handlers-and-conditionals",
+        "title": "Tags, Handlers & Conditionals",
+        "description": "Incorporate task tags, conditional when blocks, and event notify handlers.",
+        "difficulty": "Advanced",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "best-practices",
+        "title": "Best Practices",
+        "description": "Organize group_vars variable scopes and perform syntax validations.",
+        "difficulty": "Advanced",
+        "duration": "30 minutes"
+      },
+      {
+        "slug": "ansible-capstone-project",
+        "title": "Ansible Capstone Project",
+        "description": "Deliver a complete multi-role web services automation deployment workflow.",
+        "difficulty": "Advanced",
+        "duration": "45 minutes",
         "is_capstone": true
       }
     ]
@@ -537,258 +659,136 @@
     ]
   },
   {
-    "id": "ansible",
-    "title": "Ansible",
-    "description": "Configure and automate system deployments via declarative Ansible Playbooks and Roles.",
-    "icon": "shield",
-    "difficulty": "Beginner",
+    "id": "kubernetes",
+    "title": "Kubernetes",
+    "description": "Learn production-grade container orchestration, deployments, ingress, storage claims, and service discovery.",
+    "icon": "layers",
+    "difficulty": "Intermediate",
     "coming_soon": false,
     "courses": [
       {
-        "slug": "introduction-to-ansible",
-        "title": "Introduction to Ansible",
-        "description": "Learn the primary push-based configuration management concepts of Ansible.",
-        "difficulty": "Beginner",
-        "duration": "30 minutes"
-      },
-      {
-        "slug": "inventory-files-and-hosts",
-        "title": "Inventory Files & Hosts",
-        "description": "Structure target host groups, INI properties, and connection variables.",
-        "difficulty": "Beginner",
-        "duration": "30 minutes"
-      },
-      {
-        "slug": "ad-hoc-commands",
-        "title": "Ad-hoc Commands",
-        "description": "Trigger quick module execution scripts directly on target node groupings.",
-        "difficulty": "Beginner",
-        "duration": "30 minutes"
-      },
-      {
-        "slug": "writing-playbooks",
-        "title": "Writing Playbooks",
-        "description": "Deploy stateful configuration states using structured YAML playbook definitions.",
-        "difficulty": "Beginner",
-        "duration": "30 minutes"
-      },
-      {
-        "slug": "variables-and-facts",
-        "title": "Variables & Facts",
-        "description": "Declare custom play variables and query dynamically gathered host system facts.",
-        "difficulty": "Intermediate",
-        "duration": "30 minutes"
-      },
-      {
-        "slug": "templates-and-jinja2",
-        "title": "Templates & Jinja2",
-        "description": "Compile dynamic text configuration files using the Jinja2 rendering engine.",
-        "difficulty": "Intermediate",
-        "duration": "30 minutes"
-      },
-      {
-        "slug": "roles",
-        "title": "Roles",
-        "description": "Organize tasks, templates, handlers, and variables into modular roles path structures.",
-        "difficulty": "Intermediate",
-        "duration": "30 minutes"
-      },
-      {
-        "slug": "ansible-galaxy",
-        "title": "Ansible Galaxy",
-        "description": "Import and configure shared community roles utilizing Ansible Galaxy CLI.",
-        "difficulty": "Intermediate",
-        "duration": "30 minutes"
-      },
-      {
-        "slug": "tags-handlers-and-conditionals",
-        "title": "Tags, Handlers & Conditionals",
-        "description": "Incorporate task tags, conditional when blocks, and event notify handlers.",
-        "difficulty": "Advanced",
-        "duration": "30 minutes"
-      },
-      {
-        "slug": "best-practices",
-        "title": "Best Practices",
-        "description": "Organize group_vars variable scopes and perform syntax validations.",
-        "difficulty": "Advanced",
-        "duration": "30 minutes"
-      },
-      {
-        "slug": "ansible-capstone-project",
-        "title": "Ansible Capstone Project",
-        "description": "Deliver a complete multi-role web services automation deployment workflow.",
-        "difficulty": "Advanced",
-        "duration": "45 minutes",
-        "is_capstone": true
-      }
-    ]
-  },
-  {
-    "id": "github-actions",
-    "title": "GitHub Actions",
-    "description": "Master automated workflows, triggers, runners, continuous integration, artifact storage, and secure continuous deployment pipelines.",
-    "icon": "play",
-    "difficulty": "Beginner",
-    "coming_soon": false,
-    "courses": [
-      {
-        "slug": "github-actions-fundamentals",
-        "title": "GitHub Actions Fundamentals",
-        "description": "Learn workflows configurations, job parallelisms, triggers, and runner environments.",
-        "difficulty": "Beginner",
-        "duration": "30 minutes"
-      },
-      {
-        "slug": "building-ci-pipelines",
-        "title": "Building CI Pipelines",
-        "description": "Checkout code repositories, manage Node/Python setups, and run shell steps.",
+        "slug": "kubernetes-fundamentals",
+        "title": "Kubernetes Fundamentals",
+        "description": "Learn the core components, control plane processes, and worker node architectures of Kubernetes.",
         "difficulty": "Beginner",
         "duration": "45 minutes"
       },
       {
-        "slug": "testing-and-artifact-management",
-        "title": "Testing & Artifact Management",
-        "description": "Run tests and save output artifacts using upload-artifact actions.",
-        "difficulty": "Intermediate",
-        "duration": "45 minutes"
-      },
-      {
-        "slug": "automated-deployments",
-        "title": "Automated Deployments",
-        "description": "Securely deploy release packages utilizing encrypted Secrets and environments.",
-        "difficulty": "Intermediate",
-        "duration": "60 minutes"
-      }
-    ]
-  },
-  {
-    "id": "cicd",
-    "title": "CI/CD",
-    "description": "Master the principles of Continuous Integration, Continuous Delivery, and Continuous Deployment. Build clean automated gates and pipelines.",
-    "icon": "git-pull-request",
-    "difficulty": "Beginner",
-    "coming_soon": false,
-    "courses": [
-      {
-        "slug": "introduction-to-cicd",
-        "title": "Introduction to CI/CD",
-        "description": "Learn the software delivery lifecycle, pipelines, and manual vs automated delivery principles.",
-        "difficulty": "Beginner",
-        "duration": "30 minutes"
-      },
-      {
-        "slug": "continuous-integration",
-        "title": "Continuous Integration",
-        "description": "Automate code checks, syntax rules, compilation validation, and unit testing scripts.",
+        "slug": "kubernetes-pods",
+        "title": "Pods",
+        "description": "Deploy, inspect, and manage single and multi-container Pod workloads in Kubernetes namespaces.",
         "difficulty": "Beginner",
         "duration": "45 minutes"
       },
       {
-        "slug": "continuous-delivery",
-        "title": "Continuous Delivery",
-        "description": "Package build iterations and maintain package registry releases behind manual approval checkpoints.",
-        "difficulty": "Intermediate",
-        "duration": "45 minutes"
-      },
-      {
-        "slug": "continuous-deployment",
-        "title": "Continuous Deployment",
-        "description": "Automate final staging and production deployment gates safely without manual triggers.",
-        "difficulty": "Intermediate",
-        "duration": "45 minutes"
-      },
-      {
-        "slug": "building-a-complete-cicd-pipeline",
-        "title": "Building a Complete CI/CD Pipeline",
-        "description": "Orchestrate complex pipelines combining compile gates, test scripts, approvals, and rollbacks.",
-        "difficulty": "Advanced",
-        "duration": "60 minutes"
-      }
-    ]
-  },
-  {
-    "id": "jenkins",
-    "title": "Jenkins",
-    "description": "Master declarative and scripted build automation pipelines using the industry standard Jenkins automation server.",
-    "icon": "settings",
-    "difficulty": "Beginner",
-    "coming_soon": false,
-    "courses": [
-      {
-        "slug": "jenkins-fundamentals",
-        "title": "Jenkins Fundamentals",
-        "description": "Learn the main elements of Jenkins architecture including master, agent, and executors configurations.",
+        "slug": "kubernetes-deployments",
+        "title": "Deployments",
+        "description": "Scale state-free container stacks, perform zero-downtime updates, and manage deployment rollbacks.",
         "difficulty": "Beginner",
-        "duration": "30 minutes"
+        "duration": "45 minutes"
       },
       {
-        "slug": "installing-and-configuring-jenkins",
-        "title": "Installing & Configuring Jenkins",
-        "description": "Install, run, and secure a Jenkins controller environment with basic plugins.",
+        "slug": "kubernetes-replicasets",
+        "title": "ReplicaSets",
+        "description": "Understand how ReplicaSet controllers reconcile Pod instance counts automatically.",
         "difficulty": "Beginner",
-        "duration": "30 minutes"
+        "duration": "45 minutes"
       },
       {
-        "slug": "freestyle-jobs",
-        "title": "Freestyle Jobs",
-        "description": "Configure graphical linear build tasks, build triggers, and file collections properties.",
+        "slug": "kubernetes-services",
+        "title": "Services",
+        "description": "Expose application pods using stable ClusterIP, NodePort, and LoadBalancer configurations.",
         "difficulty": "Beginner",
-        "duration": "30 minutes"
+        "duration": "45 minutes"
       },
       {
-        "slug": "pipeline-as-code-jenkinsfile",
-        "title": "Pipeline as Code (Jenkinsfile)",
-        "description": "Learn to declare multi-stage build pipelines committed as text alongside code.",
+        "slug": "kubernetes-namespaces",
+        "title": "Namespaces",
+        "description": "Organize and secure multiple independent project resources within the same Kubernetes cluster.",
+        "difficulty": "Beginner",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "kubernetes-configmaps",
+        "title": "ConfigMaps",
+        "description": "Decouple configurations variables from container images using ConfigMap stores.",
+        "difficulty": "Beginner",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "kubernetes-secrets",
+        "title": "Secrets",
+        "description": "Inject token variables, API keys, and database passwords securely using Secret models.",
+        "difficulty": "Beginner",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "kubernetes-persistent-volumes",
+        "title": "Persistent Volumes",
+        "description": "Define persistent cluster storage assets independent of individual Pod lifecycles.",
         "difficulty": "Intermediate",
         "duration": "45 minutes"
       },
       {
-        "slug": "declarative-vs-scripted-pipelines",
-        "title": "Declarative vs Scripted Pipelines",
-        "description": "Understand structured Declarative syntax and compare it to imperatively scripted Groovy node blocks.",
+        "slug": "kubernetes-persistent-volume-claims",
+        "title": "Persistent Volume Claims",
+        "description": "Bind application resource requests dynamically to suitable Persistent Volumes.",
         "difficulty": "Intermediate",
         "duration": "45 minutes"
       },
       {
-        "slug": "distributed-builds-and-agents",
-        "title": "Distributed Builds & Agents",
-        "description": "Distribute resource compile execution pipelines across isolated agent pools via node labels.",
+        "slug": "kubernetes-ingress",
+        "title": "Ingress",
+        "description": "Route external L7 HTTP/HTTPS traffic to internal services using ingress routing rules.",
         "difficulty": "Intermediate",
         "duration": "45 minutes"
       },
       {
-        "slug": "credentials-and-secrets-management",
-        "title": "Credentials & Secrets Management",
-        "description": "Safely bind database logins, API keys, and SSH keys in runtime variables environments.",
+        "slug": "kubernetes-rolling-updates",
+        "title": "Rolling Updates",
+        "description": "Perform updates and configure maxSurge and maxUnavailable values for deployments.",
         "difficulty": "Intermediate",
         "duration": "45 minutes"
       },
       {
-        "slug": "plugins-and-integrations",
-        "title": "Plugins & Integrations",
-        "description": "Integrate third-party build status reports, Slack messaging webhooks, and git events hooks.",
+        "slug": "kubernetes-jobs-and-cronjobs",
+        "title": "Jobs & CronJobs",
+        "description": "Run short-lived batch computations and schedule recurring cron tasks inside K8s.",
         "difficulty": "Intermediate",
         "duration": "45 minutes"
       },
       {
-        "slug": "building-a-complete-cicd-pipeline-jenkins",
-        "title": "Building a Complete CI/CD Pipeline",
-        "description": "Combine compilation steps, lint operations, automated unit tests, and final deployment rules.",
-        "difficulty": "Advanced",
-        "duration": "60 minutes"
+        "slug": "kubernetes-resource-requests-and-limits",
+        "title": "Resource Requests & Limits",
+        "description": "Configure compute limits and requests to optimize CPU and RAM distribution models.",
+        "difficulty": "Intermediate",
+        "duration": "45 minutes"
       },
       {
-        "slug": "jenkins-best-practices",
-        "title": "Jenkins Best Practices",
-        "description": "Configure log file pruning rules and backup server details to reduce master loads.",
+        "slug": "kubernetes-autoscaling-hpa",
+        "title": "Autoscaling (HPA)",
+        "description": "Scale deployment replicas dynamically based on real-time CPU utilization metrics.",
         "difficulty": "Advanced",
         "duration": "45 minutes"
       },
       {
-        "slug": "jenkins-capstone-project",
-        "title": "Jenkins Capstone Project",
-        "description": "Deploy a multi-stage production deployment pipeline with artifacts archival and rollbacks.",
+        "slug": "kubernetes-helm-basics",
+        "title": "Helm Basics",
+        "description": "Install, upgrade, roll back, and package Kubernetes applications using Helm Charts.",
+        "difficulty": "Advanced",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "kubernetes-production-best-practices",
+        "title": "Production Best Practices",
+        "description": "Configure liveness probes, readiness endpoints, security contexts, and resource quotas.",
+        "difficulty": "Advanced",
+        "duration": "45 minutes"
+      },
+      {
+        "slug": "kubernetes-capstone-project",
+        "title": "Capstone Project",
+        "description": "Deploy a complete multi-tier application stack with deployment modules, config sets, secrets, and PVCs.",
         "difficulty": "Advanced",
         "duration": "90 minutes",
         "is_capstone": true

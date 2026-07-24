@@ -60,6 +60,17 @@ export default function LabsCatalogPage() {
     mutationFn: (academyId: string) => labService.generateCertificate(academyId),
   });
 
+  const generateCourseCertMutation = useMutation({
+    onSuccess: (res) => {
+      alert(res.message);
+      queryClient.invalidateQueries({ queryKey: ["academies_list"] });
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.detail || "Failed to generate course certificate.");
+    },
+    mutationFn: (courseSlug: string) => labService.generateCourseCertificate(courseSlug),
+  });
+
   const categories = [
     "All",
     "Linux",
@@ -172,10 +183,10 @@ export default function LabsCatalogPage() {
     .sort((a, b) => {
       // 4. Sort calculations
       if (sort === "default") {
-        const oldOrder = [
-          "linux", "docker", "kubernetes", "terraform", "aws", "azure", "jenkins", "ansible", "git", "github-actions", "monitoring", "observability"
+        const roadmapOrder = [
+          "linux", "git", "docker", "cicd", "github-actions", "jenkins", "ansible", "terraform", "aws", "azure", "kubernetes", "monitoring", "observability"
         ];
-        return oldOrder.indexOf(a.id) - oldOrder.indexOf(b.id);
+        return roadmapOrder.indexOf(a.id) - roadmapOrder.indexOf(b.id);
       }
       if (sort === "alphabetical") {
         return a.title.localeCompare(b.title);
@@ -468,6 +479,17 @@ export default function LabsCatalogPage() {
                                     />
                                   </div>
                                 </div>
+
+                                 {isCompleted ? (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => generateCourseCertMutation.mutate(course.slug)}
+                                    disabled={generateCourseCertMutation.isPending}
+                                    className="rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white cursor-pointer"
+                                  >
+                                    {generateCourseCertMutation.isPending ? "Claiming..." : "Claim Certificate"}
+                                  </Button>
+                                ) : null}
 
                                 <Link href={`/labs/workspace/${course.slug}`}>
                                   <Button
